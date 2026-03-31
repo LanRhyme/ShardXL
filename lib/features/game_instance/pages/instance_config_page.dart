@@ -119,53 +119,32 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
     final settings = ref.watch(gameSettingsProvider);
     final config = ref.watch(instanceConfigProvider);
 
-    return Container(
-      color: Theme.of(context).colorScheme.surface,
-      child: Stack(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 背景装饰
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.03),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-            child: Column(
+          // 返回按钮和标题
+          _buildHeader(),
+          const SizedBox(height: 24),
+          // 版本信息卡片
+          _buildVersionInfoCard(),
+          const SizedBox(height: 32),
+          // 配置内容
+          Expanded(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 返回按钮和标题
-                _buildHeader(),
-                const SizedBox(height: 24),
-                // 版本信息卡片
-                _buildVersionInfoCard(),
-                const SizedBox(height: 32),
-                // 配置内容
+                // 左侧配置列表
                 Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 左侧配置列表
-                      Expanded(
-                        flex: 3,
-                        child: _buildConfigList(settings, config),
-                      ),
-                      const SizedBox(width: 32),
-                      // 右侧快速操作
-                      SizedBox(
-                        width: 200,
-                        child: _buildQuickActions(),
-                      ),
-                    ],
-                  ),
+                  flex: 3,
+                  child: _buildConfigList(settings, config),
+                ),
+                const SizedBox(width: 32),
+                // 右侧快速操作
+                SizedBox(
+                  width: 200,
+                  child: _buildQuickActions(),
                 ),
               ],
             ),

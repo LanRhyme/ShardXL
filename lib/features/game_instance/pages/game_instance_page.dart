@@ -924,95 +924,70 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
                   ),
                 
                 // 主要内容
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // 图标容器
-                      Hero(
-                        tag: 'icon_${widget.version}',
-                        child: Image.asset(
-                          iconData.assetPath!,
-                          width: 72,
-                          height: 72,
-                          errorBuilder: (_, __, ___) => Container(
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // 图标容器
+                        Hero(
+                          tag: 'icon_${widget.version}',
+                          child: Image.asset(
+                            iconData.assetPath!,
                             width: 72,
                             height: 72,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(18),
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: iconData.gradientColors,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: iconData.gradientColors,
+                                ),
                               ),
+                              child: const Icon(Icons.grass, size: 36, color: Colors.white),
                             ),
-                            child: const Icon(Icons.grass, size: 36, color: Colors.white),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      // 版本名称
-                      Text(
-                        widget.version,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.2,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 6),
-                      // 类型标签
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: iconData.shadowColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: iconData.shadowColor.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          _getVersionTypeLabel(widget.version),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: iconData.shadowColor,
+                        const SizedBox(height: 16),
+                        // 版本名称
+                        Text(
+                          widget.version,
+                          style: const TextStyle(
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
+                            letterSpacing: 0.2,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 6),
+                        // 类型标签
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: iconData.shadowColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: iconData.shadowColor.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            _getVersionTypeLabel(widget.version),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: iconData.shadowColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // 启动按钮 (悬浮显示)
-                AnimatedOpacity(
-                  opacity: _isHovered ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: FilledButton(
-                        onPressed: widget.onLaunch,
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.play_arrow_rounded, size: 18),
-                            SizedBox(width: 4),
-                            Text('启动', style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
