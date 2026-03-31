@@ -42,45 +42,15 @@ class ShardBackground extends ConsumerWidget {
         return Container(color: colorScheme.surfaceContainerLowest);
 
       case 'gradient':
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colorScheme.surfaceContainerLowest,
-                colorScheme.surfaceContainer,
-                Color.lerp(
-                  colorScheme.surfaceContainerLowest,
-                  primaryColor,
-                  0.08,
-                )!,
-              ],
-            ),
-          ),
-        );
+        return _GradientBackground(colorScheme: colorScheme, primaryColor: primaryColor);
 
       case 'image':
         // 图片背景占位（可扩展）
-        // 注意：需要在 assets/images/ 下放置 background.png 文件
-        return Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLowest,
-            // 暂时使用渐变作为 fallback，图片文件存在时启用
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                colorScheme.surfaceContainerLowest,
-                colorScheme.surfaceContainer,
-              ],
-            ),
-          ),
-        );
+        return _GradientBackground(colorScheme: colorScheme, primaryColor: primaryColor);
 
       case 'dynamic':
-        // 动态渐变背景（赛博朋克风格）
-        return _DynamicBackground(primaryColor: primaryColor);
+        // 动态渐变背景
+        return _DynamicBackground(primaryColor: primaryColor, colorScheme: colorScheme);
 
       default:
         return Container(color: colorScheme.surfaceContainerLowest);
@@ -88,11 +58,92 @@ class ShardBackground extends ConsumerWidget {
   }
 }
 
-/// 动态渐变背景（赛博朋克风格）
-class _DynamicBackground extends StatefulWidget {
+/// 静态渐变背景
+class _GradientBackground extends StatelessWidget {
+  final ColorScheme colorScheme;
   final Color primaryColor;
 
-  const _DynamicBackground({required this.primaryColor});
+  const _GradientBackground({
+    required this.colorScheme,
+    required this.primaryColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hsl = HSLColor.fromColor(primaryColor);
+    
+    return Container(
+      decoration: BoxDecoration(
+        // 主背景色
+        color: colorScheme.surfaceContainerLowest,
+      ),
+      child: Stack(
+        children: [
+          // 顶部渐变光晕
+          Positioned(
+            top: -200,
+            right: -100,
+            child: Container(
+              width: 500,
+              height: 500,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    HSLColor.fromAHSL(0.15, hsl.hue, hsl.saturation * 0.5, 0.5).toColor(),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // 底部渐变光晕
+          Positioned(
+            bottom: -150,
+            left: -100,
+            child: Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    HSLColor.fromAHSL(0.08, (hsl.hue + 30) % 360, hsl.saturation * 0.3, 0.4).toColor(),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // 主渐变
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  colorScheme.surfaceContainerLowest,
+                  colorScheme.surfaceContainer,
+                ],
+                stops: const [0.0, 1.0],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 动态渐变背景
+class _DynamicBackground extends StatefulWidget {
+  final Color primaryColor;
+  final ColorScheme colorScheme;
+
+  const _DynamicBackground({
+    required this.primaryColor,
+    required this.colorScheme,
+  });
 
   @override
   State<_DynamicBackground> createState() => _DynamicBackgroundState();
@@ -106,7 +157,7 @@ class _DynamicBackgroundState extends State<_DynamicBackground>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 10),
+      duration: const Duration(seconds: 15),
       vsync: this,
     )..repeat(reverse: true);
   }
@@ -119,37 +170,81 @@ class _DynamicBackgroundState extends State<_DynamicBackground>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final hsl = HSLColor.fromColor(widget.primaryColor);
 
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
         return Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colorScheme.surfaceContainerLowest,
-                Color.lerp(
-                  colorScheme.surfaceContainerLowest,
-                  widget.primaryColor,
-                  0.05 + (_controller.value * 0.05),
-                )!,
-                colorScheme.surfaceContainer,
-                Color.lerp(
-                  colorScheme.surfaceContainerLowest,
-                  widget.primaryColor,
-                  0.08 - (_controller.value * 0.03),
-                )!,
-              ],
-              stops: [
-                0.0,
-                0.3 + (_controller.value * 0.1),
-                0.7 - (_controller.value * 0.1),
-                1.0,
-              ],
-            ),
+            color: widget.colorScheme.surfaceContainerLowest,
+          ),
+          child: Stack(
+            children: [
+              // 动态光晕 1（右上）
+              Positioned(
+                top: -150 + (_controller.value * 50),
+                right: -50 + (_controller.value * 30),
+                child: Container(
+                  width: 450,
+                  height: 450,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        HSLColor.fromAHSL(
+                          0.12 + (_controller.value * 0.05),
+                          hsl.hue,
+                          hsl.saturation * 0.6,
+                          0.5,
+                        ).toColor(),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // 动态光晕 2（左下）
+              Positioned(
+                bottom: -100 - (_controller.value * 40),
+                left: -80 + (_controller.value * 20),
+                child: Container(
+                  width: 350,
+                  height: 350,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        HSLColor.fromAHSL(
+                          0.08 + (_controller.value * 0.03),
+                          (hsl.hue + 40) % 360,
+                          hsl.saturation * 0.4,
+                          0.45,
+                        ).toColor(),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // 微妙的噪点纹理效果（使用极细线性渐变模拟）
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      widget.colorScheme.surfaceContainerLowest,
+                      Color.lerp(
+                        widget.colorScheme.surfaceContainerLowest,
+                        widget.colorScheme.surfaceContainer,
+                        0.5,
+                      )!,
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },

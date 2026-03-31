@@ -115,6 +115,120 @@ class ShardTheme {
   // 生成 Material 3 ThemeData
   // ========================
 
+  /// 基于 primaryColor 动态生成和谐的深色配色方案
+  /// 
+  /// 使用 HSL 颜色空间，从 primaryColor 提取色相，
+  /// 然后生成低饱和度、低亮度的 surface 颜色
+  ColorScheme _buildDarkColorScheme(ColorScheme base, Color primary) {
+    final hsl = HSLColor.fromColor(primary);
+    final hue = hsl.hue;
+    final sat = hsl.saturation;
+
+    // 背景层：极低饱和度，深色调
+    final surfaceContainerLowest = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.08,  // 8% 原始饱和度
+      0.06,        // 6% 亮度
+    ).toColor();
+
+    // surface 层：略微带色
+    final surfaceContainer = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.10,
+      0.10,
+    ).toColor();
+
+    // 卡片层：稍亮
+    final surfaceContainerHigh = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.12,
+      0.14,
+    ).toColor();
+
+    // 最高层：用于悬浮元素
+    final surfaceContainerHighest = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.14,
+      0.18,
+    ).toColor();
+
+    // surface 主色
+    final surface = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.10,
+      0.09,
+    ).toColor();
+
+    return base.copyWith(
+      surface: surface,
+      surfaceContainerLowest: surfaceContainerLowest,
+      surfaceContainer: surfaceContainer,
+      surfaceContainerHigh: surfaceContainerHigh,
+      surfaceContainerHighest: surfaceContainerHighest,
+      // 保持良好的文字对比度
+      onSurface: Colors.white.withValues(alpha: 0.92),
+      onSurfaceVariant: Colors.white.withValues(alpha: 0.70),
+    );
+  }
+
+  /// 基于 primaryColor 动态生成和谐的浅色配色方案
+  /// 
+  /// 浅色模式层级：background(最深) → surface → card(最浅/最突出)
+  ColorScheme _buildLightColorScheme(ColorScheme base, Color primary) {
+    final hsl = HSLColor.fromColor(primary);
+    final hue = hsl.hue;
+    final sat = hsl.saturation;
+
+    // 浅色模式：背景最深，层级越高颜色越浅（越突出）
+    final surfaceContainerLowest = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.06,
+      0.91,  // 最深，作为背景
+    ).toColor();
+
+    final surfaceContainer = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.05,
+      0.94,  // 稍浅
+    ).toColor();
+
+    final surfaceContainerHigh = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.04,
+      0.96,  // 更浅，用于卡片
+    ).toColor();
+
+    final surfaceContainerHighest = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.03,
+      0.98,  // 最浅，最突出
+    ).toColor();
+
+    final surface = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      sat * 0.05,
+      0.93,  // 介于 background 和 card 之间
+    ).toColor();
+
+    return base.copyWith(
+      surface: surface,
+      surfaceContainerLowest: surfaceContainerLowest,
+      surfaceContainer: surfaceContainer,
+      surfaceContainerHigh: surfaceContainerHigh,
+      surfaceContainerHighest: surfaceContainerHighest,
+    );
+  }
+
   /// 构建带缩放的 TextTheme
   TextTheme _buildTextTheme(bool isDark, double scale) {
     final base = ThemeData(
@@ -149,20 +263,10 @@ class ShardTheme {
       brightness: isDark ? Brightness.dark : Brightness.light,
     );
 
-    // 深色模式下的自定义 surface 颜色
+    // 深色/浅色模式下的自定义 surface 颜色（基于 primaryColor 动态生成）
     final effectiveColorScheme = isDark
-        ? colorScheme.copyWith(
-            // 使用较深的 surface 作为背景
-            surface: const Color(0xFF1A1A2E),
-            surfaceContainerLowest: const Color(0xFF0D0D1A),
-            surfaceContainer: const Color(0xFF1E1E32),
-            surfaceContainerHigh: const Color(0xFF252540),
-            surfaceContainerHighest: const Color(0xFF2D2D50),
-            // 确保 on* 颜色对比度
-            onSurface: Colors.white.withValues(alpha: 0.95),
-            onSurfaceVariant: Colors.white.withValues(alpha: 0.75),
-          )
-        : colorScheme;
+        ? _buildDarkColorScheme(colorScheme, primaryColor)
+        : _buildLightColorScheme(colorScheme, primaryColor);
 
     return ThemeData(
       useMaterial3: true,
@@ -240,9 +344,9 @@ class ShardTheme {
       // 扩展主题
       extensions: <ThemeExtension<dynamic>>[
         ShardThemeExtension(
-          glassBlurSigma: 20.0,
-          glassBorderWidth: 1.5,
-          glowColor: primaryColor.withValues(alpha: 0.3),
+          glassBlurSigma: 16.0,        // 更柔和的模糊
+          glassBorderWidth: 1.0,       // 更细的边框
+          glowColor: primaryColor,      // 使用原始 primary 色
           cardBorderRadius: 16.0 * uiScale,
           animationDurationFactor: 1.0 / animationSpeed,
         ),

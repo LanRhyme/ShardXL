@@ -54,25 +54,26 @@ class GlassCard extends ConsumerWidget {
     BorderRadius borderRadius,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
-    final blurSigma = themeExtension?.glassBlurSigma ?? 20.0;
-    final borderWidth = themeExtension?.glassBorderWidth ?? 1.5;
-    final glowColor = themeExtension?.glowColor ?? colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final blurSigma = themeExtension?.glassBlurSigma ?? 16.0;
+    final borderWidth = themeExtension?.glassBorderWidth ?? 1.0;
+
+    // 根据主题模式调整边框颜色
+    // 深色模式：白色半透明边框
+    // 浅色模式：黑色半透明边框
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.08);
+
+    // 卡片背景色
+    final cardColor = isDark
+        ? colorScheme.surfaceContainerHigh.withValues(alpha: shardTheme.cardOpacity)
+        : colorScheme.surfaceContainerHigh.withValues(alpha: shardTheme.cardOpacity + 0.1);
 
     return Container(
       width: width,
       height: height,
       margin: margin,
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        boxShadow: [
-          // 基于 primary 的轻微辉光阴影
-          BoxShadow(
-            color: glowColor.withValues(alpha: 0.15),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
       child: ClipRRect(
         borderRadius: borderRadius,
         child: BackdropFilter(
@@ -80,11 +81,27 @@ class GlassCard extends ConsumerWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
-              color: colorScheme.surfaceContainerHigh
-                  .withValues(alpha: shardTheme.cardOpacity),
+              // 半透明背景
+              color: cardColor,
+              // 细腻的边框
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: borderColor,
                 width: borderWidth,
+              ),
+              // 内部高光效果（深色模式顶部亮，浅色模式底部暗）
+              gradient: LinearGradient(
+                begin: isDark ? Alignment.topLeft : Alignment.bottomLeft,
+                end: isDark ? Alignment.bottomRight : Alignment.topRight,
+                colors: isDark
+                    ? [
+                        Colors.white.withValues(alpha: 0.05),
+                        Colors.white.withValues(alpha: 0.0),
+                      ]
+                    : [
+                        Colors.white.withValues(alpha: 0.0),
+                        Colors.white.withValues(alpha: 0.5),
+                      ],
+                stops: const [0.0, 0.5],
               ),
             ),
             padding: padding ?? const EdgeInsets.all(16),
@@ -92,6 +109,8 @@ class GlassCard extends ConsumerWidget {
                 ? InkWell(
                     onTap: onTap,
                     borderRadius: borderRadius,
+                    splashColor: colorScheme.primary.withValues(alpha: 0.1),
+                    highlightColor: colorScheme.primary.withValues(alpha: 0.05),
                     child: child,
                   )
                 : child,

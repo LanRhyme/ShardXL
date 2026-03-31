@@ -192,21 +192,22 @@ class _HomeContent extends ConsumerWidget {
             child: Row(
               children: [
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 72,
+                  height: 72,
                   decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
+                    // 使用带透明度的 primary 色
+                    color: colorScheme.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(
-                      themeExtension?.cardBorderRadius ?? 16,
+                      (themeExtension?.cardBorderRadius ?? 16) - 4,
                     ),
                   ),
                   child: Icon(
                     Icons.play_arrow_rounded,
-                    size: 48,
-                    color: colorScheme.onPrimaryContainer,
+                    size: 40,
+                    color: colorScheme.primary,
                   ),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,16 +243,27 @@ class _HomeContent extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.download, color: colorScheme.primary, size: 32),
-                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.download, color: colorScheme.primary, size: 24),
+                      ),
+                      const SizedBox(height: 14),
                       Text(
                         '版本管理',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         '下载和管理游戏版本',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                       ),
                     ],
                   ),
@@ -264,16 +276,27 @@ class _HomeContent extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.extension, color: colorScheme.primary, size: 32),
-                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.extension, color: colorScheme.primary, size: 24),
+                      ),
+                      const SizedBox(height: 14),
                       Text(
                         '模组管理',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         '安装和管理游戏模组',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                       ),
                     ],
                   ),
