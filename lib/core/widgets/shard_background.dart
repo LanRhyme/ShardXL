@@ -90,7 +90,9 @@ class _ShardBackgroundState extends ConsumerState<ShardBackground> {
         return _DynamicBackground(primaryColor: primaryColor, colorScheme: colorScheme);
 
       case 'mica':
-        _MicaBackground.applyTransparentEffect(colorScheme);
+        _MicaBackground.applyTransparentEffect(colorScheme).catchError((e) {
+          debugPrint('Failed to apply transparent effect: $e');
+        });
         return _MicaBackground(colorScheme: colorScheme, primaryColor: primaryColor);
 
       default:
@@ -407,33 +409,10 @@ class _MicaBackground extends StatefulWidget {
 
 class _MicaBackgroundState extends State<_MicaBackground> {
   @override
-  void initState() {
-    super.initState();
-    _applyTransparentEffect();
-  }
-
-  @override
   void didUpdateWidget(_MicaBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.colorScheme.brightness != widget.colorScheme.brightness) {
-      _applyTransparentEffect();
-    }
-  }
-
-  Future<void> _applyTransparentEffect() async {
-    if (!Platform.isWindows) return;
-
-    try {
-      final isDark = widget.colorScheme.brightness == Brightness.dark;
-      await Window.setEffect(
-        effect: WindowEffect.acrylic,
-        color: isDark
-            ? const Color(0x99000000)
-            : const Color(0x99FFFFFF),
-        dark: isDark,
-      );
-    } catch (e) {
-      debugPrint('Failed to apply Acrylic effect: $e');
+      _MicaBackground.applyTransparentEffect(widget.colorScheme);
     }
   }
 
