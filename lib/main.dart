@@ -2,19 +2,28 @@
 // lib/main.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'core/theme/app_theme.dart';
-import 'presentation/bloc/auth/auth_bloc.dart';
-import 'presentation/bloc/version/version_bloc.dart';
-import 'presentation/bloc/launch/launch_bloc.dart';
-import 'presentation/bloc/download/download_bloc.dart';
-import 'presentation/pages/home/home_page.dart';
-import 'di/injection_container.dart' as di;
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await di.init();
+  
+  // Initialize window manager for desktop
+  await windowManager.ensureInitialized();
+  
+  WindowOptions windowOptions = const WindowOptions(
+    size: Size(800, 600),
+    center: true,
+    backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.normal,
+    title: 'ShardXL',
+  );
+  
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
+  
   runApp(const ShardXLApp());
 }
 
@@ -23,18 +32,51 @@ class ShardXLApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => di.sl<AuthBloc>()),
-        BlocProvider(create: (_) => di.sl<VersionBloc>()),
-        BlocProvider(create: (_) => di.sl<LaunchBloc>()),
-        BlocProvider(create: (_) => di.sl<DownloadBloc>()),
-      ],
-      child: MaterialApp(
-        title: 'ShardXL',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme,
-        home: const HomePage(),
+    return MaterialApp(
+      title: 'ShardXL',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark(useMaterial3: true),
+      home: const HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ShardXL'),
+        centerTitle: true,
+      ),
+      body: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.games,
+              size: 64,
+              color: Colors.deepPurple,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'ShardXL',
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Minecraft Java Edition Launcher',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+            SizedBox(height: 32),
+            Text(
+              'Windows Desktop Application',
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
       ),
     );
   }
