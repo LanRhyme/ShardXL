@@ -36,24 +36,25 @@ class _ShardBackgroundState extends ConsumerState<ShardBackground> {
     final shardTheme = themeState.theme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // 当背景类型从 mica 切换到其他类型时，重置窗口效果
-    if (_previousBackgroundType == 'mica' && shardTheme.backgroundType != 'mica') {
+    final currentBackgroundType = shardTheme.backgroundType;
+
+    if (_previousBackgroundType == 'mica' && currentBackgroundType != 'mica') {
       _resetWindowEffect();
+    } else if (_previousBackgroundType != 'mica' && currentBackgroundType == 'mica') {
+      _MicaBackground.applyTransparentEffect(colorScheme);
     }
-    _previousBackgroundType = shardTheme.backgroundType;
+    _previousBackgroundType = currentBackgroundType;
 
     return Stack(
       children: [
-        // 背景层
         Positioned.fill(
           child: _buildBackground(
             colorScheme,
             shardTheme.primaryColor,
-            shardTheme.backgroundType,
+            currentBackgroundType,
             backgroundImagePath: shardTheme.backgroundImagePath,
           ),
         ),
-        // 内容层
         widget.child,
       ],
     );
@@ -90,9 +91,6 @@ class _ShardBackgroundState extends ConsumerState<ShardBackground> {
         return _DynamicBackground(primaryColor: primaryColor, colorScheme: colorScheme);
 
       case 'mica':
-        _MicaBackground.applyTransparentEffect(colorScheme).catchError((e) {
-          debugPrint('Failed to apply transparent effect: $e');
-        });
         return _MicaBackground(colorScheme: colorScheme, primaryColor: primaryColor);
 
       default:
@@ -386,9 +384,13 @@ class _MicaBackground extends StatefulWidget {
     required this.primaryColor,
   });
 
+  static bool _isApplyingEffect = false;
+
   static Future<void> applyTransparentEffect(ColorScheme colorScheme) async {
     if (!Platform.isWindows) return;
+    if (_isApplyingEffect) return;
 
+    _isApplyingEffect = true;
     try {
       final isDark = colorScheme.brightness == Brightness.dark;
       await Window.setEffect(
@@ -400,6 +402,8 @@ class _MicaBackground extends StatefulWidget {
       );
     } catch (e) {
       debugPrint('Failed to apply Acrylic effect: $e');
+    } finally {
+      _isApplyingEffect = false;
     }
   }
 
