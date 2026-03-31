@@ -19,6 +19,9 @@ dependencies:
   # Window Management (Desktop)
   window_manager: ^0.4.3
 
+  # Minecraft Launcher
+  dartcraft: ^1.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
