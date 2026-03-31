@@ -1,6 +1,8 @@
 // ShardXL 动态背景组件
 // lib/core/widgets/shard_background.dart
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,6 +29,7 @@ class ShardBackground extends ConsumerWidget {
             colorScheme,
             shardTheme.primaryColor,
             shardTheme.backgroundType,
+            backgroundImagePath: shardTheme.backgroundImagePath,
           ),
         ),
         // 内容层
@@ -36,7 +39,7 @@ class ShardBackground extends ConsumerWidget {
   }
 
   /// 根据背景类型构建不同的背景
-  Widget _buildBackground(ColorScheme colorScheme, Color primaryColor, String backgroundType) {
+  Widget _buildBackground(ColorScheme colorScheme, Color primaryColor, String backgroundType, {String? backgroundImagePath}) {
     switch (backgroundType) {
       case 'solid':
         return Container(color: colorScheme.surfaceContainerLowest);
@@ -45,11 +48,12 @@ class ShardBackground extends ConsumerWidget {
         return _GradientBackground(colorScheme: colorScheme, primaryColor: primaryColor);
 
       case 'image':
-        // 图片背景占位（可扩展）
-        return _GradientBackground(colorScheme: colorScheme, primaryColor: primaryColor);
+        return _ImageBackground(
+          colorScheme: colorScheme,
+          imagePath: backgroundImagePath,
+        );
 
       case 'dynamic':
-        // 动态渐变背景
         return _DynamicBackground(primaryColor: primaryColor, colorScheme: colorScheme);
 
       default:
@@ -130,6 +134,87 @@ class _GradientBackground extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 图片背景
+class _ImageBackground extends StatelessWidget {
+  final ColorScheme colorScheme;
+  final String? imagePath;
+
+  const _ImageBackground({
+    required this.colorScheme,
+    this.imagePath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: colorScheme.surfaceContainerLowest,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (imagePath != null && imagePath!.isNotEmpty)
+            _buildImage()
+          else
+            _buildPlaceholder(),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  colorScheme.surfaceContainerLowest.withValues(alpha: 0.3),
+                  colorScheme.surfaceContainerLowest.withValues(alpha: 0.7),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    final file = File(imagePath!);
+    if (file.existsSync()) {
+      return Image.file(
+        file,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+      );
+    }
+    return Image.asset(
+      imagePath!,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      color: colorScheme.surfaceContainer,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_outlined,
+              size: 64,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '请选择背景图片',
+              style: TextStyle(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,8 +1,11 @@
 // ShardXL 主题设置页面
 // lib/features/settings/pages/theme_settings_page.dart
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../providers/theme_provider.dart';
 
@@ -111,6 +114,11 @@ class ThemeSettingsPage extends ConsumerWidget {
             currentType: shardTheme.backgroundType,
             onTypeChanged: (type) => notifier.updateBackgroundType(type),
           ),
+          if (shardTheme.backgroundType == 'image')
+            _ImageBackgroundSelector(
+              currentImagePath: shardTheme.backgroundImagePath,
+              onImageSelected: (path) => notifier.updateBackgroundImage(path),
+            ),
           const Divider(),
 
           // 预览卡片
@@ -297,6 +305,149 @@ class _PreviewCard extends ConsumerWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 图片背景选择器
+class _ImageBackgroundSelector extends ConsumerStatefulWidget {
+  final String? currentImagePath;
+  final ValueChanged<String?> onImageSelected;
+
+  const _ImageBackgroundSelector({
+    this.currentImagePath,
+    required this.onImageSelected,
+  });
+
+  @override
+  ConsumerState<_ImageBackgroundSelector> createState() =>
+      _ImageBackgroundSelectorState();
+}
+
+class _ImageBackgroundSelectorState
+    extends ConsumerState<_ImageBackgroundSelector> {
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        widget.onImageSelected(image.path);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('选择图片失败: $e')),
+        );
+      }
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('从相册选择'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('拍照'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 12),
+        if (widget.currentImagePath != null &&
+            widget.currentImagePath!.isNotEmpty) ...[
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: _buildImagePreview(),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton.filled(
+                  onPressed: () => widget.onImageSelected(null),
+                  icon: const Icon(Icons.close),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.errorContainer,
+                    foregroundColor: colorScheme.onErrorContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
+        OutlinedButton.icon(
+          onPressed: _showImageSourceDialog,
+          icon: const Icon(Icons.add_photo_alternate),
+          label: Text(widget.currentImagePath == null ||
+                  widget.currentImagePath!.isEmpty
+              ? '选择图片'
+              : '更换图片'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImagePreview() {
+    final file = File(widget.currentImagePath!);
+    if (file.existsSync()) {
+      return Image.file(
+        file,
+        width: double.infinity,
+        height: 150,
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.asset(
+      widget.currentImagePath!,
+      width: double.infinity,
+      height: 150,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => Container(
+        width: double.infinity,
+        height: 150,
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        child: Center(
+          child: Icon(
+            Icons.broken_image,
+            size: 48,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

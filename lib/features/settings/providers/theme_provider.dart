@@ -137,6 +137,13 @@ class ShardThemeNotifier extends Notifier<ThemeState> {
     await _saveTheme(newTheme);
   }
 
+  /// 更新背景图片
+  Future<void> updateBackgroundImage(String? imagePath) async {
+    final newTheme = state.theme.copyWith(backgroundImagePath: imagePath);
+    state = state.copyWith(theme: newTheme);
+    await _saveTheme(newTheme);
+  }
+
   /// 重置为默认主题
   Future<void> resetToDefault() async {
     const defaultTheme = ShardTheme();

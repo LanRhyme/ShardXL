@@ -43,6 +43,9 @@ class ShardTheme {
   
   /// 背景类型：'solid' | 'gradient' | 'image' | 'dynamic'
   final String backgroundType;
+  
+  /// 背景图片路径（仅在 backgroundType 为 'image' 时使用）
+  final String? backgroundImagePath;
 
   const ShardTheme({
     this.isDark = true,
@@ -52,6 +55,7 @@ class ShardTheme {
     this.uiScale = 1.0,
     this.animationSpeed = 1.0,
     this.backgroundType = 'gradient',
+    this.backgroundImagePath,
   });
 
   // ========================
@@ -66,6 +70,7 @@ class ShardTheme {
     double? uiScale,
     double? animationSpeed,
     String? backgroundType,
+    String? backgroundImagePath,
   }) {
     return ShardTheme(
       isDark: isDark ?? this.isDark,
@@ -75,6 +80,7 @@ class ShardTheme {
       uiScale: uiScale ?? this.uiScale,
       animationSpeed: animationSpeed ?? this.animationSpeed,
       backgroundType: backgroundType ?? this.backgroundType,
+      backgroundImagePath: backgroundImagePath ?? this.backgroundImagePath,
     );
   }
 
@@ -91,6 +97,7 @@ class ShardTheme {
       'uiScale': uiScale,
       'animationSpeed': animationSpeed,
       'backgroundType': backgroundType,
+      'backgroundImagePath': backgroundImagePath,
     };
   }
 
@@ -103,6 +110,7 @@ class ShardTheme {
       uiScale: (map['uiScale'] ?? 1.0).toDouble(),
       animationSpeed: (map['animationSpeed'] ?? 1.0).toDouble(),
       backgroundType: map['backgroundType'] ?? 'gradient',
+      backgroundImagePath: map['backgroundImagePath'] as String?,
     );
   }
 
@@ -364,7 +372,8 @@ class ShardTheme {
         other.cardOpacity == cardOpacity &&
         other.uiScale == uiScale &&
         other.animationSpeed == animationSpeed &&
-        other.backgroundType == backgroundType;
+        other.backgroundType == backgroundType &&
+        other.backgroundImagePath == backgroundImagePath;
   }
 
   @override
@@ -377,6 +386,7 @@ class ShardTheme {
       uiScale,
       animationSpeed,
       backgroundType,
+      backgroundImagePath,
     );
   }
 }
