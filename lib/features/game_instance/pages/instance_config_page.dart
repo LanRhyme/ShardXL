@@ -6,10 +6,12 @@ import '../providers/instance_config_provider.dart';
 
 class InstanceConfigPage extends ConsumerStatefulWidget {
   final String version;
+  final bool isEmbedded;
 
   const InstanceConfigPage({
     super.key,
     required this.version,
+    this.isEmbedded = false,
   });
 
   @override
@@ -33,38 +35,56 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
 
     return Container(
       color: Theme.of(context).colorScheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 返回按钮和标题
-            _buildHeader(),
-            const SizedBox(height: 24),
-            // 版本信息卡片
-            _buildVersionInfoCard(),
-            const SizedBox(height: 24),
-            // 配置内容
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 左侧配置列表
-                  Expanded(
-                    flex: 3,
-                    child: _buildConfigList(settings, config),
-                  ),
-                  const SizedBox(width: 24),
-                  // 右侧快速操作
-                  Expanded(
-                    flex: 1,
-                    child: _buildQuickActions(),
-                  ),
-                ],
+      child: Stack(
+        children: [
+          // 背景装饰
+          Positioned(
+            top: -100,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.03),
+                shape: BoxShape.circle,
               ),
             ),
-          ],
-        ),
+          ),
+          
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 返回按钮和标题
+                _buildHeader(),
+                const SizedBox(height: 24),
+                // 版本信息卡片
+                _buildVersionInfoCard(),
+                const SizedBox(height: 32),
+                // 配置内容
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 左侧配置列表
+                      Expanded(
+                        flex: 3,
+                        child: _buildConfigList(settings, config),
+                      ),
+                      const SizedBox(width: 32),
+                      // 右侧快速操作
+                      SizedBox(
+                        width: 200,
+                        child: _buildQuickActions(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -72,16 +92,18 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
   Widget _buildHeader() {
     return Row(
       children: [
-        IconButton(
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
-          icon: const Icon(Icons.arrow_back),
-          tooltip: '返回',
-        ),
-        const SizedBox(width: 16),
+        if (!widget.isEmbedded)
+          IconButton(
+            onPressed: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              }
+            },
+            icon: const Icon(Icons.arrow_back),
+            tooltip: '返回',
+          ),
+        if (!widget.isEmbedded)
+          const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -110,103 +132,135 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                      widget.version.toLowerCase().contains('neoforge');
 
     return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            // 草方块图标
-            Container(
-              width: 80,
-              height: 80,
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          // 草方块图标
+          Hero(
+            tag: 'icon_${widget.version}',
+            child: Container(
+              width: 90,
+              height: 90,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF5D8C38), // 草绿色
-                    const Color(0xFF8B7355), // 泥土色
-                  ],
+                borderRadius: BorderRadius.circular(24),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF81C784), Color(0xFF2E7D32)],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+                    color: Colors.green.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: const Center(
                 child: Icon(
                   Icons.grass,
-                  size: 40,
+                  size: 44,
                   color: Colors.white,
                 ),
               ),
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.version,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+          ),
+          const SizedBox(width: 24),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      widget.version,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: isModded
-                              ? Colors.orange.withOpacity(0.2)
-                              : Colors.green.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          isModded ? '模组加载器' : '原版',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isModded ? Colors.orange : Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                    const SizedBox(width: 12),
+                    _buildStatusChip(),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _buildInfoTag(
+                      isModded ? '模组加载器' : '官方原版',
+                      isModded ? Colors.orange : Colors.green,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '实例路径: .minecraft/versions/${widget.version}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
                       ),
-                      const SizedBox(width: 12),
-                      Icon(
-                        Icons.check_circle,
-                        size: 16,
-                        color: Colors.green.withOpacity(0.8),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '已安装',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.green.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            FilledButton.icon(
-              onPressed: () {
-                // TODO: 启动游戏
-              },
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('启动游戏'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 16),
+          _buildPrimaryLaunchButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.green.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          const Text(
+            '就绪',
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoTag(String text, MaterialColor color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color[700]),
+      ),
+    );
+  }
+
+  Widget _buildPrimaryLaunchButton() {
+    return FilledButton.icon(
+      onPressed: () {},
+      icon: const Icon(Icons.play_arrow_rounded, size: 24),
+      label: const Text('启动游戏', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 8,
+        shadowColor: Theme.of(context).colorScheme.primary.withOpacity(0.4),
       ),
     );
   }
@@ -217,8 +271,8 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 版本设置
-          _buildSectionTitle('版本设置'),
-          const SizedBox(height: 12),
+          _buildSectionHeader(Icons.auto_awesome_rounded, '版本设置'),
+          const SizedBox(height: 16),
           GlassCard(
             child: Column(
               children: [
@@ -251,8 +305,8 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
           const SizedBox(height: 24),
 
           // 游戏设置
-          _buildSectionTitle('游戏设置'),
-          const SizedBox(height: 12),
+          _buildSectionHeader(Icons.gamepad_rounded, '游戏设置'),
+          const SizedBox(height: 16),
           GlassCard(
             child: Column(
               children: [
@@ -403,8 +457,8 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
           const SizedBox(height: 24),
 
           // Java 设置
-          _buildSectionTitle('Java 设置'),
-          const SizedBox(height: 12),
+          _buildSectionHeader(Icons.terminal_rounded, 'Java 设置'),
+          const SizedBox(height: 16),
           GlassCard(
             child: Column(
               children: [
@@ -425,8 +479,8 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
           const SizedBox(height: 24),
 
           // 窗口设置
-          _buildSectionTitle('窗口设置'),
-          const SizedBox(height: 12),
+          _buildSectionHeader(Icons.aspect_ratio_rounded, '运行窗口'),
+          const SizedBox(height: 16),
           GlassCard(
             child: Column(
               children: [
@@ -534,13 +588,106 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: Theme.of(context).colorScheme.primary,
+  Widget _buildSectionHeader(IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GlassCard(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '快捷操作',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildActionButton(
+                icon: Icons.folder_open_rounded,
+                label: '浏览文件',
+                onTap: () {},
+              ),
+              const SizedBox(height: 12),
+              _buildActionButton(
+                icon: Icons.archive_outlined,
+                label: '备份实例',
+                onTap: () {},
+              ),
+              const SizedBox(height: 12),
+              _buildActionButton(
+                icon: Icons.share_rounded,
+                label: '分享代码',
+                onTap: () {},
+              ),
+              const SizedBox(height: 24),
+              Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1)),
+              const SizedBox(height: 24),
+              _buildActionButton(
+                icon: Icons.delete_outline_rounded,
+                label: '移除实例',
+                color: Colors.red,
+                onTap: () {},
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    Color? color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: color?.withOpacity(0.1) ?? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -579,103 +726,22 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
     required IconData icon,
     required String title,
     required String subtitle,
-    required String hintText,
+    String? hintText,
     required ValueChanged<String> onSubmitted,
   }) {
-    return ExpansionTile(
+    return ListTile(
       leading: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
       title: Text(title),
-      subtitle: Text(
-        subtitle,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: hintText,
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            ),
-            onSubmitted: onSubmitted,
+      subtitle: Text(subtitle),
+      trailing: SizedBox(
+        width: 200,
+        child: TextField(
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: const OutlineInputBorder(),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return Column(
-      children: [
-        GlassCard(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '快速操作',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildActionButton(
-                  icon: Icons.folder_open,
-                  label: '打开目录',
-                  onTap: () {},
-                ),
-                const SizedBox(height: 8),
-                _buildActionButton(
-                  icon: Icons.archive,
-                  label: '导出实例',
-                  onTap: () {},
-                ),
-                const SizedBox(height: 8),
-                _buildActionButton(
-                  icon: Icons.delete_outline,
-                  label: '删除实例',
-                  color: Colors.red,
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    Color? color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: color?.withOpacity(0.1) ?? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+          onSubmitted: onSubmitted,
         ),
       ),
     );

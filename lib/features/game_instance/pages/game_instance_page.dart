@@ -8,6 +8,27 @@ import '../providers/game_instances_provider.dart';
 import '../../../core/widgets/glass_card.dart';
 import 'instance_config_page.dart';
 
+enum _MenuView {
+  overview,
+  config,
+  mods,
+  saves,
+  resources,
+  shaders,
+}
+
+class _MenuItem {
+  final IconData icon;
+  final String label;
+  final _MenuView view;
+
+  const _MenuItem({
+    required this.icon,
+    required this.label,
+    required this.view,
+  });
+}
+
 class GameInstancePage extends ConsumerStatefulWidget {
   const GameInstancePage({super.key});
 
@@ -19,17 +40,17 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
   String _searchQuery = '';
   String _selectedFilter = '全部';
   String? _selectedVersion;
-  int _selectedMenuIndex = 0;
+  _MenuView _selectedView = _MenuView.overview;
 
   final List<String> _filters = ['全部', '原版', '模组加载器'];
 
   final List<_MenuItem> _menuItems = const [
-    _MenuItem(icon: Icons.grid_view, label: '实例概览'),
-    _MenuItem(icon: Icons.settings, label: '运行配置'),
-    _MenuItem(icon: Icons.extension, label: '模组仓库'),
-    _MenuItem(icon: Icons.save, label: '存档管理'),
-    _MenuItem(icon: Icons.palette, label: '资源中心'),
-    _MenuItem(icon: Icons.lightbulb, label: '视觉光影'),
+    _MenuItem(icon: Icons.grid_view, label: '实例概览', view: _MenuView.overview),
+    _MenuItem(icon: Icons.settings, label: '运行配置', view: _MenuView.config),
+    _MenuItem(icon: Icons.extension, label: '模组仓库', view: _MenuView.mods),
+    _MenuItem(icon: Icons.save, label: '存档管理', view: _MenuView.saves),
+    _MenuItem(icon: Icons.palette, label: '资源中心', view: _MenuView.resources),
+    _MenuItem(icon: Icons.lightbulb, label: '视觉光影', view: _MenuView.shaders),
   ];
 
   @override
@@ -48,96 +69,127 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
     final installedAsync = ref.watch(installedVersionsProvider);
     final gameSettings = ref.watch(gameSettingsProvider);
 
-    return Row(
-      children: [
-        // 左侧侧边栏
-        _buildSidebar(),
-        // 右侧内容区
-        Expanded(
-          child: Column(
-            children: [
-              // 顶部搜索栏
-              _buildSearchHeader(),
-              // 标签筛选
-              _buildFilterTabs(),
-              const SizedBox(height: 16),
-              // 版本网格
-              Expanded(
-                child: installedAsync.when(
-                  data: (versions) {
-                    final filteredVersions = _filterVersions(versions);
-                    if (filteredVersions.isEmpty) {
-                      return const Center(
-                        child: Text('暂无符合条件的版本'),
-                      );
-                    }
-                    return _buildVersionGrid(filteredVersions, gameSettings, authState);
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text('加载失败: $e')),
-                ),
-              ),
-            ],
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Row(
+        children: [
+          // 左侧侧边栏
+          _buildSidebar(),
+          // 右侧内容区
+          Expanded(
+            child: _buildRightContent(gameSettings, authState, installedAsync),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildSidebar() {
     return Container(
-      width: 180,
-      margin: const EdgeInsets.only(left: 16, top: 16, bottom: 16),
+      width: 220,
+      margin: const EdgeInsets.all(16),
       child: GlassCard(
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 当前选中版本显示
             if (_selectedVersion != null)
               Container(
-                padding: const EdgeInsets.all(16),
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                      Theme.of(context).colorScheme.surface.withOpacity(0),
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                ),
                 child: Column(
                   children: [
                     Container(
-                      width: 64,
-                      height: 64,
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(20),
                         gradient: const LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Color(0xFF5D8C38),
-                            Color(0xFF8B7355),
-                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF81C784), Color(0xFF2E7D32)],
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.grass, color: Colors.white, size: 32),
+                      child: const Icon(Icons.grass, color: Colors.white, size: 40),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
                     Text(
                       _selectedVersion!,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 16,
+                        letterSpacing: 0.5,
                       ),
+                      textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '当前选中实例',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.dashboard_rounded,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'ShardXL Launcher',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ],
                 ),
               ),
-            if (_selectedVersion != null)
-              const Divider(height: 1),
-            // 菜单项
+            
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1)),
+            ),
+            
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
                 itemCount: _menuItems.length,
                 itemBuilder: (context, index) {
                   final item = _menuItems[index];
-                  final isSelected = _selectedMenuIndex == index;
-                  return _buildMenuItem(item, index, isSelected);
+                  final isSelected = _selectedView == item.view;
+                  return _buildMenuItem(item, isSelected);
                 },
               ),
             ),
@@ -147,46 +199,185 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
     );
   }
 
-  Widget _buildMenuItem(_MenuItem item, int index, bool isSelected) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+  Widget _buildRightContent(GameSettings gameSettings, AuthState authState, AsyncValue<List<String>> installedAsync) {
+    switch (_selectedView) {
+      case _MenuView.overview:
+        return _buildOverviewContent(gameSettings, authState, installedAsync);
+      case _MenuView.config:
+        return _buildConfigContent();
+      case _MenuView.mods:
+        return _buildPlaceholderPage('模组仓库', Icons.extension, '管理您的游戏模组');
+      case _MenuView.saves:
+        return _buildPlaceholderPage('存档管理', Icons.save, '管理您的游戏存档');
+      case _MenuView.resources:
+        return _buildPlaceholderPage('资源中心', Icons.palette, '管理资源包和材质包');
+      case _MenuView.shaders:
+        return _buildPlaceholderPage('视觉光影', Icons.lightbulb, '管理光影包');
+    }
+  }
+
+  Widget _buildOverviewContent(GameSettings gameSettings, AuthState authState, AsyncValue<List<String>> installedAsync) {
+    return Column(
+      children: [
+        _buildSearchHeader(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            children: [
+              _buildFilterTabs(),
+              const Spacer(),
+              _buildSortButton(),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: installedAsync.when(
+            data: (versions) {
+              final filteredVersions = _filterVersions(versions);
+              if (filteredVersions.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.inbox_outlined,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        '暂无符合条件的版本',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return _buildVersionGrid(filteredVersions, gameSettings, authState);
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text('加载失败: $e')),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConfigContent() {
+    if (_selectedVersion == null) {
+      return _buildPlaceholderPage(
+        '运行配置',
+        Icons.settings,
+        '请先从实例概览中选择一个游戏实例',
+        showHint: true,
+      );
+    }
+    return InstanceConfigPage(version: _selectedVersion!, isEmbedded: true);
+  }
+
+  Widget _buildPlaceholderPage(String title, IconData icon, String subtitle, {bool showHint = false}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 56,
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+              fontSize: 14,
+            ),
+          ),
+          if (showHint) ...[
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: () => setState(() => _selectedView = _MenuView.overview),
+              icon: const Icon(Icons.grid_view),
+              label: const Text('前往实例概览'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(_MenuItem item, bool isSelected) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      margin: const EdgeInsets.only(bottom: 4),
       child: InkWell(
         onTap: () {
-          setState(() => _selectedMenuIndex = index);
-          if (index == 1 && _selectedVersion != null) {
-            // 运行配置
-            _showConfigDialog(_selectedVersion!);
-          }
+          setState(() => _selectedView = item.view);
         },
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: isSelected
-                ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.8)
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.12)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
+            border: isSelected
+                ? Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.2), width: 1)
+                : null,
           ),
           child: Row(
             children: [
               Icon(
                 item.icon,
-                size: 18,
+                size: 20,
                 color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimaryContainer
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 14),
               Text(
                 item.label,
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   color: isSelected
-                      ? Theme.of(context).colorScheme.onPrimaryContainer
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
                 ),
               ),
+              if (isSelected)
+                const Spacer()
+              else
+                const SizedBox.shrink(),
+              if (isSelected)
+                Container(
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
             ],
           ),
         ),
@@ -196,23 +387,32 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
 
   Widget _buildSearchHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 24, 8),
+      padding: const EdgeInsets.fromLTRB(24, 24, 32, 16),
       child: Row(
         children: [
           Expanded(
             child: Container(
+              height: 48,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(12),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                ),
               ),
               child: TextField(
+                style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: '查找游戏实例...',
-                  prefixIcon: const Icon(Icons.search, size: 20),
+                  hintText: '搜索您的游戏实例...',
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   hintStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4),
                   ),
                 ),
                 onChanged: (value) {
@@ -221,56 +421,119 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          IconButton(
-            onPressed: () {
-              ref.refresh(installedVersionsProvider);
-            },
-            icon: const Icon(Icons.refresh),
-            tooltip: '刷新',
+          const SizedBox(width: 16),
+          _buildActionButton(
+            icon: Icons.refresh_rounded,
+            tooltip: '同步并刷新',
+            onTap: () => ref.refresh(installedVersionsProvider),
           ),
-          IconButton(
-            onPressed: () {
-              _showCreateInstanceDialog();
-            },
-            icon: const Icon(Icons.add),
-            tooltip: '新建实例',
+          const SizedBox(width: 12),
+          _buildActionButton(
+            icon: Icons.add_rounded,
+            tooltip: '创建新实例',
+            onTap: _showCreateInstanceDialog,
+            isPrimary: true,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterTabs() {
+  Widget _buildActionButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+    bool isPrimary = false,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: isPrimary 
+            ? Theme.of(context).colorScheme.primary 
+            : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: 48,
+            height: 48,
+            alignment: Alignment.center,
+            child: Icon(
+              icon,
+              size: 22,
+              color: isPrimary 
+                  ? Theme.of(context).colorScheme.onPrimary 
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortButton() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Row(
-        children: _filters.map((filter) {
-          final isSelected = _selectedFilter == filter;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
+        children: [
+          Icon(Icons.sort_rounded, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          const SizedBox(width: 8),
+          Text(
+            '最近玩过',
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const Icon(Icons.arrow_drop_down, size: 18),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTabs() {
+    return Row(
+      children: _filters.map((filter) {
+        final isSelected = _selectedFilter == filter;
+        return Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             child: FilterChip(
               selected: isSelected,
               label: Text(filter),
               onSelected: (selected) {
                 setState(() => _selectedFilter = filter);
               },
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-              selectedColor: Theme.of(context).colorScheme.primaryContainer,
-              checkmarkColor: Theme.of(context).colorScheme.onPrimaryContainer,
-              labelStyle: TextStyle(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimaryContainer
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.2),
+              selectedColor: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
+              checkmarkColor: Theme.of(context).colorScheme.primary,
+              side: BorderSide(
+                color: isSelected 
+                    ? Theme.of(context).colorScheme.primary.withOpacity(0.3) 
+                    : Colors.transparent,
+                width: 1,
               ),
+              labelStyle: TextStyle(
+                fontSize: 13,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-          );
-        }).toList(),
-      ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -295,218 +558,49 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
   }
 
   Widget _buildVersionGrid(List<String> versions, GameSettings settings, authState) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 24, 100),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        childAspectRatio: 1.0,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: versions.length,
-      itemBuilder: (context, index) {
-        final version = versions[index];
-        final isSelected = _selectedVersion == version;
-        return _buildVersionCard(version, settings, authState, isSelected);
-      },
-    );
-  }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int crossAxisCount = 4;
+        if (constraints.maxWidth < 600) {
+          crossAxisCount = 2;
+        } else if (constraints.maxWidth < 900) {
+          crossAxisCount = 3;
+        } else if (constraints.maxWidth > 1400) {
+          crossAxisCount = 5;
+        }
 
-  Widget _buildVersionCard(String version, GameSettings settings, authState, bool isSelected) {
-    final isModded = version.toLowerCase().contains('forge') ||
-                     version.toLowerCase().contains('fabric') ||
-                     version.toLowerCase().contains('quilt') ||
-                     version.toLowerCase().contains('neoforge');
-
-    return GlassCard(
-      onTap: () {
-        setState(() => _selectedVersion = version);
-      },
-      child: Stack(
-        children: [
-          // 选中边框
-          if (isSelected)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
-              ),
-            ),
-          // 内容区域
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    gradient: const LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF5D8C38),
-                        Color(0xFF8B7355),
-                      ],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.grass, size: 32, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  version,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: isModded
-                        ? Colors.orange.withOpacity(0.2)
-                        : Colors.green.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    isModded ? '模组' : '原版',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: isModded ? Colors.orange : Colors.green,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        return GridView.builder(
+          padding: const EdgeInsets.fromLTRB(24, 16, 32, 100),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: 0.9,
+            crossAxisSpacing: 20,
+            mainAxisSpacing: 20,
           ),
-          // 更多选项按钮
-          Positioned(
-            top: 8,
-            right: 8,
-            child: PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, size: 18),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'launch',
-                  child: Row(
-                    children: [
-                      Icon(Icons.play_arrow, size: 18),
-                      SizedBox(width: 8),
-                      Text('启动'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'config',
-                  child: Row(
-                    children: [
-                      Icon(Icons.settings, size: 18),
-                      SizedBox(width: 8),
-                      Text('配置'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'folder',
-                  child: Row(
-                    children: [
-                      Icon(Icons.folder_open, size: 18),
-                      SizedBox(width: 8),
-                      Text('打开目录'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete, color: Colors.red, size: 18),
-                      SizedBox(width: 8),
-                      Text('删除', style: TextStyle(color: Colors.red)),
-                    ],
-                  ),
-                ),
-              ],
-              onSelected: (value) {
-                switch (value) {
-                  case 'launch':
-                    _launchGame(version, authState, settings);
-                    break;
-                  case 'config':
-                    _showConfigDialog(version);
-                    break;
-                  case 'folder':
-                    _openInstanceFolder(version, settings);
-                    break;
-                  case 'delete':
-                    _showDeleteConfirmDialog(version);
-                    break;
-                }
+          itemCount: versions.length,
+          itemBuilder: (context, index) {
+            final version = versions[index];
+            final isSelected = _selectedVersion == version;
+            return _VersionCard(
+              key: ValueKey(version),
+              version: version,
+              settings: settings,
+              authState: authState,
+              isSelected: isSelected,
+              onTap: () => setState(() => _selectedVersion = version),
+              onLaunch: () => _launchGame(version, authState, settings),
+              onConfig: () {
+                setState(() {
+                  _selectedVersion = version;
+                  _selectedView = _MenuView.config;
+                });
               },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showConfigDialog(String version) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        barrierDismissible: true,
-        barrierColor: Colors.black54,
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Scaffold(
-              backgroundColor: Colors.transparent,
-              body: Center(
-                child: GestureDetector(
-                  onTap: () {},
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 0.85,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: InstanceConfigPage(version: version),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
+              onOpenFolder: () => _openInstanceFolder(version, settings),
+              onDelete: () => _showDeleteConfirmDialog(version),
+            );
+          },
+        );
+      }
     );
   }
 
@@ -632,9 +726,274 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
   }
 }
 
-class _MenuItem {
-  final IconData icon;
-  final String label;
+class _VersionCard extends StatefulWidget {
+  final String version;
+  final GameSettings settings;
+  final dynamic authState;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final VoidCallback onLaunch;
+  final VoidCallback onConfig;
+  final VoidCallback onOpenFolder;
+  final VoidCallback onDelete;
 
-  const _MenuItem({required this.icon, required this.label});
+  const _VersionCard({
+    super.key,
+    required this.version,
+    required this.settings,
+    required this.authState,
+    required this.isSelected,
+    required this.onTap,
+    required this.onLaunch,
+    required this.onConfig,
+    required this.onOpenFolder,
+    required this.onDelete,
+  });
+
+  @override
+  State<_VersionCard> createState() => _VersionCardState();
+}
+
+class _VersionCardState extends State<_VersionCard> with SingleTickerProviderStateMixin {
+  bool _isHovered = false;
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.03).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isModded = widget.version.toLowerCase().contains('forge') ||
+                     widget.version.toLowerCase().contains('fabric') ||
+                     widget.version.toLowerCase().contains('quilt') ||
+                     widget.version.toLowerCase().contains('neoforge');
+
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() => _isHovered = true);
+        _controller.forward();
+      },
+      onExit: (_) {
+        setState(() => _isHovered = false);
+        _controller.reverse();
+      },
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              if (_isHovered || widget.isSelected)
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 8),
+                ),
+            ],
+          ),
+          child: GlassCard(
+            onTap: widget.onTap,
+            padding: EdgeInsets.zero,
+            child: Stack(
+              children: [
+                // 选中状态背景光晕
+                if (widget.isSelected)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                          width: 2,
+                        ),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                
+                // 主要内容
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 图标容器
+                      Hero(
+                        tag: 'icon_${widget.version}',
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF81C784), Color(0xFF388E3C)],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.green.withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.grass, size: 36, color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // 版本名称
+                      Text(
+                        widget.version,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.2,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 6),
+                      // 类型标签
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: isModded
+                              ? Colors.orange.withValues(alpha: 0.1)
+                              : Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isModded 
+                                ? Colors.orange.withValues(alpha: 0.2) 
+                                : Colors.green.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          isModded ? '模组加载器' : '官方原版',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isModded ? Colors.orange[700] : Colors.green[700],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 启动按钮 (悬浮显示)
+                AnimatedOpacity(
+                  opacity: _isHovered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: FilledButton(
+                        onPressed: widget.onLaunch,
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.play_arrow_rounded, size: 18),
+                            SizedBox(width: 4),
+                            Text('启动', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 更多选项
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: PopupMenuButton<String>(
+                    tooltip: '选项',
+                    splashRadius: 20,
+                    icon: Icon(
+                      Icons.more_vert_rounded,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    itemBuilder: (context) => [
+                      _buildPopupItem('launch', Icons.play_arrow_rounded, '立即启动'),
+                      _buildPopupItem('config', Icons.settings_outlined, '运行配置'),
+                      _buildPopupItem('folder', Icons.folder_open_outlined, '浏览文件'),
+                      const PopupMenuDivider(),
+                      _buildPopupItem('delete', Icons.delete_outline_rounded, '移除实例', isDestructive: true),
+                    ],
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'launch': widget.onLaunch(); break;
+                        case 'config': widget.onConfig(); break;
+                        case 'folder': widget.onOpenFolder(); break;
+                        case 'delete': widget.onDelete(); break;
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildPopupItem(String value, IconData icon, String label, {bool isDestructive = false}) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(
+            icon, 
+            size: 18, 
+            color: isDestructive ? Colors.red : Theme.of(context).colorScheme.onSurface,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDestructive ? Colors.red : Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
