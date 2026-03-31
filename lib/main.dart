@@ -1,7 +1,7 @@
 // ShardXL - Minecraft Java Edition Launcher
 // lib/main.dart
 //
-// 顶部底部导航栏布局：主页、核心管理、下载、碎片网络、设置
+// 顶部底部导航栏布局：主页、游戏实例、下载、碎片网络、设置
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +10,7 @@ import 'package:window_manager/window_manager.dart';
 import 'core/widgets/shard_background.dart';
 import 'core/widgets/shard_bottom_nav_bar.dart';
 import 'features/home/pages/home_page.dart';
-import 'features/core/pages/core_page.dart';
+import 'features/game_instance/pages/game_instance_page.dart';
 import 'features/download/pages/download_page.dart';
 import 'features/network/pages/network_page.dart';
 import 'features/settings/pages/settings_page.dart';
@@ -79,7 +79,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     NavItem(
       icon: Icons.construction_outlined,
       selectedIcon: Icons.construction,
-      label: '核心管理',
+      label: '游戏实例',
     ),
     NavItem(
       icon: Icons.download_outlined,
@@ -101,7 +101,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   // 页面列表
   static const _pages = [
     HomePageContent(),
-    CorePage(),
+    GameInstancePage(),
     DownloadPage(),
     NetworkPage(),
     SettingsPage(),

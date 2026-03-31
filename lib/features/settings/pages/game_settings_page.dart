@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/providers/dartcraft_provider.dart';
+import '../../game_instance/providers/dartcraft_provider.dart';
 import '../../../core/widgets/glass_card.dart';
 
 class GameSettingsPage extends ConsumerStatefulWidget {
