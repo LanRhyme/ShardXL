@@ -85,7 +85,7 @@ class ShardTheme {
   Map<String, dynamic> toMap() {
     return {
       'isDark': isDark,
-      'primaryColor': primaryColor.value,
+      'primaryColor': primaryColor.toARGB32(),
       'enableGlassEffect': enableGlassEffect,
       'cardOpacity': cardOpacity,
       'uiScale': uiScale,

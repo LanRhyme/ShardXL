@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme/shard_theme.dart';
 import '../providers/theme_provider.dart';
 
 /// 主题设置页面
@@ -30,7 +29,7 @@ class ThemeSettingsPage extends ConsumerWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
         children: [
           // 主题模式
           _SectionTitle(title: '主题模式'),
@@ -176,7 +175,7 @@ class _ColorPicker extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: presetColors.map((color) {
-        final isSelected = color.value == currentColor.value;
+        final isSelected = color.toARGB32() == currentColor.toARGB32();
         return GestureDetector(
           onTap: () => onColorChanged(color),
           child: Container(
@@ -268,7 +267,7 @@ class _PreviewCard extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '主题色: #${shardTheme.primaryColor.value.toRadixString(16).substring(2).toUpperCase()}',
+              '主题色: #${shardTheme.primaryColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             Text(
