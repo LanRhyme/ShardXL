@@ -6,8 +6,55 @@
 // - ShardFloatingBottomNavBar: 悬浮底部导航栏（包裹 ShardBottomNavBar）
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../theme/shard_theme.dart';
+
+// ========================
+// 尺寸测量组件
+// ========================
+
+/// 用于测量子组件尺寸的 Widget
+typedef OnWidgetSizeChange = void Function(Size size);
+
+class MeasureSize extends SingleChildRenderObjectWidget {
+  final OnWidgetSizeChange onChange;
+
+  const MeasureSize({
+    super.key,
+    required this.onChange,
+    required Widget super.child,
+  });
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _MeasureSizeRenderObject(onChange);
+  }
+
+  @override
+  void updateRenderObject(BuildContext context, _MeasureSizeRenderObject renderObject) {
+    renderObject.onChange = onChange;
+  }
+}
+
+class _MeasureSizeRenderObject extends RenderProxyBox {
+  OnWidgetSizeChange onChange;
+  Size? _previousSize;
+
+  _MeasureSizeRenderObject(this.onChange);
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    Size newSize = child?.size ?? Size.zero;
+    if (_previousSize != newSize) {
+      _previousSize = newSize;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        onChange(newSize);
+      });
+    }
+  }
+}
 
 // ========================
 // 导航项数据模型
@@ -153,31 +200,32 @@ class _ShardBottomNavBarState extends State<ShardBottomNavBar>
     final colorScheme = Theme.of(context).colorScheme;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Container(
-      padding: EdgeInsets.fromLTRB(12, 8, 12, 8 + bottomPadding),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        border: widget.showTopBorder
-            ? Border(
-                top: BorderSide(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  width: 0.5,
-                ),
-              )
-            : null,
-      ),
-      child: LayoutBuilder(
+    return ClipPath(
+      clipper: _InvertedRoundedClipper(),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(12, 28, 12, 8 + bottomPadding),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest,
+          border: widget.showTopBorder
+              ? Border(
+                  top: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    width: 0.5,
+                  ),
+                )
+              : null,
+        ),
+        child: LayoutBuilder(
         builder: (context, constraints) {
-          final itemWidth = constraints.maxWidth / widget.items.length;
-          final padding = itemWidth * 0.2;
+          const itemWidth = 120.0;
+          const itemPadding = 8.0;
 
           return Stack(
             children: [
               // 指示器层
               Positioned(
                 left: 0,
-                top: 0,
-                bottom: 0,
+                top: 10,
                 child: AnimatedBuilder(
                   animation: Listenable.merge([_posAnimation, _scaleAnimation]),
                   builder: (context, _) {
@@ -191,12 +239,12 @@ class _ShardBottomNavBarState extends State<ShardBottomNavBar>
                             itemWidth / 2;
 
                     // 计算指示器宽度（中心点 + 伸缩）
-                    final indicatorWidth = (itemWidth - padding * 2) * scale;
+                    final indicatorWidth = (itemWidth - itemPadding * 2) * scale;
                     final indicatorLeft = center - indicatorWidth / 2;
 
                     return Container(
                       width: indicatorWidth,
-                      height: 44,
+                      height: 30,
                       margin: EdgeInsets.only(left: indicatorLeft),
                       decoration: BoxDecoration(
                         color: colorScheme.primaryContainer,
@@ -208,6 +256,7 @@ class _ShardBottomNavBarState extends State<ShardBottomNavBar>
               ),
               // 导航项层
               Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: List.generate(widget.items.length, (index) {
                   return _buildNavItem(index, itemWidth);
                 }),
@@ -215,6 +264,7 @@ class _ShardBottomNavBarState extends State<ShardBottomNavBar>
             ],
           );
         },
+        ),
       ),
     );
   }
@@ -229,34 +279,82 @@ class _ShardBottomNavBarState extends State<ShardBottomNavBar>
       onTap: () => widget.onTap(index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: itemWidth,
-        height: 44,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isSelected ? item.selectedIcon : item.icon,
-              size: 20,
-              color: isSelected
-                  ? colorScheme.onPrimaryContainer
-                  : colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              item.label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          width: itemWidth,
+          height: 48,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isSelected ? item.selectedIcon : item.icon,
+                size: 22,
                 color: isSelected
                     ? colorScheme.onPrimaryContainer
                     : colorScheme.onSurfaceVariant,
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
     );
   }
+}
+
+/// 向内凹的圆角裁剪器
+/// 在顶部镂空一个占满整个宽度的圆角矩形凹槽（类似 QuickShell 效果）
+class _InvertedRoundedClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    final notchHeight = 28.0; // 凹槽深度
+    final notchRadius = 24.0; // 凹槽圆角半径
+
+    // 从左上角开始
+    path.moveTo(0, 0);
+
+    // 凹槽左侧曲线（向下进入凹槽）
+    // 控制点在左上，终点在左下
+    path.quadraticBezierTo(
+      0, notchHeight, // 控制点：向下
+      notchRadius, notchHeight, // 终点：向右
+    );
+
+    // 凹槽底部直线（占满整个宽度）
+    path.lineTo(size.width - notchRadius, notchHeight);
+
+    // 凹槽右侧曲线（向上退出凹槽）
+    // 控制点在右下，终点在右上
+    path.quadraticBezierTo(
+      size.width, notchHeight, // 控制点
+      size.width, 0, // 终点：向上回到顶部
+    );
+
+    // 顶部右边直线
+    path.lineTo(size.width, 0);
+
+    // 右边向下
+    path.lineTo(size.width, size.height);
+
+    // 底边
+    path.lineTo(0, size.height);
+
+    // 闭合路径
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 // ========================
@@ -287,25 +385,242 @@ class ShardFloatingBottomNavBar extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding + marginBottom),
+      alignment: Alignment.center,
       child: Card(
         elevation: 4,
         margin: EdgeInsets.zero,
         color: colorScheme.surfaceContainerHighest,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(999),
           side: BorderSide(
             color: colorScheme.outlineVariant.withValues(alpha: 0.5),
             width: 0.5,
           ),
         ),
         clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-          child: ShardBottomNavBar(
-            items: items,
-            selectedIndex: selectedIndex,
-            onTap: onTap,
-            showTopBorder: false,
+        child: IntrinsicWidth(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            child: _ShardFloatingNavBarContent(
+              items: items,
+              selectedIndex: selectedIndex,
+              onTap: onTap,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 悬浮导航栏内部内容 - 使用动态宽度
+class _ShardFloatingNavBarContent extends StatefulWidget {
+  final List<NavItem> items;
+  final int selectedIndex;
+  final ValueChanged<int> onTap;
+
+  const _ShardFloatingNavBarContent({
+    required this.items,
+    required this.selectedIndex,
+    required this.onTap,
+  });
+
+  @override
+  State<_ShardFloatingNavBarContent> createState() =>
+      _ShardFloatingNavBarContentState();
+}
+
+class _ShardFloatingNavBarContentState
+    extends State<_ShardFloatingNavBarContent>
+    with TickerProviderStateMixin {
+  late AnimationController _posController;
+  late Animation<double> _posAnimation;
+  late AnimationController _scaleController;
+  late Animation<double> _scaleAnimation;
+
+  int _fromIndex = 0;
+  int _toIndex = 0;
+
+  final List<dynamic> _disposables = [];
+
+  // 导航项高度
+  static const double _itemHeight = 40;
+
+  // 存储每个导航项的宽度
+  final Map<int, double> _itemWidths = {};
+  final GlobalKey _rowKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _posController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _posAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _posController, curve: Curves.easeOutCubic),
+    );
+    _scaleAnimation = Tween<double>(begin: 1, end: 1).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeOut),
+    );
+    _disposables.addAll([_posController, _scaleController]);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fromIndex = widget.selectedIndex;
+    _toIndex = widget.selectedIndex;
+  }
+
+  @override
+  void didUpdateWidget(covariant _ShardFloatingNavBarContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex != oldWidget.selectedIndex) {
+      _animateToIndex(oldWidget.selectedIndex, widget.selectedIndex);
+    }
+  }
+
+  void _animateToIndex(int from, int to) {
+    final theme = Theme.of(context);
+    final factor = theme.extension<ShardThemeExtension>()
+            ?.animationDurationFactor ??
+        1.0;
+
+    _fromIndex = from;
+    _toIndex = to;
+
+    _posController.reset();
+    _scaleController.reset();
+
+    final posDuration = (300 * factor).round();
+    _posController.duration = Duration(milliseconds: posDuration);
+
+    final scaleDuration = (200 * factor).round();
+    _scaleController.duration = Duration(milliseconds: scaleDuration);
+
+    _posController.forward();
+    _scaleController.forward();
+  }
+
+  @override
+  void dispose() {
+    for (final d in _disposables) {
+      if (d is AnimationController) d.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      height: _itemHeight,
+      child: Stack(
+        children: [
+          // 指示器层 - 完全圆角，宽度根据元素动态变化
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_posAnimation, _scaleAnimation]),
+              builder: (context, _) {
+                final pos = _posAnimation.value;
+                final scale = _scaleAnimation.value;
+
+                // 计算当前指示器的位置和宽度
+                final fromWidth = _itemWidths[_fromIndex] ?? 80;
+                final toWidth = _itemWidths[_toIndex] ?? 80;
+                final currentWidth = fromWidth + (toWidth - fromWidth) * pos;
+
+                // 计算左侧位置（累加前面所有项的宽度）
+                double fromLeft = 0;
+                double toLeft = 0;
+                for (int i = 0; i < _fromIndex; i++) {
+                  fromLeft += _itemWidths[i] ?? 80;
+                }
+                for (int i = 0; i < _toIndex; i++) {
+                  toLeft += _itemWidths[i] ?? 80;
+                }
+                final currentLeft = fromLeft + (toLeft - fromLeft) * pos;
+
+                final indicatorWidth = currentWidth * scale;
+                final indicatorLeft = currentLeft + (currentWidth - indicatorWidth) / 2;
+
+                return Container(
+                  width: indicatorWidth,
+                  height: _itemHeight,
+                  margin: EdgeInsets.only(left: indicatorLeft),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                );
+              },
+            ),
+          ),
+          // 导航项层
+          Row(
+            key: _rowKey,
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(widget.items.length, (index) {
+              return _buildNavItem(index);
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index) {
+    final isSelected = index == widget.selectedIndex;
+    final colorScheme = Theme.of(context).colorScheme;
+    final item = widget.items[index];
+
+    return GestureDetector(
+      onTap: () => widget.onTap(index),
+      behavior: HitTestBehavior.opaque,
+      child: MeasureSize(
+        onChange: (size) {
+          if (size.width > 0 && _itemWidths[index] != size.width) {
+            setState(() {
+              _itemWidths[index] = size.width;
+            });
+          }
+        },
+        child: IntrinsicWidth(
+          child: Container(
+            height: _itemHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isSelected ? item.selectedIcon : item.icon,
+                  size: 18,
+                  color: isSelected
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  item.label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: isSelected
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
