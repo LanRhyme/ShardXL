@@ -30,6 +30,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: const Text('登录')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

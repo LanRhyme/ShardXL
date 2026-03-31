@@ -129,7 +129,7 @@ class ShardThemeNotifier extends Notifier<ThemeState> {
 
   /// 更新背景类型
   Future<void> updateBackgroundType(String type) async {
-    const validTypes = ['solid', 'gradient', 'image', 'dynamic'];
+    const validTypes = ['solid', 'gradient', 'image', 'dynamic', 'mica'];
     if (!validTypes.contains(type)) return;
 
     final newTheme = state.theme.copyWith(backgroundType: type);

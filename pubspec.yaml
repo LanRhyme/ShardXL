@@ -18,6 +18,8 @@ dependencies:
 
   # Window Management (Desktop)
   window_manager: ^0.4.3
+  flutter_acrylic: ^1.1.4
+  bitsdojo_window: ^0.1.6
 
   # Minecraft Launcher
   dartcraft: ^1.0.1

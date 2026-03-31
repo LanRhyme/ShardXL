@@ -5,21 +5,42 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 
 import '../../../features/settings/providers/theme_provider.dart';
 
 /// 动态背景组件
 /// 根据主题配置显示不同类型的背景
-class ShardBackground extends ConsumerWidget {
+class ShardBackground extends ConsumerStatefulWidget {
   final Widget child;
 
   const ShardBackground({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ShardBackground> createState() => _ShardBackgroundState();
+}
+
+class _ShardBackgroundState extends ConsumerState<ShardBackground> {
+  String _previousBackgroundType = '';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final backgroundType = ref.read(shardThemeProvider).theme.backgroundType;
+    _previousBackgroundType = backgroundType;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeState = ref.watch(shardThemeProvider);
     final shardTheme = themeState.theme;
     final colorScheme = Theme.of(context).colorScheme;
+
+    // 当背景类型从 mica 切换到其他类型时，重置窗口效果
+    if (_previousBackgroundType == 'mica' && shardTheme.backgroundType != 'mica') {
+      _resetWindowEffect();
+    }
+    _previousBackgroundType = shardTheme.backgroundType;
 
     return Stack(
       children: [
@@ -33,9 +54,21 @@ class ShardBackground extends ConsumerWidget {
           ),
         ),
         // 内容层
-        child,
+        widget.child,
       ],
     );
+  }
+
+  Future<void> _resetWindowEffect() async {
+    if (!Platform.isWindows) return;
+    try {
+      await Window.setEffect(
+        effect: WindowEffect.disabled,
+        color: Colors.transparent,
+      );
+    } catch (e) {
+      debugPrint('Failed to reset window effect: $e');
+    }
   }
 
   /// 根据背景类型构建不同的背景
@@ -55,6 +88,9 @@ class ShardBackground extends ConsumerWidget {
 
       case 'dynamic':
         return _DynamicBackground(primaryColor: primaryColor, colorScheme: colorScheme);
+
+      case 'mica':
+        return _MicaBackground(colorScheme: colorScheme, primaryColor: primaryColor);
 
       default:
         return Container(color: colorScheme.surfaceContainerLowest);
@@ -334,5 +370,77 @@ class _DynamicBackgroundState extends State<_DynamicBackground>
         );
       },
     );
+  }
+}
+
+/// Mica 背景效果（高斯模糊窗口）
+class _MicaBackground extends StatefulWidget {
+  final ColorScheme colorScheme;
+  final Color primaryColor;
+
+  const _MicaBackground({
+    required this.colorScheme,
+    required this.primaryColor,
+  });
+
+  @override
+  State<_MicaBackground> createState() => _MicaBackgroundState();
+}
+
+class _MicaBackgroundState extends State<_MicaBackground> {
+  @override
+  void initState() {
+    super.initState();
+    _applyTransparentEffect();
+  }
+
+  @override
+  void didUpdateWidget(_MicaBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.colorScheme.brightness != widget.colorScheme.brightness) {
+      _applyTransparentEffect();
+    }
+  }
+
+  Future<void> _applyTransparentEffect() async {
+    if (!Platform.isWindows) return;
+
+    try {
+      final isDark = widget.colorScheme.brightness == Brightness.dark;
+      await Window.setEffect(
+        effect: WindowEffect.acrylic,
+        color: isDark
+            ? const Color(0x99000000)
+            : const Color(0x99FFFFFF),
+        dark: isDark,
+      );
+    } catch (e) {
+      debugPrint('Failed to apply Acrylic effect: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _resetEffect();
+    super.dispose();
+  }
+
+  Future<void> _resetEffect() async {
+    if (!Platform.isWindows) return;
+
+    try {
+      await Window.setEffect(
+        effect: WindowEffect.disabled,
+        color: widget.colorScheme.surfaceContainerLowest,
+        dark: widget.colorScheme.brightness == Brightness.dark,
+      );
+    } catch (e) {
+      debugPrint('Failed to reset window effect: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(color: Colors.transparent);
   }
 }

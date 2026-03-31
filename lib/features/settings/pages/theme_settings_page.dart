@@ -654,6 +654,7 @@ class _BackgroundTypeSelector extends StatelessWidget {
     _BackgroundType(value: 'gradient', label: '渐变', icon: Icons.gradient_rounded),
     _BackgroundType(value: 'image', label: '图片', icon: Icons.image_rounded),
     _BackgroundType(value: 'dynamic', label: '动态', icon: Icons.auto_awesome_rounded),
+    _BackgroundType(value: 'mica', label: 'Mica', icon: Icons.layers_rounded),
   ];
 
   @override

@@ -280,6 +280,7 @@ class ShardTheme {
       useMaterial3: true,
       brightness: isDark ? Brightness.dark : Brightness.light,
       colorScheme: effectiveColorScheme,
+      scaffoldBackgroundColor: Colors.transparent,
       // 字体缩放 - 使用自定义 TextTheme 而非 apply
       textTheme: _buildTextTheme(isDark, uiScale),
       // 卡片主题

@@ -69,3 +69,10 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
 
   return Win32Window::MessageHandler(hwnd, message, wparam, lparam);
 }
+
+// bitsdojo_window 配置
+extern "C" {
+  __declspec(dllexport) auto BDWGetWindowHandle() -> HWND {
+    return GetActiveWindow();
+  }
+}

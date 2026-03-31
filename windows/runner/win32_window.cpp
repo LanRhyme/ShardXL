@@ -97,7 +97,7 @@ const wchar_t* WindowClassRegistrar::GetWindowClass() {
     window_class.hInstance = GetModuleHandle(nullptr);
     window_class.hIcon =
         LoadIcon(window_class.hInstance, MAKEINTRESOURCE(IDI_APP_ICON));
-    window_class.hbrBackground = 0;
+    window_class.hbrBackground = CreateSolidBrush(RGB(0, 0, 0));
     window_class.lpszMenuName = nullptr;
     window_class.lpfnWndProc = Win32Window::WndProc;
     RegisterClass(&window_class);
@@ -143,6 +143,15 @@ bool Win32Window::Create(const std::wstring& title,
   if (!window) {
     return false;
   }
+
+  // 使用 DWM 扩展窗口框架到客户区，实现透明效果
+  MARGINS margins = {-1};
+  DwmExtendFrameIntoClientArea(window, &margins);
+
+  // 设置窗口为透明
+  SetWindowLongPtr(window, GWL_EXSTYLE, 
+                   GetWindowLongPtr(window, GWL_EXSTYLE) | WS_EX_LAYERED);
+  SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
 
   UpdateTheme(window);
 

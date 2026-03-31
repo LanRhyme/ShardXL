@@ -3,9 +3,13 @@
 //
 // 顶部底部导航栏布局：主页、游戏实例、下载、碎片网络、设置
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import 'core/widgets/shard_background.dart';
 import 'core/widgets/shard_bottom_nav_bar.dart';
@@ -22,21 +26,20 @@ void main() async {
   // 初始化窗口管理器（桌面平台）
   await windowManager.ensureInitialized();
 
-  WindowOptions windowOptions = const WindowOptions(
-    size: Size(1200, 800),
-    center: true,
-    backgroundColor: Colors.transparent,
-    skipTaskbar: false,
-    titleBarStyle: TitleBarStyle.normal,
-    title: 'ShardXL',
-  );
-
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-    await windowManager.focus();
-  });
+  // 初始化 flutter_acrylic（Windows 透明窗口）
+  if (Platform.isWindows) {
+    await Window.initialize();
+  }
 
   runApp(const ProviderScope(child: ShardXLApp()));
+
+  doWhenWindowReady(() {
+    const initialSize = Size(1200, 800);
+    appWindow.minSize = const Size(800, 600);
+    appWindow.size = initialSize;
+    appWindow.alignment = Alignment.center;
+    appWindow.show();
+  });
 }
 
 class ShardXLApp extends ConsumerWidget {
@@ -119,6 +122,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ShardBackground(
         child: Column(
           children: [
