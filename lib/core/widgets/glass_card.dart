@@ -81,39 +81,56 @@ class GlassCard extends ConsumerWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
-              // 半透明背景
-              color: cardColor,
-              // 细腻的边框
               border: Border.all(
                 color: borderColor,
                 width: borderWidth,
               ),
-              // 内部高光效果（深色模式顶部亮，浅色模式底部暗）
-              gradient: LinearGradient(
-                begin: isDark ? Alignment.topLeft : Alignment.bottomLeft,
-                end: isDark ? Alignment.bottomRight : Alignment.topRight,
-                colors: isDark
-                    ? [
-                        Colors.white.withValues(alpha: 0.05),
-                        Colors.white.withValues(alpha: 0.0),
-                      ]
-                    : [
-                        Colors.white.withValues(alpha: 0.0),
-                        Colors.white.withValues(alpha: 0.5),
-                      ],
-                stops: const [0.0, 0.5],
-              ),
             ),
-            padding: padding ?? const EdgeInsets.all(16),
-            child: onTap != null
-                ? InkWell(
-                    onTap: onTap,
-                    borderRadius: borderRadius,
-                    splashColor: colorScheme.primary.withValues(alpha: 0.1),
-                    highlightColor: colorScheme.primary.withValues(alpha: 0.05),
-                    child: child,
-                  )
-                : child,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: borderRadius,
+                      color: cardColor,
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: borderRadius,
+                      gradient: LinearGradient(
+                        begin: isDark ? Alignment.topLeft : Alignment.bottomLeft,
+                        end: isDark ? Alignment.bottomRight : Alignment.topRight,
+                        colors: isDark
+                            ? [
+                                Colors.white.withValues(alpha: 0.05),
+                                Colors.white.withValues(alpha: 0.0),
+                              ]
+                            : [
+                                Colors.white.withValues(alpha: 0.0),
+                                Colors.white.withValues(alpha: 0.5),
+                              ],
+                        stops: const [0.0, 0.5],
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: padding ?? const EdgeInsets.all(16),
+                  child: onTap != null
+                      ? InkWell(
+                          onTap: onTap,
+                          borderRadius: borderRadius,
+                          splashColor: colorScheme.primary.withValues(alpha: 0.1),
+                          highlightColor: colorScheme.primary.withValues(alpha: 0.05),
+                          child: child,
+                        )
+                      : child,
+                ),
+              ],
+            ),
           ),
         ),
       ),

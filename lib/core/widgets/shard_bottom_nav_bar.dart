@@ -5,10 +5,13 @@
 // - ShardBottomNavBar: 主底部导航栏
 // - ShardFloatingBottomNavBar: 悬浮底部导航栏（包裹 ShardBottomNavBar）
 
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../theme/shard_theme.dart';
+import '../../features/settings/providers/theme_provider.dart';
 
 // ========================
 // 尺寸测量组件
@@ -81,17 +84,10 @@ class NavItem {
 /// - 左对齐文本标签
 /// - surfaceContainerHighest 背景
 /// - 指示器背景移动动画 + 动态伸缩（距离越长拉伸越大）
-class ShardBottomNavBar extends StatefulWidget {
-  /// 导航项列表
+class ShardBottomNavBar extends ConsumerStatefulWidget {
   final List<NavItem> items;
-
-  /// 当前选中索引
   final int selectedIndex;
-
-  /// 选中回调
   final ValueChanged<int> onTap;
-
-  /// 是否显示顶部边框（默认 true）
   final bool showTopBorder;
 
   const ShardBottomNavBar({
@@ -103,10 +99,10 @@ class ShardBottomNavBar extends StatefulWidget {
   });
 
   @override
-  State<ShardBottomNavBar> createState() => _ShardBottomNavBarState();
+  ConsumerState<ShardBottomNavBar> createState() => _ShardBottomNavBarState();
 }
 
-class _ShardBottomNavBarState extends State<ShardBottomNavBar>
+class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
     with TickerProviderStateMixin {
   // 动画控制器：位置动画
   late AnimationController _posController;
@@ -199,30 +195,33 @@ class _ShardBottomNavBarState extends State<ShardBottomNavBar>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final themeState = ref.watch(shardThemeProvider);
+    final enableGlass = themeState.theme.enableGlassEffect;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
+    final blurSigma = themeExtension?.glassBlurSigma ?? 16.0;
 
-    return ClipPath(
-      clipper: _InvertedRoundedClipper(),
-      child: Container(
-        padding: EdgeInsets.fromLTRB(12, 28, 12, 8 + bottomPadding),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          border: widget.showTopBorder
-              ? Border(
-                  top: BorderSide(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                    width: 0.5,
-                  ),
-                )
-              : null,
-        ),
-        child: LayoutBuilder(
+    final navBarContent = Container(
+      padding: EdgeInsets.fromLTRB(12, 28, 12, 8 + bottomPadding),
+      decoration: BoxDecoration(
+        color: enableGlass
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.8)
+            : colorScheme.surfaceContainerHighest,
+        border: widget.showTopBorder
+            ? Border(
+                top: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  width: 0.5,
+                ),
+              )
+            : null,
+      ),
+      child: LayoutBuilder(
         builder: (context, constraints) {
           const itemWidth = 120.0;
           const itemPadding = 8.0;
 
           return Stack(
             children: [
-              // 指示器层
               Positioned(
                 left: 0,
                 top: 10,
@@ -232,13 +231,11 @@ class _ShardBottomNavBarState extends State<ShardBottomNavBar>
                     final pos = _posAnimation.value;
                     final scale = _scaleAnimation.value;
 
-                    // 计算当前指示器中心位置
                     final center =
                         (_fromIndex + (_toIndex - _fromIndex) * pos) *
                                 itemWidth +
                             itemWidth / 2;
 
-                    // 计算指示器宽度（中心点 + 伸缩）
                     final indicatorWidth = (itemWidth - itemPadding * 2) * scale;
                     final indicatorLeft = center - indicatorWidth / 2;
 
@@ -254,7 +251,6 @@ class _ShardBottomNavBarState extends State<ShardBottomNavBar>
                   },
                 ),
               ),
-              // 导航项层
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: List.generate(widget.items.length, (index) {
@@ -264,8 +260,17 @@ class _ShardBottomNavBarState extends State<ShardBottomNavBar>
             ],
           );
         },
-        ),
       ),
+    );
+
+    return ClipPath(
+      clipper: _InvertedRoundedClipper(),
+      child: enableGlass
+          ? BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+              child: navBarContent,
+            )
+          : navBarContent,
     );
   }
 
@@ -364,7 +369,7 @@ class _InvertedRoundedClipper extends CustomClipper<Path> {
 /// 悬浮风格的底部导航栏
 /// 将 ShardBottomNavBar 包裹在浮动卡片中
 /// 背景使用 surfaceContainerHighest + 可选毛玻璃效果
-class ShardFloatingBottomNavBar extends StatelessWidget {
+class ShardFloatingBottomNavBar extends ConsumerWidget {
   final List<NavItem> items;
   final int selectedIndex;
   final ValueChanged<int> onTap;
@@ -379,36 +384,52 @@ class ShardFloatingBottomNavBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final themeState = ref.watch(shardThemeProvider);
+    final enableGlass = themeState.theme.enableGlassEffect;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
+    final blurSigma = themeExtension?.glassBlurSigma ?? 16.0;
+
+    final navBarCard = Card(
+      elevation: 4,
+      margin: EdgeInsets.zero,
+      color: enableGlass
+          ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.8)
+          : colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(999),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 0.5,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicWidth(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          child: _ShardFloatingNavBarContent(
+            items: items,
+            selectedIndex: selectedIndex,
+            onTap: onTap,
+          ),
+        ),
+      ),
+    );
 
     return Container(
       margin: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding + marginBottom),
       alignment: Alignment.center,
-      child: Card(
-        elevation: 4,
-        margin: EdgeInsets.zero,
-        color: colorScheme.surfaceContainerHighest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
-          side: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-            width: 0.5,
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: IntrinsicWidth(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-            child: _ShardFloatingNavBarContent(
-              items: items,
-              selectedIndex: selectedIndex,
-              onTap: onTap,
-            ),
-          ),
-        ),
-      ),
+      child: enableGlass
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+                child: navBarCard,
+              ),
+            )
+          : navBarCard,
     );
   }
 }
