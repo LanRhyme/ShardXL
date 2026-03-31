@@ -10,6 +10,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Local Storage
+  shared_preferences: ^2.3.4
+
   # Window Management (Desktop)
   window_manager: ^0.4.3
 

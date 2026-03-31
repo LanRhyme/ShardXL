@@ -1,0 +1,46 @@
+{
+  "name": "ShardXL",
+  "description": "Minecraft Java Edition Launcher",
+  "version": "1.0.0",
+  "framework": "flutter",
+  "stateManagement": "riverpod",
+  "themeSystem": "custom_material3",
+  "ai": {
+    "skill": ".skill",
+    "rules": ".rules",
+    "context": {
+      "include": [
+        "lib/**/*.dart",
+        "pubspec.yaml",
+        "*.md"
+      ],
+      "exclude": [
+        ".dart_tool/**",
+        "build/**",
+        ".flutter-plugins-dependencies"
+      ]
+    }
+  },
+  "codeGeneration": {
+    "templates": {
+      "widget": {
+        "prefix": "shard",
+        "description": "ShardXL Widget Template"
+      },
+      "provider": {
+        "prefix": "shard",
+        "description": "ShardXL Provider Template"
+      },
+      "page": {
+        "prefix": "shard",
+        "description": "ShardXL Page Template"
+      }
+    }
+  },
+  "theme": {
+    "defaultPrimaryColor": "#7C4DFF",
+    "defaultDarkMode": true,
+    "enableGlassEffect": true,
+    "cardOpacity": 0.65
+  }
+}

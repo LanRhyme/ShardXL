@@ -1,0 +1,115 @@
+# ShardXL AI 技能配置
+# .skill
+
+## 基本信息
+name: ShardXL Development Skill
+version: 1.0.0
+description: ShardXL Minecraft Launcher 开发辅助技能
+
+## 能力范围
+- Flutter UI 开发
+- Material 3 主题设计
+- Riverpod 状态管理
+- 桌面应用开发
+- 性能优化
+
+## 上下文感知
+
+### 项目类型
+type: flutter_desktop_app
+framework: flutter
+state_management: riverpod
+theme_system: custom_material3
+
+### 目标平台
+platforms:
+  - windows
+  - macos
+  - linux
+  - android
+
+### 技术约束
+constraints:
+  - 使用 Material 3
+  - 默认深色模式
+  - 支持毛玻璃效果
+  - 高度可自定义主题
+
+## 代码生成规则
+
+### 文件模板
+创建新文件时使用以下结构：
+1. 文件头部中文注释
+2. import 语句
+3. 类定义
+4. 方法实现
+
+### 组件生成
+生成组件时：
+1. 使用 ConsumerWidget 或 ConsumerStatefulWidget
+2. 通过 ref 访问 Provider
+3. 使用 Theme.of(context) 获取主题
+4. 添加 const 构造函数
+
+### Provider 生成
+生成 Provider 时：
+1. 使用 Notifier 处理复杂状态
+2. 提供 copyWith 方法
+3. 实现持久化逻辑
+4. 添加错误处理
+
+## 主题系统技能
+
+### 主题组件
+- GlassCard: 毛玻璃卡片
+- ShardBackground: 动态背景
+- ThemeSettingsPage: 主题设置
+
+### 主题参数
+- isDark: 深色模式开关
+- primaryColor: 主题色
+- enableGlassEffect: 玻璃效果
+- cardOpacity: 卡片透明度
+- uiScale: UI 缩放
+- animationSpeed: 动画速率
+- backgroundType: 背景类型
+
+### 使用示例
+```dart
+// 读取主题
+final shardTheme = ref.watch(currentShardThemeProvider);
+
+// 更新主题
+ref.read(shardThemeProvider.notifier).updatePrimaryColor(color);
+
+// 使用 GlassCard
+GlassCard(
+  child: Text('内容'),
+)
+```
+
+## 调试技能
+
+### 常见问题
+1. 玻璃效果不显示: 检查 enableGlassEffect 和 cardOpacity
+2. 颜色不正确: 检查 ColorScheme.fromSeed 参数
+3. 动画卡顿: 降低 animationSpeed
+
+### 性能优化
+1. 使用 const 构造函数
+2. 避免不必要的 rebuild
+3. 使用 Selector 精确监听
+
+## 扩展能力
+
+### 可添加功能
+- 自定义字体
+- 音效系统
+- 多语言支持
+- 插件系统
+
+### 集成建议
+- 游戏启动逻辑
+- 版本管理
+- 模组下载
+- 账户系统
