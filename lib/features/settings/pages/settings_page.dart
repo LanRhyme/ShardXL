@@ -3,6 +3,8 @@
 //
 // 内置悬浮导航栏切换子页面：全局游戏设置、启动器设置、主题、其他设置、关于
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/shard_bottom_nav_bar.dart';
@@ -21,8 +23,13 @@ class SettingsPage extends StatefulWidget {
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends State<SettingsPage>
+    with SingleTickerProviderStateMixin {
   int _subIndex = 0;
+  late AnimationController _navAnimController;
+  late Animation<Offset> _navSlideAnimation;
+  bool _isNavVisible = true;
+  Timer? _showTimer;
 
   // 子页面导航项配置
   static const _subNavItems = [
@@ -63,16 +70,75 @@ class _SettingsPageState extends State<SettingsPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _navAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _navSlideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, 2.5),
+    ).animate(CurvedAnimation(
+      parent: _navAnimController,
+      curve: Curves.easeOutQuart,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _navAnimController.dispose();
+    super.dispose();
+  }
+
+  void _hideNavBar() {
+    if (_isNavVisible) {
+      _isNavVisible = false;
+      _navAnimController.forward();
+    }
+  }
+
+  void _showNavBar() {
+    if (!_isNavVisible) {
+      _isNavVisible = true;
+      _navAnimController.reverse();
+    }
+  }
+
+  void _onScrollUpdate() {
+    _hideNavBar();
+  }
+
+  void _onScrollEnd() {
+    _showTimer?.cancel();
+    _showTimer = Timer(const Duration(milliseconds: 300), _showNavBar);
+  }
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollStartNotification) {
+      _hideNavBar();
+    } else if (notification is ScrollUpdateNotification) {
+      _onScrollUpdate();
+    } else if (notification is ScrollEndNotification) {
+      _onScrollEnd();
+    }
+    return false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
         // 子页面内容
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: KeyedSubtree(
-            key: ValueKey(_subIndex),
-            child: _pages[_subIndex],
+        NotificationListener<ScrollNotification>(
+          onNotification: _onScrollNotification,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: KeyedSubtree(
+              key: ValueKey(_subIndex),
+              child: _pages[_subIndex],
+            ),
           ),
         ),
         // 悬浮底部导航栏
@@ -80,10 +146,14 @@ class _SettingsPageState extends State<SettingsPage> {
           left: 0,
           right: 0,
           bottom: 0,
-          child: ShardFloatingBottomNavBar(
-            items: _subNavItems,
-            selectedIndex: _subIndex,
-            onTap: (index) => setState(() => _subIndex = index),
+          child: SlideTransition(
+            position: _navSlideAnimation,
+            child: ShardFloatingBottomNavBar(
+              items: _subNavItems,
+              selectedIndex: _subIndex,
+              onTap: (index) => setState(() => _subIndex = index),
+              marginBottom: 0,
+            ),
           ),
         ),
       ],
