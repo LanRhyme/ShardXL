@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/dartcraft_provider.dart';
+import '../../../core/widgets/glass_card.dart';
 
 class GameSettingsPage extends ConsumerStatefulWidget {
   const GameSettingsPage({super.key});
@@ -23,108 +24,157 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
   Widget build(BuildContext context) {
     final settings = ref.watch(gameSettingsProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('全局游戏设置')),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-        children: [
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.code),
-              title: const Text('Java 路径'),
-              subtitle: Text(
-                settings.javaPath.isEmpty ? '自动检测' : settings.javaPath,
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Text(
+                '全局游戏设置',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showJavaPathDialog(settings),
-            ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.memory),
-              title: const Text('内存分配'),
-              subtitle: Text('${settings.memoryMB} MB'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showMemoryDialog(settings),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.folder),
-              title: const Text('游戏目录'),
-              subtitle: Text(
-                settings.gameDirectory.isEmpty
-                    ? '未设置'
-                    : settings.gameDirectory,
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+            children: [
+              GlassCard(
+                child: ListTile(
+                  leading: const Icon(Icons.code),
+                  title: const Text('Java 路径'),
+                  subtitle: Text(
+                    settings.javaPath.isEmpty ? '自动检测' : settings.javaPath,
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showJavaPathDialog(settings),
+                ),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showGameDirectoryDialog(settings),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.aspect_ratio),
-              title: const Text('游戏窗口'),
-              subtitle: Text(
-                settings.fullscreen
-                    ? '全屏模式'
-                    : '${settings.windowWidth} x ${settings.windowHeight}',
+              const SizedBox(height: 8),
+              GlassCard(
+                child: ListTile(
+                  leading: const Icon(Icons.memory),
+                  title: const Text('内存分配'),
+                  subtitle: Text('${settings.memoryMB} MB'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showMemoryDialog(settings),
+                ),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showWindowDialog(settings),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: SwitchListTile(
-              secondary: const Icon(Icons.fullscreen),
-              title: const Text('全屏启动'),
-              subtitle: const Text('游戏以全屏模式启动'),
-              value: settings.fullscreen,
-              onChanged: (value) {
-                ref.read(gameSettingsProvider.notifier).setFullscreen(value);
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            child: ExpansionTile(
-              leading: const Icon(Icons.terminal),
-              title: const Text('JVM 参数'),
-              subtitle: Text(settings.jvmArguments.isEmpty
-                  ? '无自定义参数'
-                  : settings.jvmArguments.join(' ')),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '推荐参数（自动添加）：',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+              const SizedBox(height: 8),
+              GlassCard(
+                child: ListTile(
+                  leading: const Icon(Icons.folder),
+                  title: const Text('游戏目录'),
+                  subtitle: Text(
+                    settings.gameDirectory.isEmpty
+                        ? '未设置'
+                        : settings.gameDirectory,
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showGameDirectoryDialog(settings),
+                ),
+              ),
+              const SizedBox(height: 8),
+              GlassCard(
+                child: ListTile(
+                  leading: const Icon(Icons.aspect_ratio),
+                  title: const Text('游戏窗口'),
+                  subtitle: Text(
+                    settings.fullscreen
+                        ? '全屏模式'
+                        : '${settings.windowWidth} x ${settings.windowHeight}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showWindowDialog(settings),
+                ),
+              ),
+              const SizedBox(height: 8),
+              GlassCard(
+                child: SwitchListTile(
+                  secondary: const Icon(Icons.fullscreen),
+                  title: const Text('全屏启动'),
+                  subtitle: const Text('游戏以全屏模式启动'),
+                  value: settings.fullscreen,
+                  onChanged: (value) {
+                    ref.read(gameSettingsProvider.notifier).setFullscreen(value);
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              GlassCard(
+                child: ExpansionTile(
+                  leading: const Icon(Icons.terminal),
+                  title: const Text('JVM 参数'),
+                  subtitle: Text(settings.jvmArguments.isEmpty
+                      ? '无自定义参数'
+                      : settings.jvmArguments.join(' ')),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '推荐参数（自动添加）：',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '-Xmx${settings.memoryMB}M -Xms${settings.memoryMB ~/ 2}M',
+                            style: const TextStyle(fontFamily: 'monospace'),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            '自定义参数：',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: '例如: -XX:+UseG1GC -XX:+UseConcMarkSweepGC',
+                            ),
+                            controller: TextEditingController(
+                              text: settings.jvmArguments.join(' '),
+                            ),
+                            onSubmitted: (value) {
+                              final args = value
+                                  .split(' ')
+                                  .where((s) => s.isNotEmpty)
+                                  .toList();
+                              ref
+                                  .read(gameSettingsProvider.notifier)
+                                  .setJvmArguments(args);
+                            },
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '-Xmx${settings.memoryMB}M -Xms${settings.memoryMB ~/ 2}M',
-                        style: const TextStyle(fontFamily: 'monospace'),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        '自定义参数：',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              GlassCard(
+                child: ExpansionTile(
+                  leading: const Icon(Icons.settings),
+                  title: const Text('游戏参数'),
+                  subtitle: Text(settings.gameArguments.isEmpty
+                      ? '无自定义参数'
+                      : settings.gameArguments.join(' ')),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: TextField(
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
-                          hintText: '例如: -XX:+UseG1GC -XX:+UseConcMarkSweepGC',
+                          hintText: '例如: --fancy --fast',
                         ),
                         controller: TextEditingController(
-                          text: settings.jvmArguments.join(' '),
+                          text: settings.gameArguments.join(' '),
                         ),
                         onSubmitted: (value) {
                           final args = value
@@ -133,50 +183,17 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                               .toList();
                           ref
                               .read(gameSettingsProvider.notifier)
-                              .setJvmArguments(args);
+                              .setGameArguments(args);
                         },
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: ExpansionTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('游戏参数'),
-              subtitle: Text(settings.gameArguments.isEmpty
-                  ? '无自定义参数'
-                  : settings.gameArguments.join(' ')),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: '例如: --fancy --fast',
                     ),
-                    controller: TextEditingController(
-                      text: settings.gameArguments.join(' '),
-                    ),
-                    onSubmitted: (value) {
-                      final args = value
-                          .split(' ')
-                          .where((s) => s.isNotEmpty)
-                          .toList();
-                      ref
-                          .read(gameSettingsProvider.notifier)
-                          .setGameArguments(args);
-                    },
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

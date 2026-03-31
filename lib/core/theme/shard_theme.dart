@@ -54,7 +54,7 @@ class ShardTheme {
     this.cardOpacity = 0.65,
     this.uiScale = 1.0,
     this.animationSpeed = 1.0,
-    this.backgroundType = 'gradient',
+    this.backgroundType = 'solid',
     this.backgroundImagePath,
   });
 

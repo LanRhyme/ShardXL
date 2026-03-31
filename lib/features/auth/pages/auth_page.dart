@@ -2,6 +2,7 @@ import 'package:dartcraft/dartcraft.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../../../core/widgets/glass_card.dart';
 
 class AuthPage extends ConsumerStatefulWidget {
   const AuthPage({super.key});
@@ -41,13 +42,12 @@ class _AuthPageState extends ConsumerState<AuthPage> {
               const Center(child: CircularProgressIndicator()),
             ] else ...[
               if (authState.error != null)
-                Card(
-                  color: Colors.red.shade100,
+                GlassCard(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
                       authState.error!,
-                      style: TextStyle(color: Colors.red.shade900),
+                      style: TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   ),
                 ),
@@ -65,7 +65,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   Widget _buildAuthenticatedCard(AuthState authState) {
-    return Card(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -101,7 +101,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   Widget _buildMicrosoftAuth() {
-    return Card(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -138,7 +138,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   Widget _buildElyByAuth() {
-    return Card(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

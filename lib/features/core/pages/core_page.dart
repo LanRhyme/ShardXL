@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/pages/auth_page.dart';
 import '../providers/dartcraft_provider.dart';
+import '../../../core/widgets/glass_card.dart';
 
 class CorePage extends ConsumerStatefulWidget {
   const CorePage({super.key});
@@ -67,7 +68,7 @@ class _CorePageState extends ConsumerState<CorePage> {
 
   Widget _buildAccountSection(AuthState authState) {
     if (authState.isAuthenticated) {
-      return Card(
+      return GlassCard(
         child: ListTile(
           leading: const CircleAvatar(
             child: Icon(Icons.person),
@@ -87,7 +88,7 @@ class _CorePageState extends ConsumerState<CorePage> {
       );
     }
 
-    return Card(
+    return GlassCard(
       child: ListTile(
         leading: const Icon(Icons.account_circle_outlined),
         title: const Text('未登录'),
@@ -106,7 +107,7 @@ class _CorePageState extends ConsumerState<CorePage> {
   }
 
   Widget _buildGameDirectorySection(GameSettings settings) {
-    return Card(
+    return GlassCard(
       child: ListTile(
         leading: const Icon(Icons.folder),
         title: const Text('游戏目录'),
@@ -122,7 +123,7 @@ class _CorePageState extends ConsumerState<CorePage> {
   }
 
   Widget _buildVersionSelector(AsyncValue<List<String>> installedAsync) {
-    return Card(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -175,7 +176,7 @@ class _CorePageState extends ConsumerState<CorePage> {
       javaPath: settings.javaPath.isNotEmpty ? settings.javaPath : null,
     );
 
-    return Card(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

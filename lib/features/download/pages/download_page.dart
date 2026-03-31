@@ -2,6 +2,7 @@ import 'package:dartcraft/dartcraft.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/dartcraft_provider.dart';
+import '../../../core/widgets/glass_card.dart';
 
 class DownloadPage extends ConsumerStatefulWidget {
   const DownloadPage({super.key});
@@ -84,7 +85,7 @@ class _DownloadPageState extends ConsumerState<DownloadPage> {
       _FilterItem('old_alpha', '旧版Alpha', Icons.history_edu),
     ];
 
-    return Card(
+    return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -156,7 +157,7 @@ class _DownloadPageState extends ConsumerState<DownloadPage> {
   }
 
   Widget _buildSearchBar() {
-    return Card(
+    return GlassCard(
       child: TextField(
         decoration: InputDecoration(
           hintText: '搜索版本...',
@@ -181,7 +182,7 @@ class _DownloadPageState extends ConsumerState<DownloadPage> {
   Widget _buildVersionList() {
     final versionsAsync = ref.watch(availableVersionsProvider);
 
-    return Card(
+    return GlassCard(
       child: versionsAsync.when(
         data: (versions) {
           final filtered = versions.where((v) {
@@ -294,7 +295,7 @@ class _VersionListItemState extends ConsumerState<_VersionListItem> {
     final colorScheme = Theme.of(context).colorScheme;
     final versionColor = _getVersionColor(widget.version.type.name);
 
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.only(bottom: 8),
       child: Column(
         children: [
