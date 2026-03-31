@@ -29,6 +29,92 @@ class _MenuItem {
   });
 }
 
+class _VersionIconData {
+  final IconData? icon;
+  final String? assetPath;
+  final List<Color> gradientColors;
+  final Color shadowColor;
+
+  const _VersionIconData({
+    this.icon,
+    this.assetPath,
+    required this.gradientColors,
+    required this.shadowColor,
+  });
+}
+
+_VersionIconData _getVersionIconData(String version) {
+  final v = version.toLowerCase();
+  
+  if (v.contains('neoforge')) {
+    return const _VersionIconData(
+      assetPath: 'assets/icons/neoforge.png',
+      gradientColors: [Color(0xFF7C4DFF), Color(0xFF651FFF)],
+      shadowColor: Color(0xFF7C4DFF),
+    );
+  } else if (v.contains('forge')) {
+    return const _VersionIconData(
+      assetPath: 'assets/icons/forge.png',
+      gradientColors: [Color(0xFF607D8B), Color(0xFF37474F)],
+      shadowColor: Color(0xFF607D8B),
+    );
+  } else if (v.contains('fabric')) {
+    return const _VersionIconData(
+      assetPath: 'assets/icons/fabric.png',
+      gradientColors: [Color(0xFFDB7093), Color(0xFFC2185B)],
+      shadowColor: Color(0xFFDB7093),
+    );
+  } else if (v.contains('quilt')) {
+    return const _VersionIconData(
+      assetPath: 'assets/icons/quilt.png',
+      gradientColors: [Color(0xFF26C6DA), Color(0xFF0097A7)],
+      shadowColor: Color(0xFF26C6DA),
+    );
+  } else if (v.contains('optifine') || v.contains('optifabric')) {
+    return const _VersionIconData(
+      assetPath: 'assets/icons/optifine.png',
+      gradientColors: [Color(0xFFFFB74D), Color(0xFFF57C00)],
+      shadowColor: Color(0xFFFFB74D),
+    );
+  } else if (v.contains('snapshot') || v.contains('pre') || v.contains('rc')) {
+    return const _VersionIconData(
+      assetPath: 'assets/icons/snapshot.png',
+      gradientColors: [Color(0xFF7E57C2), Color(0xFF512DA8)],
+      shadowColor: Color(0xFF7E57C2),
+    );
+  } else {
+    return const _VersionIconData(
+      assetPath: 'assets/icons/vanilla.png',
+      gradientColors: [Color(0xFF81C784), Color(0xFF388E3C)],
+      shadowColor: Color(0xFF81C784),
+    );
+  }
+}
+
+String _getVersionTypeLabel(String version) {
+  final v = version.toLowerCase();
+  
+  if (v.contains('neoforge')) {
+    return 'NeoForge';
+  } else if (v.contains('forge')) {
+    return 'Forge';
+  } else if (v.contains('fabric')) {
+    return 'Fabric';
+  } else if (v.contains('quilt')) {
+    return 'Quilt';
+  } else if (v.contains('optifine') || v.contains('optifabric')) {
+    return 'OptiFine';
+  } else if (v.contains('snapshot')) {
+    return '快照版';
+  } else if (v.contains('pre')) {
+    return '预发布版';
+  } else if (v.contains('rc')) {
+    return '候选版';
+  } else {
+    return '官方原版';
+  }
+}
+
 class GameInstancePage extends ConsumerStatefulWidget {
   const GameInstancePage({super.key});
 
@@ -108,49 +194,53 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
                   ),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF81C784), Color(0xFF2E7D32)],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.green.withOpacity(0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
+                child: Builder(
+                  builder: (context) {
+                    final iconData = _getVersionIconData(_selectedVersion!);
+                    return Column(
+                      children: [
+                        Image.asset(
+                          iconData.assetPath!,
+                          width: 80,
+                          height: 80,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: iconData.gradientColors,
+                              ),
+                            ),
+                            child: const Icon(Icons.grass, color: Colors.white, size: 40),
                           ),
-                        ],
-                      ),
-                      child: const Icon(Icons.grass, color: Colors.white, size: 40),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _selectedVersion!,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        letterSpacing: 0.5,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '当前选中实例',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _selectedVersion!,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _getVersionTypeLabel(_selectedVersion!),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: iconData.shadowColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               )
             else
@@ -779,10 +869,7 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
 
   @override
   Widget build(BuildContext context) {
-    final isModded = widget.version.toLowerCase().contains('forge') ||
-                     widget.version.toLowerCase().contains('fabric') ||
-                     widget.version.toLowerCase().contains('quilt') ||
-                     widget.version.toLowerCase().contains('neoforge');
+    final iconData = _getVersionIconData(widget.version);
 
     return MouseRegion(
       onEnter: (_) {
@@ -845,25 +932,23 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
                       // 图标容器
                       Hero(
                         tag: 'icon_${widget.version}',
-                        child: Container(
+                        child: Image.asset(
+                          iconData.assetPath!,
                           width: 72,
                           height: 72,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF81C784), Color(0xFF388E3C)],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.green.withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: iconData.gradientColors,
                               ),
-                            ],
+                            ),
+                            child: const Icon(Icons.grass, size: 36, color: Colors.white),
                           ),
-                          child: const Icon(Icons.grass, size: 36, color: Colors.white),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -884,22 +969,18 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                         decoration: BoxDecoration(
-                          color: isModded
-                              ? Colors.orange.withValues(alpha: 0.1)
-                              : Colors.green.withValues(alpha: 0.1),
+                          color: iconData.shadowColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: isModded 
-                                ? Colors.orange.withValues(alpha: 0.2) 
-                                : Colors.green.withValues(alpha: 0.2),
+                            color: iconData.shadowColor.withValues(alpha: 0.2),
                             width: 1,
                           ),
                         ),
                         child: Text(
-                          isModded ? '模组加载器' : '官方原版',
+                          _getVersionTypeLabel(widget.version),
                           style: TextStyle(
                             fontSize: 10,
-                            color: isModded ? Colors.orange[700] : Colors.green[700],
+                            color: iconData.shadowColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

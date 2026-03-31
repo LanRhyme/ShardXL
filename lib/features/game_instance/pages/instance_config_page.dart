@@ -4,6 +4,92 @@ import '../../../core/widgets/glass_card.dart';
 import '../providers/dartcraft_provider.dart';
 import '../providers/instance_config_provider.dart';
 
+class VersionIconData {
+  final IconData? icon;
+  final String? assetPath;
+  final List<Color> gradientColors;
+  final Color shadowColor;
+
+  const VersionIconData({
+    this.icon,
+    this.assetPath,
+    required this.gradientColors,
+    required this.shadowColor,
+  });
+}
+
+VersionIconData getVersionIconData(String version) {
+  final v = version.toLowerCase();
+  
+  if (v.contains('neoforge')) {
+    return const VersionIconData(
+      assetPath: 'assets/icons/neoforge.png',
+      gradientColors: [Color(0xFF7C4DFF), Color(0xFF651FFF)],
+      shadowColor: Color(0xFF7C4DFF),
+    );
+  } else if (v.contains('forge')) {
+    return const VersionIconData(
+      assetPath: 'assets/icons/forge.png',
+      gradientColors: [Color(0xFF607D8B), Color(0xFF37474F)],
+      shadowColor: Color(0xFF607D8B),
+    );
+  } else if (v.contains('fabric')) {
+    return const VersionIconData(
+      assetPath: 'assets/icons/fabric.png',
+      gradientColors: [Color(0xFFDB7093), Color(0xFFC2185B)],
+      shadowColor: Color(0xFFDB7093),
+    );
+  } else if (v.contains('quilt')) {
+    return const VersionIconData(
+      assetPath: 'assets/icons/quilt.png',
+      gradientColors: [Color(0xFF26C6DA), Color(0xFF0097A7)],
+      shadowColor: Color(0xFF26C6DA),
+    );
+  } else if (v.contains('optifine') || v.contains('optifabric')) {
+    return const VersionIconData(
+      assetPath: 'assets/icons/optifine.png',
+      gradientColors: [Color(0xFFFFB74D), Color(0xFFF57C00)],
+      shadowColor: Color(0xFFFFB74D),
+    );
+  } else if (v.contains('snapshot') || v.contains('pre') || v.contains('rc')) {
+    return const VersionIconData(
+      assetPath: 'assets/icons/snapshot.png',
+      gradientColors: [Color(0xFF7E57C2), Color(0xFF512DA8)],
+      shadowColor: Color(0xFF7E57C2),
+    );
+  } else {
+    return const VersionIconData(
+      assetPath: 'assets/icons/vanilla.png',
+      gradientColors: [Color(0xFF81C784), Color(0xFF388E3C)],
+      shadowColor: Color(0xFF81C784),
+    );
+  }
+}
+
+String getVersionTypeLabel(String version) {
+  final v = version.toLowerCase();
+  
+  if (v.contains('neoforge')) {
+    return 'NeoForge';
+  } else if (v.contains('forge')) {
+    return 'Forge';
+  } else if (v.contains('fabric')) {
+    return 'Fabric';
+  } else if (v.contains('quilt')) {
+    return 'Quilt';
+  } else if (v.contains('optifine') || v.contains('optifabric')) {
+    return 'OptiFine';
+  } else if (v.contains('snapshot')) {
+    return '快照版';
+  } else if (v.contains('pre')) {
+    return '预发布版';
+  } else if (v.contains('rc')) {
+    return '候选版';
+  } else {
+    return '官方原版';
+  }
+}
+
 class InstanceConfigPage extends ConsumerStatefulWidget {
   final String version;
   final bool isEmbedded;
@@ -126,42 +212,30 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
   }
 
   Widget _buildVersionInfoCard() {
-    final isModded = widget.version.toLowerCase().contains('forge') ||
-                     widget.version.toLowerCase().contains('fabric') ||
-                     widget.version.toLowerCase().contains('quilt') ||
-                     widget.version.toLowerCase().contains('neoforge');
+    final iconData = getVersionIconData(widget.version);
 
     return GlassCard(
       padding: const EdgeInsets.all(24),
       child: Row(
         children: [
-          // 草方块图标
           Hero(
             tag: 'icon_${widget.version}',
-            child: Container(
+            child: Image.asset(
+              iconData.assetPath!,
               width: 90,
               height: 90,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF81C784), Color(0xFF2E7D32)],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
+              errorBuilder: (_, __, ___) => Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: iconData.gradientColors,
                   ),
-                ],
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.grass,
-                  size: 44,
-                  color: Colors.white,
                 ),
+                child: const Icon(Icons.grass, size: 44, color: Colors.white),
               ),
             ),
           ),
@@ -188,8 +262,8 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                 Row(
                   children: [
                     _buildInfoTag(
-                      isModded ? '模组加载器' : '官方原版',
-                      isModded ? Colors.orange : Colors.green,
+                      getVersionTypeLabel(widget.version),
+                      iconData.shadowColor,
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -237,7 +311,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
     );
   }
 
-  Widget _buildInfoTag(String text, MaterialColor color) {
+  Widget _buildInfoTag(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -246,7 +320,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color[700]),
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
       ),
     );
   }
