@@ -1,7 +1,28 @@
 import 'dart:io';
-import 'package:dartcraft/dartcraft.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../../frb/shardxl_ffi_bindings.dart';
+
+class MinecraftVersion {
+  final String id;
+  final String versionType;
+  final DateTime releaseTime;
+
+  MinecraftVersion({
+    required this.id,
+    required this.versionType,
+    required this.releaseTime,
+  });
+
+  factory MinecraftVersion.fromJson(Map<String, dynamic> json) {
+    return MinecraftVersion(
+      id: json['id'] as String,
+      versionType: json['versionType'] as String,
+      releaseTime: DateTime.parse(json['releaseTime'] as String),
+    );
+  }
+}
 
 class GameSettings {
   final String javaPath;
@@ -86,12 +107,16 @@ class GameSettingsNotifier extends StateNotifier<GameSettings> {
   }
 
   String _getDefaultGameDir() {
-    if (Platform.isWindows) {
-      return '${Platform.environment['APPDATA'] ?? ''}/.minecraft';
-    } else if (Platform.isMacOS) {
-      return '${Platform.environment['HOME'] ?? ''}/Library/Application Support/minecraft';
-    } else {
-      return '${Platform.environment['HOME'] ?? ''}/.minecraft';
+    try {
+      return getDefaultGameDirectory();
+    } catch (e) {
+      if (Platform.isWindows) {
+        return '${Platform.environment['APPDATA'] ?? ''}/.minecraft';
+      } else if (Platform.isMacOS) {
+        return '${Platform.environment['HOME'] ?? ''}/Library/Application Support/minecraft';
+      } else {
+        return '${Platform.environment['HOME'] ?? ''}/.minecraft';
+      }
     }
   }
 
@@ -145,11 +170,26 @@ final gameSettingsProvider =
 });
 
 final availableVersionsProvider = FutureProvider<List<MinecraftVersion>>((ref) async {
-  return await Dartcraft.getAvailableVersions();
+  try {
+    final result = getReleaseVersions();
+    if (result.error != null) {
+      return [];
+    }
+    return result.versions
+        .map((v) => MinecraftVersion(
+              id: v.id,
+              versionType: v.versionType,
+              releaseTime: DateTime.tryParse(v.releaseTime) ?? DateTime.now(),
+            ))
+        .toList();
+  } catch (e) {
+    return [];
+  }
 });
 
 final releaseVersionsProvider = FutureProvider<List<MinecraftVersion>>((ref) async {
-  return await Dartcraft.getReleaseVersions();
+  final allVersions = await ref.watch(availableVersionsProvider.future);
+  return allVersions.where((v) => v.versionType == 'release').toList();
 });
 
 final installedVersionsProvider = FutureProvider<List<String>>((ref) async {
@@ -157,39 +197,48 @@ final installedVersionsProvider = FutureProvider<List<String>>((ref) async {
   final dir = settings.gameDirectory;
   if (dir.isEmpty) return [];
   
-  final versionsDir = Directory('$dir/versions');
-  if (!await versionsDir.exists()) return [];
-  
-  final entities = await versionsDir.list().toList();
-  return entities
-      .whereType<Directory>()
-      .map((d) => d.path.split(Platform.pathSeparator).last)
-      .toList();
+  try {
+    return getInstalledVersions(dir);
+  } catch (e) {
+    return [];
+  }
 });
 
 class LauncherInstance {
   final String version;
   final String gameDirectory;
   final GameSettings settings;
-  final bool useElyBy;
 
   LauncherInstance({
     required this.version,
     required this.gameDirectory,
     required this.settings,
-    this.useElyBy = false,
   });
+}
 
-  Dartcraft toDartcraft() {
-    return Dartcraft(
-      version,
-      gameDirectory,
-      javaPath: settings.javaPath.isNotEmpty ? settings.javaPath : null,
-      useElyBy: useElyBy,
+class VersionInstallResult {
+  final bool success;
+  final String? error;
+
+  VersionInstallResult({required this.success, this.error});
+}
+
+Future<VersionInstallResult> installMinecraftVersion(String versionId, String gameDirectory) async {
+  try {
+    final result = installVersion(versionId, gameDirectory);
+    return VersionInstallResult(
+      success: result.success,
+      error: result.error,
     );
+  } catch (e) {
+    return VersionInstallResult(success: false, error: e.toString());
   }
 }
 
-final currentLauncherProvider = Provider.family<Dartcraft, LauncherInstance>(
-  (ref, instance) => instance.toDartcraft(),
-);
+String checkJavaVersion(String? javaPath) {
+  try {
+    return checkJava(javaPath);
+  } catch (e) {
+    return 'Error checking Java: $e';
+  }
+}

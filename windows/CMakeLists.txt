@@ -10,6 +10,58 @@ set(BINARY_NAME "shard_xl")
 # versions of CMake.
 cmake_policy(VERSION 3.14...3.25)
 
+# === ShardXL-Lib Rust FFI Configuration ===
+set(SHARDXL_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../external/ShardXL-Lib")
+set(SHARDXL_LIB_NAME "lighty_launcher")
+set(SHARDXL_LIB_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../lib")
+set(SHARDXL_LIB_DLL "${SHARDXL_LIB_OUTPUT_DIR}/${SHARDXL_LIB_NAME}.dll")
+
+# Find cargo (Rust compiler)
+# Try common installation paths
+set(CARGO_SEARCH_PATHS
+    "$ENV{USERPROFILE}\\.cargo\\bin"
+    "$ENV{HOME}\\.cargo\\bin"
+    "C:\\Users\\$ENV{USERNAME}\\.cargo\\bin"
+)
+find_program(CARGO_EXECUTABLE 
+    NAMES cargo 
+    PATHS ${CARGO_SEARCH_PATHS}
+    DOC "Path to cargo executable"
+)
+mark_as_advanced(CARGO_EXECUTABLE)
+
+# Build ShardXL-Lib Rust library
+# Only build if DLL doesn't exist (to avoid memory/process issues with CMake)
+# Users should manually run: cd external/ShardXL-Lib && cargo build --release
+if(CARGO_EXECUTABLE AND NOT EXISTS ${SHARDXL_LIB_DLL})
+    message(STATUS "Found cargo: ${CARGO_EXECUTABLE}")
+    message(STATUS "Building ShardXL-Lib Rust library...")
+    
+    # Build ShardXL-Lib Rust library
+    add_custom_target(build_shardxl_lib
+        COMMAND ${CARGO_EXECUTABLE} build --release --manifest-path=${SHARDXL_LIB_DIR}/Cargo.toml
+        WORKING_DIRECTORY ${SHARDXL_LIB_DIR}
+        COMMENT "Building ShardXL-Lib Rust library"
+    )
+
+    # Copy DLL to lib directory (runs after build)
+    add_custom_target(copy_shardxl_dll
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${SHARDXL_LIB_OUTPUT_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${SHARDXL_LIB_DIR}/target/release/${SHARDXL_LIB_NAME}.dll
+            ${SHARDXL_LIB_DLL}
+        DEPENDS build_shardxl_lib
+        COMMENT "Copying ShardXL-Lib DLL to lib directory"
+    )
+elseif(EXISTS ${SHARDXL_LIB_DLL})
+    message(STATUS "ShardXL-Lib DLL found at ${SHARDXL_LIB_DLL}")
+    message(STATUS "To rebuild Rust library, run: cd external/ShardXL-Lib && cargo build --release")
+    message(STATUS "Then copy: target/release/lighty_launcher.dll -> lib/")
+else()
+    message(WARNING "cargo not found and DLL not found - ShardXL-Lib will not be available")
+    message(WARNING "Install Rust from https://rustup.rs or manually build the DLL")
+endif()
+
 # Define build configuration option.
 get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(IS_MULTICONFIG)
@@ -51,6 +103,11 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")
+
+# Make ShardXL-Lib build part of the app build (after target is defined)
+if(CARGO_EXECUTABLE AND NOT EXISTS ${SHARDXL_LIB_DLL})
+    add_dependencies(${BINARY_NAME} copy_shardxl_dll)
+endif()
 
 
 # Generated plugin build rules, which manage building the plugins and adding

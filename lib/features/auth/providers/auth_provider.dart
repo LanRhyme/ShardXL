@@ -1,8 +1,9 @@
-import 'package:dartcraft/dartcraft.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum AuthMethod { microsoft, elyBy }
+import '../../../../frb/shardxl_ffi_bindings.dart';
+
+enum AuthMethod { microsoft, elyBy, offline }
 
 class AuthState {
   final bool isAuthenticated;
@@ -59,12 +60,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final accessToken = prefs.getString(_keyAccessToken);
     final methodStr = prefs.getString(_keyAuthMethod);
 
-    if (username != null && uuid != null && accessToken != null) {
+    if (username != null && uuid != null) {
       AuthMethod? method;
       if (methodStr == 'microsoft') {
         method = AuthMethod.microsoft;
       } else if (methodStr == 'elyBy') {
         method = AuthMethod.elyBy;
+      } else if (methodStr == 'offline') {
+        method = AuthMethod.offline;
       }
       state = AuthState(
         isAuthenticated: true,
@@ -76,19 +79,40 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> authenticateWithMicrosoft(String code) async {
+  Future<void> authenticateOffline(String username) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final result = await Dartcraft.authenticateWithMicrosoft(code);
-      await _saveAuth(result, AuthMethod.microsoft);
+      final result = authenticateOfflineFfi(username);
+      
+      if (!result.success) {
+        throw Exception(result.error ?? 'Authentication failed');
+      }
+      
+      final profile = result.profile;
+      if (profile == null) {
+        throw Exception('No profile returned');
+      }
+
+      await _saveAuth(profile.username, profile.uuid, profile.accessToken, AuthMethod.offline);
       state = state.copyWith(
         isAuthenticated: true,
         isLoading: false,
-        username: result.username,
-        uuid: result.uuid,
-        accessToken: result.accessToken,
-        authMethod: AuthMethod.microsoft,
+        username: profile.username,
+        uuid: profile.uuid,
+        accessToken: profile.accessToken,
+        authMethod: AuthMethod.offline,
       );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> authenticateWithMicrosoft(String code) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      // TODO: Implement Microsoft authentication via ShardXL-Lib
+      // This requires the full ShardXL-Lib FFI setup with Microsoft OAuth
+      throw UnimplementedError('Microsoft authentication not yet implemented');
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -97,17 +121,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> authenticateWithElyBy(String username, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final launcher = Dartcraft('1.20.4', '', useElyBy: true);
-      final result = await launcher.authenticateWithElyBy(username, password);
-      await _saveAuth(result, AuthMethod.elyBy);
-      state = state.copyWith(
-        isAuthenticated: true,
-        isLoading: false,
-        username: result.username,
-        uuid: result.uuid,
-        accessToken: result.accessToken,
-        authMethod: AuthMethod.elyBy,
-      );
+      // TODO: Implement Ely.by authentication via ShardXL-Lib
+      throw UnimplementedError('Ely.by authentication not yet implemented');
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -120,34 +135,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
   ) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final launcher = Dartcraft('1.20.4', '', useElyBy: true);
-      final result = await launcher.authenticateWithElyByTwoFactor(
-        username,
-        password,
-        totpCode,
-      );
-      await _saveAuth(result, AuthMethod.elyBy);
-      state = state.copyWith(
-        isAuthenticated: true,
-        isLoading: false,
-        username: result.username,
-        uuid: result.uuid,
-        accessToken: result.accessToken,
-        authMethod: AuthMethod.elyBy,
-      );
+      // TODO: Implement Ely.by 2FA via ShardXL-Lib
+      throw UnimplementedError('Ely.by 2FA not yet implemented');
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
-  Future<void> _saveAuth(AuthenticationResult result, AuthMethod method) async {
+  Future<void> _saveAuth(String username, String uuid, String? accessToken, AuthMethod method) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyUsername, result.username);
-    await prefs.setString(_keyUuid, result.uuid);
-    await prefs.setString(_keyAccessToken, result.accessToken);
+    await prefs.setString(_keyUsername, username);
+    await prefs.setString(_keyUuid, uuid);
+    if (accessToken != null) {
+      await prefs.setString(_keyAccessToken, accessToken);
+    }
     await prefs.setString(
       _keyAuthMethod,
-      method == AuthMethod.microsoft ? 'microsoft' : 'elyBy',
+      method == AuthMethod.microsoft ? 'microsoft' 
+          : method == AuthMethod.elyBy ? 'elyBy' 
+          : 'offline',
     );
   }
 

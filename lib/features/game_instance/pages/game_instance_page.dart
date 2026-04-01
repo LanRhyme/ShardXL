@@ -1,4 +1,4 @@
-import 'package:dartcraft/dartcraft.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -767,13 +767,12 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
       return;
     }
 
-    final launcher = Dartcraft(
-      version,
-      settings.gameDirectory,
-      javaPath: settings.javaPath.isNotEmpty ? settings.javaPath : null,
-    );
-
-    if (!launcher.isInstalled) {
+    // Check if version is installed
+    final versionDir = Directory('${settings.gameDirectory}/versions/$version');
+    final jarFile = File('${versionDir.path}/$version.jar');
+    final jsonFile = File('${versionDir.path}/$version.json');
+    
+    if (!jarFile.existsSync() || !jsonFile.existsSync()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('版本未安装，请先下载')),
       );
@@ -781,33 +780,15 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('正在启动 $version...')),
+      SnackBar(content: Text('正在启动 $version...（ShardXL-Lib 集成中）')),
     );
 
     try {
-      final process = await launcher.launch(
-        username: authState.username!,
-        uuid: authState.uuid!,
-        accessToken: authState.accessToken!,
-        jvmArguments: [
-          settings.defaultJvmArg,
-          settings.minJvmArg,
-          ...settings.jvmArguments,
-        ],
-        showOutput: true,
-      );
-
+      // Simplified launch using ShardXL-Lib approach
+      // TODO: Full ShardXL-Lib integration for game launching
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$version 已启动')),
+        SnackBar(content: Text('$version 启动功能即将完成')),
       );
-
-      process.exitCode.then((code) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('游戏已退出，退出码: $code')),
-          );
-        }
-      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('启动失败: $e')),
