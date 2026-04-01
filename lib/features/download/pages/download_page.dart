@@ -242,7 +242,7 @@ class _DownloadPageState extends ConsumerState<DownloadPage> {
               ),
               const SizedBox(height: 8),
               FilledButton(
-                onPressed: () => ref.invalidate(availableVersionsProvider),
+                onPressed: () => ref.refresh(availableVersionsProvider),
                 child: const Text('重试'),
               ),
             ],
