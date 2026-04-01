@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -196,6 +197,10 @@ final availableVersionsProvider = FutureProvider<List<MinecraftVersion>>((ref) a
               releaseTime: DateTime.tryParse(v['releaseTime'] as String? ?? '') ?? DateTime.now(),
             ))
         .toList();
+  } on SocketException catch (e) {
+    return [];
+  } on TimeoutException catch (e) {
+    return [];
   } catch (e) {
     return [];
   }
