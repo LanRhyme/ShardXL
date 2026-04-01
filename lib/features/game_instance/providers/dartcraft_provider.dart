@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../../frb/shardxl_ffi_bindings.dart';
 
@@ -171,15 +173,27 @@ final gameSettingsProvider =
 
 final availableVersionsProvider = FutureProvider<List<MinecraftVersion>>((ref) async {
   try {
-    final result = getReleaseVersions();
-    if (result.error != null) {
+    final response = await http.get(
+      Uri.parse('https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'),
+    ).timeout(const Duration(seconds: 15));
+    
+    if (response.statusCode != 200) {
       return [];
     }
-    return result.versions
+    
+    final manifest = json.decode(response.body);
+    final versionsJson = manifest['versions'] as List<dynamic>?;
+    
+    if (versionsJson == null) {
+      return [];
+    }
+    
+    return versionsJson
+        .where((v) => v['type'] == 'release')
         .map((v) => MinecraftVersion(
-              id: v.id,
-              versionType: v.versionType,
-              releaseTime: DateTime.tryParse(v.releaseTime) ?? DateTime.now(),
+              id: v['id'] as String,
+              versionType: v['type'] as String,
+              releaseTime: DateTime.tryParse(v['releaseTime'] as String? ?? '') ?? DateTime.now(),
             ))
         .toList();
   } catch (e) {
@@ -198,7 +212,7 @@ final installedVersionsProvider = FutureProvider<List<String>>((ref) async {
   if (dir.isEmpty) return [];
   
   try {
-    return getInstalledVersions(dir);
+    return await Future.microtask(() => getInstalledVersions(dir));
   } catch (e) {
     return [];
   }
@@ -225,7 +239,7 @@ class VersionInstallResult {
 
 Future<VersionInstallResult> installMinecraftVersion(String versionId, String gameDirectory) async {
   try {
-    final result = installVersion(versionId, gameDirectory);
+    final result = await Future.microtask(() => installVersion(versionId, gameDirectory));
     return VersionInstallResult(
       success: result.success,
       error: result.error,

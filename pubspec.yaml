@@ -16,6 +16,9 @@ dependencies:
   # Local Storage
   shared_preferences: ^2.3.4
 
+  # HTTP Client
+  http: ^1.2.0
+
   # Window Management (Desktop)
   window_manager: ^0.4.3
   flutter_acrylic: ^1.1.4
