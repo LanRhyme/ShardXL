@@ -67,7 +67,7 @@ class _DownloadPageState extends ConsumerState<DownloadPage> {
         ),
         IconButton(
           icon: const Icon(Icons.refresh),
-          onPressed: () => ref.refresh(availableVersionsProvider),
+          onPressed: () => ref.invalidate(availableVersionsProvider),
           tooltip: '刷新',
         ),
       ],
@@ -242,7 +242,7 @@ class _DownloadPageState extends ConsumerState<DownloadPage> {
               ),
               const SizedBox(height: 8),
               FilledButton(
-                onPressed: () => ref.refresh(availableVersionsProvider),
+                onPressed: () => ref.invalidate(availableVersionsProvider),
                 child: const Text('重试'),
               ),
             ],
