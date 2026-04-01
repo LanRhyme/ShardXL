@@ -30,13 +30,11 @@ class _MenuItem {
 }
 
 class _VersionIconData {
-  final IconData? icon;
   final String? assetPath;
   final List<Color> gradientColors;
   final Color shadowColor;
 
   const _VersionIconData({
-    this.icon,
     this.assetPath,
     required this.gradientColors,
     required this.shadowColor,

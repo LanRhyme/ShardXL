@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../game_instance/providers/dartcraft_provider.dart';
@@ -293,7 +292,6 @@ class _VersionListItemState extends ConsumerState<_VersionListItem> {
         ) ??
         false;
 
-    final colorScheme = Theme.of(context).colorScheme;
     final versionColor = _getVersionColor(widget.version.versionType);
 
     return GlassCard(
@@ -524,7 +522,7 @@ class _VersionListItemState extends ConsumerState<_VersionListItem> {
         );
       }
 
-      ref.refresh(installedVersionsProvider);
+      ref.invalidate(installedVersionsProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

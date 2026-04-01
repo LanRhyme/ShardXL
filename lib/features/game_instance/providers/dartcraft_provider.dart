@@ -197,9 +197,9 @@ final availableVersionsProvider = FutureProvider<List<MinecraftVersion>>((ref) a
               releaseTime: DateTime.tryParse(v['releaseTime'] as String? ?? '') ?? DateTime.now(),
             ))
         .toList();
-  } on SocketException catch (e) {
+  } on SocketException {
     return [];
-  } on TimeoutException catch (e) {
+  } on TimeoutException {
     return [];
   } catch (e) {
     return [];
