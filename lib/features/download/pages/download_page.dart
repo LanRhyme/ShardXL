@@ -67,7 +67,7 @@ class _DownloadPageState extends ConsumerState<DownloadPage> {
         ),
         IconButton(
           icon: const Icon(Icons.refresh),
-          onPressed: () => ref.invalidate(availableVersionsProvider),
+          onPressed: () => ref.refresh(availableVersionsProvider),
           tooltip: '刷新',
         ),
       ],
