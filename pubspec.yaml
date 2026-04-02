@@ -43,3 +43,9 @@ flutter:
   
   assets:
     - assets/icons/
+    - assets/images/
+  
+  fonts:
+    - family: AlimamaFangYuanTi
+      fonts:
+        - asset: assets/fonts/AlimamaFangYuanTiVF.ttf

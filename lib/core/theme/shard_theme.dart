@@ -11,47 +11,47 @@ class ShardTheme {
   // ========================
   // 主题模式参数
   // ========================
-  
+
   /// 是否为深色模式（默认 true）
   final bool isDark;
-  
+
   /// 主色（用户自定义，用于生成完整 ColorScheme）
   final Color primaryColor;
 
   // ========================
   // 玻璃效果参数
   // ========================
-  
+
   /// 启用毛玻璃效果（默认 true）
   final bool enableGlassEffect;
-  
+
   /// 卡片不透明度（范围 0.15 ~ 0.95，默认 0.65）
   final double cardOpacity;
 
   // ========================
   // UI 参数
   // ========================
-  
+
   /// UI 整体缩放（范围 0.85 ~ 1.5，默认 1.0）
   final double uiScale;
-  
+
   /// 动画速率（范围 0.5 ~ 2.0，默认 1.0）
   final double animationSpeed;
 
   // ========================
   // 圆角参数（shadcn-ui 风格）
   // ========================
-  
+
   /// 基础圆角值（shadcn-ui 默认 0.625rem ≈ 10px）
   final double borderRadius;
 
   // ========================
   // 背景参数
   // ========================
-  
+
   /// 背景类型：'solid' | 'gradient' | 'image' | 'dynamic'
   final String backgroundType;
-  
+
   /// 背景图片路径（仅在 backgroundType 为 'image' 时使用）
   final String? backgroundImagePath;
 
@@ -70,7 +70,7 @@ class ShardTheme {
   // ========================
   // 复制方法
   // ========================
-  
+
   ShardTheme copyWith({
     bool? isDark,
     Color? primaryColor,
@@ -98,7 +98,7 @@ class ShardTheme {
   // ========================
   // 序列化方法
   // ========================
-  
+
   Map<String, dynamic> toMap() {
     return {
       'isDark': isDark,
@@ -137,7 +137,7 @@ class ShardTheme {
   // ========================
 
   /// 基于 primaryColor 动态生成和谐的深色配色方案
-  /// 
+  ///
   /// 使用 HSL 颜色空间，从 primaryColor 提取色相，
   /// 然后生成低饱和度、低亮度的 surface 颜色
   ColorScheme _buildDarkColorScheme(ColorScheme base, Color primary) {
@@ -149,8 +149,8 @@ class ShardTheme {
     final surfaceContainerLowest = HSLColor.fromAHSL(
       1.0,
       hue,
-      sat * 0.08,  // 8% 原始饱和度
-      0.06,        // 6% 亮度
+      sat * 0.08, // 8% 原始饱和度
+      0.06, // 6% 亮度
     ).toColor();
 
     // surface 层：略微带色
@@ -178,12 +178,7 @@ class ShardTheme {
     ).toColor();
 
     // surface 主色
-    final surface = HSLColor.fromAHSL(
-      1.0,
-      hue,
-      sat * 0.10,
-      0.09,
-    ).toColor();
+    final surface = HSLColor.fromAHSL(1.0, hue, sat * 0.10, 0.09).toColor();
 
     return base.copyWith(
       surface: surface,
@@ -198,7 +193,7 @@ class ShardTheme {
   }
 
   /// 基于 primaryColor 动态生成和谐的浅色配色方案
-  /// 
+  ///
   /// 浅色模式层级：background(最深) → surface → card(最浅/最突出)
   ColorScheme _buildLightColorScheme(ColorScheme base, Color primary) {
     final hsl = HSLColor.fromColor(primary);
@@ -210,35 +205,35 @@ class ShardTheme {
       1.0,
       hue,
       sat * 0.06,
-      0.91,  // 最深，作为背景
+      0.91, // 最深，作为背景
     ).toColor();
 
     final surfaceContainer = HSLColor.fromAHSL(
       1.0,
       hue,
       sat * 0.05,
-      0.94,  // 稍浅
+      0.94, // 稍浅
     ).toColor();
 
     final surfaceContainerHigh = HSLColor.fromAHSL(
       1.0,
       hue,
       sat * 0.04,
-      0.96,  // 更浅，用于卡片
+      0.96, // 更浅，用于卡片
     ).toColor();
 
     final surfaceContainerHighest = HSLColor.fromAHSL(
       1.0,
       hue,
       sat * 0.03,
-      0.98,  // 最浅，最突出
+      0.98, // 最浅，最突出
     ).toColor();
 
     final surface = HSLColor.fromAHSL(
       1.0,
       hue,
       sat * 0.05,
-      0.93,  // 介于 background 和 card 之间
+      0.93, // 介于 background 和 card 之间
     ).toColor();
 
     return base.copyWith(
@@ -258,24 +253,69 @@ class ShardTheme {
 
     // 使用 copyWith 逐个设置 fontSize，避免 apply(fontSizeFactor:) 的断言问题
     return base.copyWith(
-      displayLarge: base.displayLarge?.copyWith(fontSize: 57 * scale),
-      displayMedium: base.displayMedium?.copyWith(fontSize: 45 * scale),
-      displaySmall: base.displaySmall?.copyWith(fontSize: 36 * scale),
-      headlineLarge: base.headlineLarge?.copyWith(fontSize: 32 * scale),
-      headlineMedium: base.headlineMedium?.copyWith(fontSize: 28 * scale),
-      headlineSmall: base.headlineSmall?.copyWith(fontSize: 24 * scale),
-      titleLarge: base.titleLarge?.copyWith(fontSize: 22 * scale),
-      titleMedium: base.titleMedium?.copyWith(fontSize: 16 * scale),
-      titleSmall: base.titleSmall?.copyWith(fontSize: 14 * scale),
-      bodyLarge: base.bodyLarge?.copyWith(fontSize: 16 * scale),
-      bodyMedium: base.bodyMedium?.copyWith(fontSize: 14 * scale),
-      bodySmall: base.bodySmall?.copyWith(fontSize: 12 * scale),
-      labelLarge: base.labelLarge?.copyWith(fontSize: 14 * scale),
-      labelMedium: base.labelMedium?.copyWith(fontSize: 12 * scale),
-      labelSmall: base.labelSmall?.copyWith(fontSize: 11 * scale),
+      displayLarge: base.displayLarge?.copyWith(
+        fontSize: 57 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      displayMedium: base.displayMedium?.copyWith(
+        fontSize: 45 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      displaySmall: base.displaySmall?.copyWith(
+        fontSize: 36 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      headlineLarge: base.headlineLarge?.copyWith(
+        fontSize: 32 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      headlineMedium: base.headlineMedium?.copyWith(
+        fontSize: 28 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      headlineSmall: base.headlineSmall?.copyWith(
+        fontSize: 24 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      titleLarge: base.titleLarge?.copyWith(
+        fontSize: 22 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      titleMedium: base.titleMedium?.copyWith(
+        fontSize: 16 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      titleSmall: base.titleSmall?.copyWith(
+        fontSize: 14 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      bodyLarge: base.bodyLarge?.copyWith(
+        fontSize: 16 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      bodyMedium: base.bodyMedium?.copyWith(
+        fontSize: 14 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      bodySmall: base.bodySmall?.copyWith(
+        fontSize: 12 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      labelLarge: base.labelLarge?.copyWith(
+        fontSize: 14 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      labelMedium: base.labelMedium?.copyWith(
+        fontSize: 12 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
+      labelSmall: base.labelSmall?.copyWith(
+        fontSize: 11 * scale,
+        fontFamily: 'AlimamaFangYuanTi',
+      ),
     );
   }
-  
+
   /// 根据当前配置生成完整的 ThemeData（shadcn-ui 风格）
   ThemeData toThemeData() {
     // 根据 primaryColor 生成完整的 ColorScheme
@@ -297,26 +337,29 @@ class ShardTheme {
       brightness: isDark ? Brightness.dark : Brightness.light,
       colorScheme: effectiveColorScheme,
       scaffoldBackgroundColor: Colors.transparent,
+      fontFamily: 'AlimamaFangYuanTi',
       // 字体缩放 - 使用自定义 TextTheme
       textTheme: _buildTextTheme(isDark, uiScale),
-      
+
       // shadcn-ui 风格的卡片主题
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(scaledBorderRadius),
           side: BorderSide(
-            color: isDark 
-                ? Colors.white.withValues(alpha: 0.1) 
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.1)
                 : Colors.black.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
         color: enableGlassEffect
-            ? effectiveColorScheme.surfaceContainerHigh.withValues(alpha: cardOpacity)
+            ? effectiveColorScheme.surfaceContainerHigh.withValues(
+                alpha: cardOpacity,
+              )
             : effectiveColorScheme.surfaceContainerHigh,
       ),
-      
+
       // shadcn-ui 风格的 AppBar 主题
       appBarTheme: AppBarTheme(
         centerTitle: false, // shadcn-ui 通常左对齐标题
@@ -326,9 +369,10 @@ class ShardTheme {
           fontSize: 20 * uiScale,
           fontWeight: FontWeight.w600,
           color: effectiveColorScheme.onSurface,
+          fontFamily: 'AlimamaFangYuanTi',
         ),
       ),
-      
+
       // shadcn-ui 风格的按钮主题
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -342,10 +386,11 @@ class ShardTheme {
           textStyle: TextStyle(
             fontSize: 14 * uiScale,
             fontWeight: FontWeight.w500,
+            fontFamily: 'AlimamaFangYuanTi',
           ),
         ),
       ),
-      
+
       // shadcn-ui 风格的填充按钮主题
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -359,10 +404,11 @@ class ShardTheme {
           textStyle: TextStyle(
             fontSize: 14 * uiScale,
             fontWeight: FontWeight.w500,
+            fontFamily: 'AlimamaFangYuanTi',
           ),
         ),
       ),
-      
+
       // shadcn-ui 风格的轮廓按钮主题
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -373,17 +419,15 @@ class ShardTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(scaledBorderRadius),
           ),
-          side: BorderSide(
-            color: effectiveColorScheme.outline,
-            width: 1,
-          ),
+          side: BorderSide(color: effectiveColorScheme.outline, width: 1),
           textStyle: TextStyle(
             fontSize: 14 * uiScale,
             fontWeight: FontWeight.w500,
+            fontFamily: 'AlimamaFangYuanTi',
           ),
         ),
       ),
-      
+
       // shadcn-ui 风格的文本按钮主题
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -397,10 +441,11 @@ class ShardTheme {
           textStyle: TextStyle(
             fontSize: 14 * uiScale,
             fontWeight: FontWeight.w500,
+            fontFamily: 'AlimamaFangYuanTi',
           ),
         ),
       ),
-      
+
       // 导航栏主题
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: effectiveColorScheme.surfaceContainerLowest,
@@ -414,31 +459,24 @@ class ShardTheme {
         ),
         indicatorColor: effectiveColorScheme.primary.withValues(alpha: 0.24),
       ),
-      
+
       // shadcn-ui 风格的输入框主题
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: effectiveColorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
+        fillColor: effectiveColorScheme.surfaceContainerHigh.withValues(
+          alpha: 0.5,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(scaledBorderRadius),
-          borderSide: BorderSide(
-            color: effectiveColorScheme.outline,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: effectiveColorScheme.outline, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(scaledBorderRadius),
-          borderSide: BorderSide(
-            color: effectiveColorScheme.outline,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: effectiveColorScheme.outline, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(scaledBorderRadius),
-          borderSide: BorderSide(
-            color: effectiveColorScheme.primary,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: effectiveColorScheme.primary, width: 2),
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: 16 * uiScale,
@@ -447,9 +485,10 @@ class ShardTheme {
         hintStyle: TextStyle(
           color: effectiveColorScheme.onSurfaceVariant,
           fontSize: 14 * uiScale,
+          fontFamily: 'AlimamaFangYuanTi',
         ),
       ),
-      
+
       // shadcn-ui 风格的开关主题
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
@@ -465,7 +504,7 @@ class ShardTheme {
           return effectiveColorScheme.surfaceContainerHighest;
         }),
       ),
-      
+
       // shadcn-ui 风格的滑块主题
       sliderTheme: SliderThemeData(
         trackHeight: 4 * uiScale,
@@ -475,7 +514,7 @@ class ShardTheme {
         inactiveTrackColor: effectiveColorScheme.surfaceContainerHighest,
         thumbColor: effectiveColorScheme.primary,
       ),
-      
+
       // 动画时长
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
@@ -487,9 +526,9 @@ class ShardTheme {
       // 扩展主题（shadcn-ui 风格）
       extensions: <ThemeExtension<dynamic>>[
         ShardThemeExtension(
-          glassBlurSigma: 12.0,        // shadcn-ui 风格的模糊强度
-          glassBorderWidth: 1.0,       // shadcn-ui 风格的细边框
-          glowColor: primaryColor,      // 使用原始 primary 色
+          glassBlurSigma: 12.0, // shadcn-ui 风格的模糊强度
+          glassBorderWidth: 1.0, // shadcn-ui 风格的细边框
+          glowColor: primaryColor, // 使用原始 primary 色
           cardBorderRadius: scaledBorderRadius,
           buttonBorderRadius: scaledBorderRadius,
           inputBorderRadius: scaledBorderRadius,
@@ -539,22 +578,22 @@ class ShardTheme {
 class ShardThemeExtension extends ThemeExtension<ShardThemeExtension> {
   /// 玻璃模糊强度
   final double glassBlurSigma;
-  
+
   /// 玻璃边框宽度
   final double glassBorderWidth;
-  
+
   /// 辉光颜色（基于 primary）
   final Color glowColor;
-  
+
   /// 卡片基础圆角（随 uiScale 缩放）
   final double cardBorderRadius;
-  
+
   /// 按钮基础圆角（随 uiScale 缩放）
   final double buttonBorderRadius;
-  
+
   /// 输入框基础圆角（随 uiScale 缩放）
   final double inputBorderRadius;
-  
+
   /// 动画时长乘数（1.0 / animationSpeed）
   final double animationDurationFactor;
 
@@ -591,18 +630,23 @@ class ShardThemeExtension extends ThemeExtension<ShardThemeExtension> {
   }
 
   @override
-  ShardThemeExtension lerp(
-    ShardThemeExtension? other,
-    double t,
-  ) {
+  ShardThemeExtension lerp(ShardThemeExtension? other, double t) {
     if (other is! ShardThemeExtension) return this;
     return ShardThemeExtension(
       glassBlurSigma: lerpDouble(glassBlurSigma, other.glassBlurSigma, t),
       glassBorderWidth: lerpDouble(glassBorderWidth, other.glassBorderWidth, t),
       glowColor: Color.lerp(glowColor, other.glowColor, t)!,
       cardBorderRadius: lerpDouble(cardBorderRadius, other.cardBorderRadius, t),
-      buttonBorderRadius: lerpDouble(buttonBorderRadius, other.buttonBorderRadius, t),
-      inputBorderRadius: lerpDouble(inputBorderRadius, other.inputBorderRadius, t),
+      buttonBorderRadius: lerpDouble(
+        buttonBorderRadius,
+        other.buttonBorderRadius,
+        t,
+      ),
+      inputBorderRadius: lerpDouble(
+        inputBorderRadius,
+        other.inputBorderRadius,
+        t,
+      ),
       animationDurationFactor: lerpDouble(
         animationDurationFactor,
         other.animationDurationFactor,
