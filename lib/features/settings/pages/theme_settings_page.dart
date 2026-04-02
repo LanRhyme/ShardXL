@@ -1,4 +1,4 @@
-// ShardXL 主题设置页面
+// ShardXL 主题设置页面（shadcn-ui 风格）
 // lib/features/settings/pages/theme_settings_page.dart
 
 import 'dart:io';
@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import '../providers/theme_provider.dart';
 import '../../../core/theme/shard_theme.dart';
 import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/shadcn_button.dart';
 
 class ThemeSettingsPage extends ConsumerWidget {
   const ThemeSettingsPage({super.key});
@@ -30,14 +31,16 @@ class ThemeSettingsPage extends ConsumerWidget {
               Text(
                 '主题设置',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
               ),
               const Spacer(),
-              TextButton.icon(
+              ShadcnButton(
                 onPressed: () => notifier.resetToDefault(),
-                icon: const Icon(Icons.restore, size: 18),
-                label: const Text('重置'),
+                variant: ShadcnButtonVariant.outline,
+                size: ShadcnButtonSize.sm,
+                icon: Icons.restore,
+                child: const Text('重置'),
               ),
             ],
           ),
@@ -192,6 +195,17 @@ class ThemeSettingsPage extends ConsumerWidget {
             valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
             onChanged: (value) => notifier.updateAnimationSpeed(value),
           ),
+          const Divider(height: 24),
+          _SliderTile(
+            icon: Icons.rounded_corner_rounded,
+            title: '圆角大小',
+            value: shardTheme.borderRadius,
+            min: 4.0,
+            max: 20.0,
+            divisions: 16,
+            valueFormatter: (v) => '${v.toStringAsFixed(0)}px',
+            onChanged: (value) => notifier.updateBorderRadius(value),
+          ),
         ],
       ),
     );
@@ -262,21 +276,25 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
+    
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(10),
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(
+              themeExtension?.buttonBorderRadius ?? 10.0,
+            ),
           ),
-          child: Icon(icon, size: 20, color: color),
+          child: Icon(icon, size: 18, color: color),
         ),
         const SizedBox(width: 12),
         Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w500,
               ),
         ),
       ],
@@ -301,13 +319,18 @@ class _SettingTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 22, color: Theme.of(context).colorScheme.onSurfaceVariant),
-        const SizedBox(width: 16),
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Theme.of(context).textTheme.bodyLarge),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
@@ -348,26 +371,36 @@ class _SliderTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, size: 22, color: colorScheme.onSurfaceVariant),
-            const SizedBox(width: 16),
-            Expanded(child: Text(title, style: Theme.of(context).textTheme.bodyLarge)),
+            Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+            ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: colorScheme.primaryContainer.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(
+                  themeExtension?.buttonBorderRadius ?? 10.0,
+                ),
               ),
               child: Text(
                 valueFormatter(value),
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
                   color: colorScheme.primary,
                 ),
               ),
@@ -377,9 +410,9 @@ class _SliderTile extends StatelessWidget {
         const SizedBox(height: 8),
         SliderTheme(
           data: SliderThemeData(
-            trackHeight: 6,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+            trackHeight: 4,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
           ),
           child: Slider(
             value: value,
@@ -406,12 +439,15 @@ class _ThemeModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(
+          themeExtension?.buttonBorderRadius ?? 10.0,
+        ),
       ),
       child: Row(
         children: [
@@ -454,22 +490,25 @@ class _ThemeModeOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? colorScheme.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            themeExtension?.buttonBorderRadius ?? 10.0,
+          ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: colorScheme.primary.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
                   ),
                 ]
               : null,
@@ -479,7 +518,7 @@ class _ThemeModeOption extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 20,
+              size: 18,
               color: isSelected
                   ? colorScheme.onPrimary
                   : colorScheme.onSurfaceVariant,
@@ -488,7 +527,8 @@ class _ThemeModeOption extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
                 color: isSelected
                     ? colorScheme.onPrimary
                     : colorScheme.onSurfaceVariant,
@@ -527,11 +567,13 @@ class _ColorPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
+    
     return Column(
       children: [
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 8,
+          runSpacing: 8,
           children: presetColors.map((color) {
             final isSelected = color.toARGB32() == currentColor.toARGB32();
             return _ColorOption(
@@ -541,32 +583,34 @@ class _ColorPicker extends StatelessWidget {
             );
           }).toList(),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(
+              themeExtension?.buttonBorderRadius ?? 10.0,
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 24,
-                height: 24,
+                width: 20,
+                height: 20,
                 decoration: BoxDecoration(
                   color: currentColor,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-                    width: 2,
+                    width: 1,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 '当前: #${currentColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontFamily: 'monospace',
                       fontWeight: FontWeight.w500,
                     ),
@@ -596,8 +640,8 @@ class _ColorOption extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 44,
-        height: 44,
+        width: 36,
+        height: 36,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
@@ -605,29 +649,23 @@ class _ColorOption extends StatelessWidget {
             color: isSelected
                 ? Theme.of(context).colorScheme.onSurface
                 : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-            width: isSelected ? 3 : 1,
+            width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withValues(alpha: 0.5),
-                    blurRadius: 12,
-                    spreadRadius: 2,
+                    color: color.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    spreadRadius: 1,
                   ),
                 ]
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+              : null,
         ),
         child: isSelected
             ? Icon(
                 Icons.check_rounded,
                 color: _getContrastColor(color),
-                size: 22,
+                size: 18,
               )
             : null,
       ),
@@ -700,22 +738,25 @@ class _BackgroundTypeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
               ? colorScheme.primaryContainer
               : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            themeExtension?.buttonBorderRadius ?? 10.0,
+          ),
           border: Border.all(
             color: isSelected
                 ? colorScheme.primary
                 : Colors.transparent,
-            width: 1.5,
+            width: 1,
           ),
         ),
         child: Row(
@@ -723,16 +764,17 @@ class _BackgroundTypeChip extends StatelessWidget {
           children: [
             Icon(
               type.icon,
-              size: 18,
+              size: 16,
               color: isSelected
                   ? colorScheme.primary
                   : colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Text(
               type.label,
               style: TextStyle(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
                 color: isSelected
                     ? colorScheme.primary
                     : colorScheme.onSurfaceVariant,
@@ -753,6 +795,7 @@ class _PreviewCard extends ConsumerWidget {
     final themeState = ref.watch(shardThemeProvider);
     final shardTheme = themeState.theme;
     final colorScheme = Theme.of(context).colorScheme;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
     return GlassCard(
       child: Column(
@@ -779,8 +822,8 @@ class _PreviewCard extends ConsumerWidget {
                   children: [
                     Text(
                       'ShardXL 启动器',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
                     ),
                     const SizedBox(height: 2),
@@ -795,12 +838,14 @@ class _PreviewCard extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(
+                themeExtension?.buttonBorderRadius ?? 10.0,
+              ),
             ),
             child: Column(
               children: [
@@ -824,16 +869,16 @@ class _PreviewCard extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: FilledButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.play_arrow_rounded),
+                  icon: const Icon(Icons.play_arrow_rounded, size: 18),
                   label: const Text('启动游戏'),
                   style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
@@ -841,10 +886,10 @@ class _PreviewCard extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.inventory_2_rounded),
+                  icon: const Icon(Icons.inventory_2_rounded, size: 18),
                   label: const Text('版本管理'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
@@ -873,19 +918,19 @@ class _PreviewInfoRow extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon, size: 18, color: colorScheme.onSurfaceVariant),
+        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
         const SizedBox(width: 8),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
         ),
         const Spacer(),
         Text(
           value,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
                 fontFamily: 'monospace',
               ),
         ),

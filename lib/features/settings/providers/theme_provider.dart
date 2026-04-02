@@ -127,6 +127,14 @@ class ShardThemeNotifier extends Notifier<ThemeState> {
     await _saveTheme(newTheme);
   }
 
+  /// 更新圆角大小
+  Future<void> updateBorderRadius(double radius) async {
+    final clampedRadius = radius.clamp(4.0, 20.0);
+    final newTheme = state.theme.copyWith(borderRadius: clampedRadius);
+    state = state.copyWith(theme: newTheme);
+    await _saveTheme(newTheme);
+  }
+
   /// 更新背景类型
   Future<void> updateBackgroundType(String type) async {
     const validTypes = ['solid', 'gradient', 'image', 'dynamic', 'mica'];
@@ -182,10 +190,12 @@ final shardThemeExtensionProvider = Provider<ShardThemeExtension>((ref) {
   final themeData = ref.watch(currentThemeDataProvider);
   return themeData.extension<ShardThemeExtension>() ??
       const ShardThemeExtension(
-        glassBlurSigma: 20.0,
-        glassBorderWidth: 1.5,
+        glassBlurSigma: 12.0,
+        glassBorderWidth: 1.0,
         glowColor: Color(0xFF7C4DFF),
-        cardBorderRadius: 16.0,
+        cardBorderRadius: 10.0,
+        buttonBorderRadius: 10.0,
+        inputBorderRadius: 10.0,
         animationDurationFactor: 1.0,
       );
 });

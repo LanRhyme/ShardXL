@@ -291,7 +291,7 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
             children: [
               Icon(
                 isSelected ? item.selectedIcon : item.icon,
-                size: 22,
+                size: 20,
                 color: isSelected
                     ? colorScheme.onPrimaryContainer
                     : colorScheme.onSurfaceVariant,
@@ -300,8 +300,8 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
               Text(
                 item.label,
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
                   color: isSelected
                       ? colorScheme.onPrimaryContainer
                       : colorScheme.onSurfaceVariant,
@@ -618,13 +618,13 @@ class _ShardFloatingNavBarContentState
         child: IntrinsicWidth(
           child: Container(
             height: _itemHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   isSelected ? item.selectedIcon : item.icon,
-                  size: 18,
+                  size: 16,
                   color: isSelected
                       ? colorScheme.onPrimaryContainer
                       : colorScheme.onSurfaceVariant,
@@ -633,8 +633,8 @@ class _ShardFloatingNavBarContentState
                 Text(
                   item.label,
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
                     color: isSelected
                         ? colorScheme.onPrimaryContainer
                         : colorScheme.onSurfaceVariant,

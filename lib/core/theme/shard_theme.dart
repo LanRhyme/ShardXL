@@ -1,5 +1,6 @@
 // ShardXL 主题数据模型
 // lib/core/theme/shard_theme.dart
+// 基于 shadcn-ui 设计语言
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -38,6 +39,13 @@ class ShardTheme {
   final double animationSpeed;
 
   // ========================
+  // 圆角参数（shadcn-ui 风格）
+  // ========================
+  
+  /// 基础圆角值（shadcn-ui 默认 0.625rem ≈ 10px）
+  final double borderRadius;
+
+  // ========================
   // 背景参数
   // ========================
   
@@ -54,6 +62,7 @@ class ShardTheme {
     this.cardOpacity = 0.65,
     this.uiScale = 1.0,
     this.animationSpeed = 1.0,
+    this.borderRadius = 10.0, // shadcn-ui 风格圆角
     this.backgroundType = 'solid',
     this.backgroundImagePath,
   });
@@ -69,6 +78,7 @@ class ShardTheme {
     double? cardOpacity,
     double? uiScale,
     double? animationSpeed,
+    double? borderRadius,
     String? backgroundType,
     String? backgroundImagePath,
   }) {
@@ -79,6 +89,7 @@ class ShardTheme {
       cardOpacity: cardOpacity ?? this.cardOpacity,
       uiScale: uiScale ?? this.uiScale,
       animationSpeed: animationSpeed ?? this.animationSpeed,
+      borderRadius: borderRadius ?? this.borderRadius,
       backgroundType: backgroundType ?? this.backgroundType,
       backgroundImagePath: backgroundImagePath ?? this.backgroundImagePath,
     );
@@ -96,6 +107,7 @@ class ShardTheme {
       'cardOpacity': cardOpacity,
       'uiScale': uiScale,
       'animationSpeed': animationSpeed,
+      'borderRadius': borderRadius,
       'backgroundType': backgroundType,
       'backgroundImagePath': backgroundImagePath,
     };
@@ -109,6 +121,7 @@ class ShardTheme {
       cardOpacity: (map['cardOpacity'] ?? 0.65).toDouble(),
       uiScale: (map['uiScale'] ?? 1.0).toDouble(),
       animationSpeed: (map['animationSpeed'] ?? 1.0).toDouble(),
+      borderRadius: (map['borderRadius'] ?? 10.0).toDouble(),
       backgroundType: map['backgroundType'] ?? 'gradient',
       backgroundImagePath: map['backgroundImagePath'] as String?,
     );
@@ -263,7 +276,7 @@ class ShardTheme {
     );
   }
   
-  /// 根据当前配置生成完整的 ThemeData
+  /// 根据当前配置生成完整的 ThemeData（shadcn-ui 风格）
   ThemeData toThemeData() {
     // 根据 primaryColor 生成完整的 ColorScheme
     final colorScheme = ColorScheme.fromSeed(
@@ -276,26 +289,37 @@ class ShardTheme {
         ? _buildDarkColorScheme(colorScheme, primaryColor)
         : _buildLightColorScheme(colorScheme, primaryColor);
 
+    // shadcn-ui 风格的圆角系统
+    final scaledBorderRadius = borderRadius * uiScale;
+
     return ThemeData(
       useMaterial3: true,
       brightness: isDark ? Brightness.dark : Brightness.light,
       colorScheme: effectiveColorScheme,
       scaffoldBackgroundColor: Colors.transparent,
-      // 字体缩放 - 使用自定义 TextTheme 而非 apply
+      // 字体缩放 - 使用自定义 TextTheme
       textTheme: _buildTextTheme(isDark, uiScale),
-      // 卡片主题
+      
+      // shadcn-ui 风格的卡片主题
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16 * uiScale),
+          borderRadius: BorderRadius.circular(scaledBorderRadius),
+          side: BorderSide(
+            color: isDark 
+                ? Colors.white.withValues(alpha: 0.1) 
+                : Colors.black.withValues(alpha: 0.1),
+            width: 1,
+          ),
         ),
         color: enableGlassEffect
             ? effectiveColorScheme.surfaceContainerHigh.withValues(alpha: cardOpacity)
             : effectiveColorScheme.surfaceContainerHigh,
       ),
-      // AppBar 主题
+      
+      // shadcn-ui 风格的 AppBar 主题
       appBarTheme: AppBarTheme(
-        centerTitle: true,
+        centerTitle: false, // shadcn-ui 通常左对齐标题
         backgroundColor: Colors.transparent,
         elevation: 0,
         titleTextStyle: TextStyle(
@@ -304,7 +328,8 @@ class ShardTheme {
           color: effectiveColorScheme.onSurface,
         ),
       ),
-      // 按钮主题
+      
+      // shadcn-ui 风格的按钮主题
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(
@@ -312,10 +337,70 @@ class ShardTheme {
             vertical: 12 * uiScale,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12 * uiScale),
+            borderRadius: BorderRadius.circular(scaledBorderRadius),
+          ),
+          textStyle: TextStyle(
+            fontSize: 14 * uiScale,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),
+      
+      // shadcn-ui 风格的填充按钮主题
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          padding: EdgeInsets.symmetric(
+            horizontal: 24 * uiScale,
+            vertical: 12 * uiScale,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(scaledBorderRadius),
+          ),
+          textStyle: TextStyle(
+            fontSize: 14 * uiScale,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      
+      // shadcn-ui 风格的轮廓按钮主题
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.symmetric(
+            horizontal: 24 * uiScale,
+            vertical: 12 * uiScale,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(scaledBorderRadius),
+          ),
+          side: BorderSide(
+            color: effectiveColorScheme.outline,
+            width: 1,
+          ),
+          textStyle: TextStyle(
+            fontSize: 14 * uiScale,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      
+      // shadcn-ui 风格的文本按钮主题
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.symmetric(
+            horizontal: 16 * uiScale,
+            vertical: 8 * uiScale,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(scaledBorderRadius),
+          ),
+          textStyle: TextStyle(
+            fontSize: 14 * uiScale,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      
       // 导航栏主题
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: effectiveColorScheme.surfaceContainerLowest,
@@ -329,19 +414,68 @@ class ShardTheme {
         ),
         indicatorColor: effectiveColorScheme.primary.withValues(alpha: 0.24),
       ),
-      // 输入框主题
+      
+      // shadcn-ui 风格的输入框主题
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: effectiveColorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12 * uiScale),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(scaledBorderRadius),
+          borderSide: BorderSide(
+            color: effectiveColorScheme.outline,
+            width: 1,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(scaledBorderRadius),
+          borderSide: BorderSide(
+            color: effectiveColorScheme.outline,
+            width: 1,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(scaledBorderRadius),
+          borderSide: BorderSide(
+            color: effectiveColorScheme.primary,
+            width: 2,
+          ),
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: 16 * uiScale,
           vertical: 12 * uiScale,
         ),
+        hintStyle: TextStyle(
+          color: effectiveColorScheme.onSurfaceVariant,
+          fontSize: 14 * uiScale,
+        ),
       ),
+      
+      // shadcn-ui 风格的开关主题
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return effectiveColorScheme.primary;
+          }
+          return effectiveColorScheme.outline;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return effectiveColorScheme.primary.withValues(alpha: 0.3);
+          }
+          return effectiveColorScheme.surfaceContainerHighest;
+        }),
+      ),
+      
+      // shadcn-ui 风格的滑块主题
+      sliderTheme: SliderThemeData(
+        trackHeight: 4 * uiScale,
+        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8 * uiScale),
+        overlayShape: RoundSliderOverlayShape(overlayRadius: 16 * uiScale),
+        activeTrackColor: effectiveColorScheme.primary,
+        inactiveTrackColor: effectiveColorScheme.surfaceContainerHighest,
+        thumbColor: effectiveColorScheme.primary,
+      ),
+      
       // 动画时长
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
@@ -350,13 +484,15 @@ class ShardTheme {
           TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
         },
       ),
-      // 扩展主题
+      // 扩展主题（shadcn-ui 风格）
       extensions: <ThemeExtension<dynamic>>[
         ShardThemeExtension(
-          glassBlurSigma: 16.0,        // 更柔和的模糊
-          glassBorderWidth: 1.0,       // 更细的边框
+          glassBlurSigma: 12.0,        // shadcn-ui 风格的模糊强度
+          glassBorderWidth: 1.0,       // shadcn-ui 风格的细边框
           glowColor: primaryColor,      // 使用原始 primary 色
-          cardBorderRadius: 16.0 * uiScale,
+          cardBorderRadius: scaledBorderRadius,
+          buttonBorderRadius: scaledBorderRadius,
+          inputBorderRadius: scaledBorderRadius,
           animationDurationFactor: 1.0 / animationSpeed,
         ),
       ],
@@ -373,6 +509,7 @@ class ShardTheme {
         other.cardOpacity == cardOpacity &&
         other.uiScale == uiScale &&
         other.animationSpeed == animationSpeed &&
+        other.borderRadius == borderRadius &&
         other.backgroundType == backgroundType &&
         other.backgroundImagePath == backgroundImagePath;
   }
@@ -386,6 +523,7 @@ class ShardTheme {
       cardOpacity,
       uiScale,
       animationSpeed,
+      borderRadius,
       backgroundType,
       backgroundImagePath,
     );
@@ -397,7 +535,7 @@ class ShardTheme {
 // ========================
 
 /// 主题扩展，存放额外的设计 token
-/// 用于玻璃效果、辉光、圆角等高级视觉参数
+/// 用于玻璃效果、辉光、圆角等高级视觉参数（shadcn-ui 风格）
 class ShardThemeExtension extends ThemeExtension<ShardThemeExtension> {
   /// 玻璃模糊强度
   final double glassBlurSigma;
@@ -411,6 +549,12 @@ class ShardThemeExtension extends ThemeExtension<ShardThemeExtension> {
   /// 卡片基础圆角（随 uiScale 缩放）
   final double cardBorderRadius;
   
+  /// 按钮基础圆角（随 uiScale 缩放）
+  final double buttonBorderRadius;
+  
+  /// 输入框基础圆角（随 uiScale 缩放）
+  final double inputBorderRadius;
+  
   /// 动画时长乘数（1.0 / animationSpeed）
   final double animationDurationFactor;
 
@@ -419,6 +563,8 @@ class ShardThemeExtension extends ThemeExtension<ShardThemeExtension> {
     required this.glassBorderWidth,
     required this.glowColor,
     required this.cardBorderRadius,
+    required this.buttonBorderRadius,
+    required this.inputBorderRadius,
     required this.animationDurationFactor,
   });
 
@@ -428,6 +574,8 @@ class ShardThemeExtension extends ThemeExtension<ShardThemeExtension> {
     double? glassBorderWidth,
     Color? glowColor,
     double? cardBorderRadius,
+    double? buttonBorderRadius,
+    double? inputBorderRadius,
     double? animationDurationFactor,
   }) {
     return ShardThemeExtension(
@@ -435,6 +583,8 @@ class ShardThemeExtension extends ThemeExtension<ShardThemeExtension> {
       glassBorderWidth: glassBorderWidth ?? this.glassBorderWidth,
       glowColor: glowColor ?? this.glowColor,
       cardBorderRadius: cardBorderRadius ?? this.cardBorderRadius,
+      buttonBorderRadius: buttonBorderRadius ?? this.buttonBorderRadius,
+      inputBorderRadius: inputBorderRadius ?? this.inputBorderRadius,
       animationDurationFactor:
           animationDurationFactor ?? this.animationDurationFactor,
     );
@@ -451,6 +601,8 @@ class ShardThemeExtension extends ThemeExtension<ShardThemeExtension> {
       glassBorderWidth: lerpDouble(glassBorderWidth, other.glassBorderWidth, t),
       glowColor: Color.lerp(glowColor, other.glowColor, t)!,
       cardBorderRadius: lerpDouble(cardBorderRadius, other.cardBorderRadius, t),
+      buttonBorderRadius: lerpDouble(buttonBorderRadius, other.buttonBorderRadius, t),
+      inputBorderRadius: lerpDouble(inputBorderRadius, other.inputBorderRadius, t),
       animationDurationFactor: lerpDouble(
         animationDurationFactor,
         other.animationDurationFactor,

@@ -1,4 +1,4 @@
-// ShardXL 玻璃效果卡片组件
+// ShardXL 玻璃效果卡片组件（shadcn-ui 风格）
 // lib/core/widgets/glass_card.dart
 
 import 'dart:ui';
@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/settings/providers/theme_provider.dart';
 import '../theme/shard_theme.dart';
 
-/// 毛玻璃效果卡片组件
+/// 毛玻璃效果卡片组件（shadcn-ui 风格）
 /// 根据主题配置自动启用/禁用玻璃效果
 class GlassCard extends ConsumerWidget {
   final Widget child;
@@ -17,6 +17,7 @@ class GlassCard extends ConsumerWidget {
   final double? width;
   final double? height;
   final VoidCallback? onTap;
+  final bool showBorder;
 
   const GlassCard({
     super.key,
@@ -26,6 +27,7 @@ class GlassCard extends ConsumerWidget {
     this.width,
     this.height,
     this.onTap,
+    this.showBorder = true,
   });
 
   @override
@@ -36,7 +38,7 @@ class GlassCard extends ConsumerWidget {
         Theme.of(context).extension<ShardThemeExtension>();
 
     final borderRadius =
-        BorderRadius.circular(themeExtension?.cardBorderRadius ?? 16.0);
+        BorderRadius.circular(themeExtension?.cardBorderRadius ?? 10.0);
 
     // 根据是否启用玻璃效果选择不同的卡片样式
     if (shardTheme.enableGlassEffect) {
@@ -46,7 +48,7 @@ class GlassCard extends ConsumerWidget {
     }
   }
 
-  /// 构建玻璃效果卡片
+  /// 构建玻璃效果卡片（shadcn-ui 风格）
   Widget _buildGlassCard(
     BuildContext context,
     ShardTheme shardTheme,
@@ -55,15 +57,13 @@ class GlassCard extends ConsumerWidget {
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final blurSigma = themeExtension?.glassBlurSigma ?? 16.0;
+    final blurSigma = themeExtension?.glassBlurSigma ?? 12.0;
     final borderWidth = themeExtension?.glassBorderWidth ?? 1.0;
 
-    // 根据主题模式调整边框颜色
-    // 深色模式：白色半透明边框
-    // 浅色模式：黑色半透明边框
+    // shadcn-ui 风格的边框颜色
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.12)
-        : Colors.black.withValues(alpha: 0.08);
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.black.withValues(alpha: 0.1);
 
     // 卡片背景色
     final cardColor = isDark
@@ -81,10 +81,12 @@ class GlassCard extends ConsumerWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
-              border: Border.all(
-                color: borderColor,
-                width: borderWidth,
-              ),
+              border: showBorder
+                  ? Border.all(
+                      color: borderColor,
+                      width: borderWidth,
+                    )
+                  : null,
             ),
             child: Stack(
               children: [
@@ -96,23 +98,24 @@ class GlassCard extends ConsumerWidget {
                     ),
                   ),
                 ),
+                // shadcn-ui 风格的微妙渐变
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: borderRadius,
                       gradient: LinearGradient(
-                        begin: isDark ? Alignment.topLeft : Alignment.bottomLeft,
-                        end: isDark ? Alignment.bottomRight : Alignment.topRight,
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                         colors: isDark
                             ? [
-                                Colors.white.withValues(alpha: 0.05),
+                                Colors.white.withValues(alpha: 0.03),
                                 Colors.white.withValues(alpha: 0.0),
                               ]
                             : [
-                                Colors.white.withValues(alpha: 0.0),
                                 Colors.white.withValues(alpha: 0.5),
+                                Colors.white.withValues(alpha: 0.0),
                               ],
-                        stops: const [0.0, 0.5],
+                        stops: const [0.0, 0.3],
                       ),
                     ),
                   ),
@@ -137,21 +140,31 @@ class GlassCard extends ConsumerWidget {
     );
   }
 
-  /// 构建普通卡片（关闭玻璃效果时的 fallback）
+  /// 构建普通卡片（shadcn-ui 风格）
   Widget _buildNormalCard(BuildContext context, BorderRadius borderRadius) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Card(
+    return Container(
+      width: width,
+      height: height,
       margin: margin,
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: borderRadius),
-      color: colorScheme.surfaceContainerHigh,
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        color: colorScheme.surfaceContainerHigh,
+        border: showBorder
+            ? Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.1),
+                width: 1,
+              )
+            : null,
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: borderRadius,
-        child: Container(
-          width: width,
-          height: height,
+        child: Padding(
           padding: padding ?? const EdgeInsets.all(16),
           child: child,
         ),
