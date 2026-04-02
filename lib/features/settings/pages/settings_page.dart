@@ -34,13 +34,13 @@ class _SettingsPageState extends State<SettingsPage>
   // 子页面导航项配置
   static const _subNavItems = [
     NavItem(
-      icon: Icons.sports_esports_outlined,
-      selectedIcon: Icons.sports_esports,
+      icon: Icons.games_outlined,
+      selectedIcon: Icons.games,
       label: '全局游戏',
     ),
     NavItem(
-      icon: Icons.rocket_launch_outlined,
-      selectedIcon: Icons.rocket_launch,
+      icon: Icons.rocket_outlined,
+      selectedIcon: Icons.rocket,
       label: '启动器',
     ),
     NavItem(
@@ -49,12 +49,12 @@ class _SettingsPageState extends State<SettingsPage>
       label: '主题',
     ),
     NavItem(
-      icon: Icons.tune_outlined,
-      selectedIcon: Icons.tune,
+      icon: Icons.more_horiz_outlined,
+      selectedIcon: Icons.more_horiz,
       label: '其他',
     ),
     NavItem(
-      icon: Icons.info_outline,
+      icon: Icons.info_outlined,
       selectedIcon: Icons.info,
       label: '关于',
     ),

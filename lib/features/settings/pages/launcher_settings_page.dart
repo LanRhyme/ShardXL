@@ -28,12 +28,12 @@ class LauncherSettingsPage extends StatelessWidget {
             colorScheme,
             themeExtension,
             title: '通知',
-            icon: Icons.notifications,
+            icon: Icons.notifications_outlined,
             children: [
               _buildSwitchTile(
                 context,
                 colorScheme,
-                icon: Icons.notifications,
+                icon: Icons.notifications_outlined,
                 title: '桌面通知',
                 subtitle: '接收游戏更新和重要通知',
                 value: true,
@@ -43,7 +43,7 @@ class LauncherSettingsPage extends StatelessWidget {
               _buildSwitchTile(
                 context,
                 colorScheme,
-                icon: Icons.volume_up,
+                icon: Icons.volume_up_outlined,
                 title: '通知声音',
                 subtitle: '播放通知提示音',
                 value: true,
@@ -59,12 +59,12 @@ class LauncherSettingsPage extends StatelessWidget {
             colorScheme,
             themeExtension,
             title: '更新',
-            icon: Icons.system_update,
+            icon: Icons.download_outlined,
             children: [
               _buildSwitchTile(
                 context,
                 colorScheme,
-                icon: Icons.system_update,
+                icon: Icons.download_outlined,
                 title: '自动更新',
                 subtitle: '启动时检查更新',
                 value: true,
@@ -74,7 +74,7 @@ class LauncherSettingsPage extends StatelessWidget {
               _buildSwitchTile(
                 context,
                 colorScheme,
-                icon: Icons.download,
+                icon: Icons.cloud_download_outlined,
                 title: '自动下载更新',
                 subtitle: '在后台自动下载更新',
                 value: false,
@@ -90,13 +90,13 @@ class LauncherSettingsPage extends StatelessWidget {
             colorScheme,
             themeExtension,
             title: '外观',
-            icon: Icons.palette,
+            icon: Icons.palette_outlined,
             children: [
               _buildSettingTile(
                 context,
                 colorScheme,
                 themeExtension,
-                icon: Icons.language,
+                icon: Icons.translate_outlined,
                 title: '语言',
                 subtitle: '简体中文',
                 onTap: () {},
@@ -106,7 +106,7 @@ class LauncherSettingsPage extends StatelessWidget {
                 context,
                 colorScheme,
                 themeExtension,
-                icon: Icons.view_module,
+                icon: Icons.grid_view_outlined,
                 title: '视图模式',
                 subtitle: '网格视图',
                 onTap: () {},
@@ -121,12 +121,12 @@ class LauncherSettingsPage extends StatelessWidget {
             colorScheme,
             themeExtension,
             title: '隐私',
-            icon: Icons.security,
+            icon: Icons.shield_outlined,
             children: [
               _buildSwitchTile(
                 context,
                 colorScheme,
-                icon: Icons.analytics,
+                icon: Icons.bar_chart_outlined,
                 title: '使用统计',
                 subtitle: '帮助改进 ShardXL',
                 value: true,
@@ -136,7 +136,7 @@ class LauncherSettingsPage extends StatelessWidget {
               _buildSwitchTile(
                 context,
                 colorScheme,
-                icon: Icons.cloud_upload,
+                icon: Icons.cloud_sync_outlined,
                 title: '云端同步',
                 subtitle: '同步设置到云端',
                 value: false,

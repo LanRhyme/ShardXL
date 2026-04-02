@@ -44,13 +44,13 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             colorScheme,
             themeExtension,
             title: 'Java 设置',
-            icon: Icons.code,
+            icon: Icons.hub_outlined,
             children: [
               _buildSettingTile(
                 context,
                 colorScheme,
                 themeExtension,
-                icon: Icons.code,
+                icon: Icons.folder_outlined,
                 title: 'Java 路径',
                 subtitle: settings.javaPath.isEmpty ? '自动检测' : settings.javaPath,
                 onTap: () => _showJavaPathDialog(settings),
@@ -60,7 +60,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 context,
                 colorScheme,
                 themeExtension,
-                icon: Icons.memory,
+                icon: Icons.memory_outlined,
                 title: '内存分配',
                 subtitle: '${settings.memoryMB} MB',
                 onTap: () => _showMemoryDialog(settings),
@@ -75,13 +75,13 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             colorScheme,
             themeExtension,
             title: '游戏目录',
-            icon: Icons.folder,
+            icon: Icons.folder_open_outlined,
             children: [
               _buildSettingTile(
                 context,
                 colorScheme,
                 themeExtension,
-                icon: Icons.folder,
+                icon: Icons.folder_outlined,
                 title: '游戏目录',
                 subtitle: settings.gameDirectory.isEmpty ? '未设置' : settings.gameDirectory,
                 onTap: () => _showGameDirectoryDialog(settings),
@@ -96,13 +96,13 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             colorScheme,
             themeExtension,
             title: '窗口设置',
-            icon: Icons.aspect_ratio,
+            icon: Icons.aspect_ratio_outlined,
             children: [
               _buildSettingTile(
                 context,
                 colorScheme,
                 themeExtension,
-                icon: Icons.aspect_ratio,
+                icon: Icons.aspect_ratio_outlined,
                 title: '游戏窗口',
                 subtitle: settings.fullscreen ? '全屏模式' : '${settings.windowWidth} x ${settings.windowHeight}',
                 onTap: () => _showWindowDialog(settings),
@@ -111,7 +111,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
               _buildSwitchTile(
                 context,
                 colorScheme,
-                icon: Icons.fullscreen,
+                icon: Icons.crop_outlined,
                 title: '全屏启动',
                 subtitle: '游戏以全屏模式启动',
                 value: settings.fullscreen,
@@ -129,13 +129,13 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             colorScheme,
             themeExtension,
             title: '高级参数',
-            icon: Icons.terminal,
+            icon: Icons.code_outlined,
             children: [
               _buildExpandableTile(
                 context,
                 colorScheme,
                 themeExtension,
-                icon: Icons.terminal,
+                icon: Icons.code_outlined,
                 title: 'JVM 参数',
                 subtitle: settings.jvmArguments.isEmpty ? '无自定义参数' : settings.jvmArguments.join(' '),
                 children: [
@@ -194,7 +194,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 context,
                 colorScheme,
                 themeExtension,
-                icon: Icons.settings,
+                icon: Icons.settings_outlined,
                 title: '游戏参数',
                 subtitle: settings.gameArguments.isEmpty ? '无自定义参数' : settings.gameArguments.join(' '),
                 children: [

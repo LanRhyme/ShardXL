@@ -102,7 +102,7 @@ class ThemeSettingsPage extends ConsumerWidget {
   ) {
     return _SettingsSection(
       title: '主题模式',
-      icon: Icons.brightness_6_rounded,
+      icon: Icons.brightness_6_outlined,
       child: _ThemeModeSelector(
         isDark: shardTheme.isDark,
         onChanged: (value) => notifier.updateIsDark(value),
@@ -118,7 +118,7 @@ class ThemeSettingsPage extends ConsumerWidget {
   ) {
     return _SettingsSection(
       title: '主题色',
-      icon: Icons.palette_rounded,
+      icon: Icons.palette_outlined,
       child: _ColorPicker(
         currentColor: shardTheme.primaryColor,
         onColorChanged: (color) => notifier.updatePrimaryColor(color),
@@ -134,11 +134,11 @@ class ThemeSettingsPage extends ConsumerWidget {
   ) {
     return _SettingsSection(
       title: '玻璃效果',
-      icon: Icons.blur_on_rounded,
+      icon: Icons.blur_on_outlined,
       child: Column(
         children: [
           _SettingSwitch(
-            icon: Icons.gradient_rounded,
+            icon: Icons.grain_outlined,
             title: '启用毛玻璃',
             subtitle: 'Liquid Glass 风格',
             value: shardTheme.enableGlassEffect,
@@ -147,7 +147,7 @@ class ThemeSettingsPage extends ConsumerWidget {
           if (shardTheme.enableGlassEffect) ...[
             const SizedBox(height: 16),
             _SettingSlider(
-              icon: Icons.opacity_rounded,
+              icon: Icons.opacity_outlined,
               title: '卡片不透明度',
               value: shardTheme.cardOpacity,
               min: 0.15,
@@ -170,11 +170,11 @@ class ThemeSettingsPage extends ConsumerWidget {
   ) {
     return _SettingsSection(
       title: 'UI 参数',
-      icon: Icons.tune_rounded,
+      icon: Icons.tune_outlined,
       child: Column(
         children: [
           _SettingSlider(
-            icon: Icons.zoom_out_map_rounded,
+            icon: Icons.maximize_outlined,
             title: '界面缩放',
             value: shardTheme.uiScale,
             min: 0.85,
@@ -185,7 +185,7 @@ class ThemeSettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _SettingSlider(
-            icon: Icons.speed_rounded,
+            icon: Icons.animation_outlined,
             title: '动画速率',
             value: shardTheme.animationSpeed,
             min: 0.5,
@@ -196,7 +196,7 @@ class ThemeSettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           _SettingSlider(
-            icon: Icons.rounded_corner_rounded,
+            icon: Icons.rounded_corner_outlined,
             title: '圆角大小',
             value: shardTheme.borderRadius,
             min: 4.0,
@@ -218,7 +218,7 @@ class ThemeSettingsPage extends ConsumerWidget {
   ) {
     return _SettingsSection(
       title: '背景类型',
-      icon: Icons.wallpaper_rounded,
+      icon: Icons.wallpaper_outlined,
       child: Column(
         children: [
           _BackgroundTypeSelector(
@@ -240,7 +240,7 @@ class ThemeSettingsPage extends ConsumerWidget {
   Widget _buildPreviewSection(BuildContext context, ColorScheme colorScheme, ShardTheme shardTheme) {
     return _SettingsSection(
       title: '效果预览',
-      icon: Icons.preview_rounded,
+      icon: Icons.visibility_outlined,
       child: const _PreviewCard(),
     );
   }
@@ -463,7 +463,7 @@ class _ThemeModeSelector extends StatelessWidget {
         children: [
           Expanded(
             child: _ThemeModeOption(
-              icon: Icons.light_mode_rounded,
+              icon: Icons.wb_sunny_outlined,
               label: '浅色',
               isSelected: !isDark,
               onTap: () => onChanged(false),
@@ -472,7 +472,7 @@ class _ThemeModeSelector extends StatelessWidget {
           const SizedBox(width: 4),
           Expanded(
             child: _ThemeModeOption(
-              icon: Icons.dark_mode_rounded,
+              icon: Icons.dark_mode_outlined,
               label: '深色',
               isSelected: isDark,
               onTap: () => onChanged(true),
@@ -698,11 +698,11 @@ class _BackgroundTypeSelector extends StatelessWidget {
   });
 
   static const List<_BackgroundType> types = [
-    _BackgroundType(value: 'solid', label: '纯色', icon: Icons.color_lens_rounded),
-    _BackgroundType(value: 'gradient', label: '渐变', icon: Icons.gradient_rounded),
-    _BackgroundType(value: 'image', label: '图片', icon: Icons.image_rounded),
-    _BackgroundType(value: 'dynamic', label: '动态', icon: Icons.auto_awesome_rounded),
-    _BackgroundType(value: 'mica', label: 'Mica', icon: Icons.layers_rounded),
+    _BackgroundType(value: 'solid', label: '纯色', icon: Icons.color_lens_outlined),
+    _BackgroundType(value: 'gradient', label: '渐变', icon: Icons.gradient_outlined),
+    _BackgroundType(value: 'image', label: '图片', icon: Icons.image_outlined),
+    _BackgroundType(value: 'dynamic', label: '动态', icon: Icons.auto_awesome_outlined),
+    _BackgroundType(value: 'mica', label: 'Mica', icon: Icons.layers_outlined),
   ];
 
   @override
