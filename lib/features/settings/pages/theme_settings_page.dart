@@ -31,27 +31,27 @@ class ThemeSettingsPage extends ConsumerWidget {
           // 页面标题
           _buildHeader(context, colorScheme, notifier),
           const SizedBox(height: 20),
-          
+
           // 主题模式
           _buildThemeModeSection(context, shardTheme, notifier, colorScheme),
           const SizedBox(height: 16),
-          
+
           // 主题色
           _buildColorSection(context, shardTheme, notifier, colorScheme),
           const SizedBox(height: 16),
-          
+
           // 玻璃效果
           _buildGlassSection(context, shardTheme, notifier, colorScheme),
           const SizedBox(height: 16),
-          
+
           // UI 参数
           _buildUISection(context, shardTheme, notifier, colorScheme),
           const SizedBox(height: 16),
-          
+
           // 背景类型
           _buildBackgroundSection(context, shardTheme, notifier, colorScheme),
           const SizedBox(height: 16),
-          
+
           // 效果预览
           _buildPreviewSection(context, colorScheme, shardTheme),
           const SizedBox(height: 100),
@@ -60,7 +60,11 @@ class ThemeSettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, ColorScheme colorScheme, ShardThemeNotifier notifier) {
+  Widget _buildHeader(
+    BuildContext context,
+    ColorScheme colorScheme,
+    ShardThemeNotifier notifier,
+  ) {
     return Row(
       children: [
         Expanded(
@@ -70,15 +74,15 @@ class ThemeSettingsPage extends ConsumerWidget {
               Text(
                 '主题设置',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 '自定义启动器的外观和感觉',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -152,7 +156,6 @@ class ThemeSettingsPage extends ConsumerWidget {
               value: shardTheme.cardOpacity,
               min: 0.15,
               max: 0.95,
-              divisions: 80,
               valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
               onChanged: (value) => notifier.updateCardOpacity(value),
             ),
@@ -179,7 +182,6 @@ class ThemeSettingsPage extends ConsumerWidget {
             value: shardTheme.uiScale,
             min: 0.85,
             max: 1.5,
-            divisions: 65,
             valueFormatter: (v) => '${v.toStringAsFixed(2)}x',
             onChanged: (value) => notifier.updateUiScale(value),
           ),
@@ -190,7 +192,6 @@ class ThemeSettingsPage extends ConsumerWidget {
             value: shardTheme.animationSpeed,
             min: 0.5,
             max: 2.0,
-            divisions: 15,
             valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
             onChanged: (value) => notifier.updateAnimationSpeed(value),
           ),
@@ -201,7 +202,6 @@ class ThemeSettingsPage extends ConsumerWidget {
             value: shardTheme.borderRadius,
             min: 4.0,
             max: 20.0,
-            divisions: 16,
             valueFormatter: (v) => '${v.toStringAsFixed(0)}px',
             onChanged: (value) => notifier.updateBorderRadius(value),
           ),
@@ -237,7 +237,11 @@ class ThemeSettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPreviewSection(BuildContext context, ColorScheme colorScheme, ShardTheme shardTheme) {
+  Widget _buildPreviewSection(
+    BuildContext context,
+    ColorScheme colorScheme,
+    ShardTheme shardTheme,
+  ) {
     return _SettingsSection(
       title: '效果预览',
       icon: Icons.visibility_outlined,
@@ -285,9 +289,9 @@ class _SettingsSection extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -332,23 +336,20 @@ class _SettingSwitch extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
         ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-        ),
+        Switch(value: value, onChanged: onChanged),
       ],
     );
   }
@@ -360,7 +361,6 @@ class _SettingSlider extends StatelessWidget {
   final double value;
   final double min;
   final double max;
-  final int divisions;
   final String Function(double) valueFormatter;
   final ValueChanged<double> onChanged;
 
@@ -370,7 +370,6 @@ class _SettingSlider extends StatelessWidget {
     required this.value,
     required this.min,
     required this.max,
-    required this.divisions,
     required this.valueFormatter,
     required this.onChanged,
   });
@@ -389,9 +388,9 @@ class _SettingSlider extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
             Container(
@@ -417,16 +416,16 @@ class _SettingSlider extends StatelessWidget {
         SliderTheme(
           data: SliderThemeData(
             trackHeight: 4,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+            thumbShape: const RoundSliderThumbShape(
+              enabledThumbRadius: 6,
+              elevation: 2,
+              pressedElevation: 4,
+            ),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+            overlayColor: colorScheme.primary.withValues(alpha: 0.12),
+            trackShape: const RoundedRectSliderTrackShape(),
           ),
-          child: Slider(
-            value: value,
-            min: min,
-            max: max,
-            divisions: divisions,
-            onChanged: onChanged,
-          ),
+          child: Slider(value: value, min: min, max: max, onChanged: onChanged),
         ),
       ],
     );
@@ -441,10 +440,7 @@ class _ThemeModeSelector extends StatelessWidget {
   final bool isDark;
   final ValueChanged<bool> onChanged;
 
-  const _ThemeModeSelector({
-    required this.isDark,
-    required this.onChanged,
-  });
+  const _ThemeModeSelector({required this.isDark, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -617,9 +613,9 @@ class _ColorPicker extends StatelessWidget {
               Text(
                 '当前: #${currentColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontFamily: 'monospace',
-                      fontWeight: FontWeight.w500,
-                    ),
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -698,10 +694,22 @@ class _BackgroundTypeSelector extends StatelessWidget {
   });
 
   static const List<_BackgroundType> types = [
-    _BackgroundType(value: 'solid', label: '纯色', icon: Icons.color_lens_outlined),
-    _BackgroundType(value: 'gradient', label: '渐变', icon: Icons.gradient_outlined),
+    _BackgroundType(
+      value: 'solid',
+      label: '纯色',
+      icon: Icons.color_lens_outlined,
+    ),
+    _BackgroundType(
+      value: 'gradient',
+      label: '渐变',
+      icon: Icons.gradient_outlined,
+    ),
     _BackgroundType(value: 'image', label: '图片', icon: Icons.image_outlined),
-    _BackgroundType(value: 'dynamic', label: '动态', icon: Icons.auto_awesome_outlined),
+    _BackgroundType(
+      value: 'dynamic',
+      label: '动态',
+      icon: Icons.auto_awesome_outlined,
+    ),
     _BackgroundType(value: 'mica', label: 'Mica', icon: Icons.layers_outlined),
   ];
 
@@ -763,9 +771,7 @@ class _BackgroundTypeChip extends StatelessWidget {
             themeExtension?.buttonBorderRadius ?? 10.0,
           ),
           border: Border.all(
-            color: isSelected
-                ? colorScheme.primary
-                : Colors.transparent,
+            color: isSelected ? colorScheme.primary : Colors.transparent,
             width: 1,
           ),
         ),
@@ -832,9 +838,9 @@ class _ImageBackgroundSelectorState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('选择图片失败: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('选择图片失败: $e')));
       }
     }
   }
@@ -902,7 +908,11 @@ class _ImageBackgroundSelectorState
                       color: Colors.black.withValues(alpha: 0.5),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.close, size: 16, color: Colors.white),
+                    child: const Icon(
+                      Icons.close,
+                      size: 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -954,7 +964,8 @@ class _PreviewCard extends ConsumerWidget {
               _PreviewInfoRow(
                 icon: Icons.palette_rounded,
                 label: '主题色',
-                value: '#${shardTheme.primaryColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
+                value:
+                    '#${shardTheme.primaryColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
               ),
               const SizedBox(height: 8),
               _PreviewInfoRow(
@@ -978,7 +989,7 @@ class _PreviewCard extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 12),
-        
+
         // 按钮预览
         Row(
           children: [
@@ -1026,17 +1037,17 @@ class _PreviewInfoRow extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         const Spacer(),
         Text(
           value,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
-                fontFamily: 'monospace',
-              ),
+            fontWeight: FontWeight.w500,
+            fontFamily: 'monospace',
+          ),
         ),
       ],
     );

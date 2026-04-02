@@ -251,68 +251,23 @@ class ShardTheme {
       brightness: isDark ? Brightness.dark : Brightness.light,
     ).textTheme;
 
-    // 使用 copyWith 逐个设置 fontSize，避免 apply(fontSizeFactor:) 的断言问题
+    // fontFamily 已通过 ThemeData.fontFamily 统一设置，无需在每个 TextStyle 中重复
     return base.copyWith(
-      displayLarge: base.displayLarge?.copyWith(
-        fontSize: 57 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      displayMedium: base.displayMedium?.copyWith(
-        fontSize: 45 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      displaySmall: base.displaySmall?.copyWith(
-        fontSize: 36 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      headlineLarge: base.headlineLarge?.copyWith(
-        fontSize: 32 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      headlineMedium: base.headlineMedium?.copyWith(
-        fontSize: 28 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      headlineSmall: base.headlineSmall?.copyWith(
-        fontSize: 24 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      titleLarge: base.titleLarge?.copyWith(
-        fontSize: 22 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      titleMedium: base.titleMedium?.copyWith(
-        fontSize: 16 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      titleSmall: base.titleSmall?.copyWith(
-        fontSize: 14 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      bodyLarge: base.bodyLarge?.copyWith(
-        fontSize: 16 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      bodyMedium: base.bodyMedium?.copyWith(
-        fontSize: 14 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      bodySmall: base.bodySmall?.copyWith(
-        fontSize: 12 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      labelLarge: base.labelLarge?.copyWith(
-        fontSize: 14 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      labelMedium: base.labelMedium?.copyWith(
-        fontSize: 12 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
-      labelSmall: base.labelSmall?.copyWith(
-        fontSize: 11 * scale,
-        fontFamily: 'AlimamaFangYuanTi',
-      ),
+      displayLarge: base.displayLarge?.copyWith(fontSize: 57 * scale),
+      displayMedium: base.displayMedium?.copyWith(fontSize: 45 * scale),
+      displaySmall: base.displaySmall?.copyWith(fontSize: 36 * scale),
+      headlineLarge: base.headlineLarge?.copyWith(fontSize: 32 * scale),
+      headlineMedium: base.headlineMedium?.copyWith(fontSize: 28 * scale),
+      headlineSmall: base.headlineSmall?.copyWith(fontSize: 24 * scale),
+      titleLarge: base.titleLarge?.copyWith(fontSize: 22 * scale),
+      titleMedium: base.titleMedium?.copyWith(fontSize: 16 * scale),
+      titleSmall: base.titleSmall?.copyWith(fontSize: 14 * scale),
+      bodyLarge: base.bodyLarge?.copyWith(fontSize: 16 * scale),
+      bodyMedium: base.bodyMedium?.copyWith(fontSize: 14 * scale),
+      bodySmall: base.bodySmall?.copyWith(fontSize: 12 * scale),
+      labelLarge: base.labelLarge?.copyWith(fontSize: 14 * scale),
+      labelMedium: base.labelMedium?.copyWith(fontSize: 12 * scale),
+      labelSmall: base.labelSmall?.copyWith(fontSize: 11 * scale),
     );
   }
 
@@ -505,14 +460,22 @@ class ShardTheme {
         }),
       ),
 
-      // shadcn-ui 风格的滑块主题
+      // shadcn-ui 风格的滑块主题 - 优化为更流畅的交互
       sliderTheme: SliderThemeData(
         trackHeight: 4 * uiScale,
-        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8 * uiScale),
-        overlayShape: RoundSliderOverlayShape(overlayRadius: 16 * uiScale),
+        thumbShape: RoundSliderThumbShape(
+          enabledThumbRadius: 8 * uiScale,
+          elevation: 2,
+          pressedElevation: 4,
+        ),
+        overlayShape: RoundSliderOverlayShape(overlayRadius: 20 * uiScale),
         activeTrackColor: effectiveColorScheme.primary,
         inactiveTrackColor: effectiveColorScheme.surfaceContainerHighest,
         thumbColor: effectiveColorScheme.primary,
+        overlayColor: effectiveColorScheme.primary.withValues(alpha: 0.12),
+        activeTickMarkColor: Colors.transparent,
+        inactiveTickMarkColor: Colors.transparent,
+        trackShape: const RoundedRectSliderTrackShape(),
       ),
 
       // 动画时长

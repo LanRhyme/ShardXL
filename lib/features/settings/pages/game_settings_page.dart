@@ -37,7 +37,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
           // 页面标题
           _buildHeader(context, colorScheme),
           const SizedBox(height: 20),
-          
+
           // Java 设置
           _buildSettingsSection(
             context,
@@ -52,7 +52,9 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 themeExtension,
                 icon: Icons.folder_outlined,
                 title: 'Java 路径',
-                subtitle: settings.javaPath.isEmpty ? '自动检测' : settings.javaPath,
+                subtitle: settings.javaPath.isEmpty
+                    ? '自动检测'
+                    : settings.javaPath,
                 onTap: () => _showJavaPathDialog(settings),
               ),
               const SizedBox(height: 12),
@@ -68,7 +70,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // 游戏目录
           _buildSettingsSection(
             context,
@@ -83,13 +85,15 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 themeExtension,
                 icon: Icons.folder_outlined,
                 title: '游戏目录',
-                subtitle: settings.gameDirectory.isEmpty ? '未设置' : settings.gameDirectory,
+                subtitle: settings.gameDirectory.isEmpty
+                    ? '未设置'
+                    : settings.gameDirectory,
                 onTap: () => _showGameDirectoryDialog(settings),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // 窗口设置
           _buildSettingsSection(
             context,
@@ -104,7 +108,9 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 themeExtension,
                 icon: Icons.aspect_ratio_outlined,
                 title: '游戏窗口',
-                subtitle: settings.fullscreen ? '全屏模式' : '${settings.windowWidth} x ${settings.windowHeight}',
+                subtitle: settings.fullscreen
+                    ? '全屏模式'
+                    : '${settings.windowWidth} x ${settings.windowHeight}',
                 onTap: () => _showWindowDialog(settings),
               ),
               const SizedBox(height: 12),
@@ -122,7 +128,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // 高级参数
           _buildSettingsSection(
             context,
@@ -137,7 +143,9 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 themeExtension,
                 icon: Icons.code_outlined,
                 title: 'JVM 参数',
-                subtitle: settings.jvmArguments.isEmpty ? '无自定义参数' : settings.jvmArguments.join(' '),
+                subtitle: settings.jvmArguments.isEmpty
+                    ? '无自定义参数'
+                    : settings.jvmArguments.join(' '),
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
@@ -146,14 +154,14 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                       children: [
                         Text(
                           '推荐参数（自动添加）：',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '-Xmx${settings.memoryMB}M -Xms${settings.memoryMB ~/ 2}M',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
                                 fontFamily: 'monospace',
                                 color: colorScheme.onSurfaceVariant,
                               ),
@@ -161,14 +169,14 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                         const SizedBox(height: 12),
                         Text(
                           '自定义参数：',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 8),
                         TextField(
                           decoration: InputDecoration(
-                            hintText: '例如: -XX:+UseG1GC -XX:+UseConcMarkSweepGC',
+                            hintText:
+                                '例如: -XX:+UseG1GC -XX:+UseConcMarkSweepGC',
                             isDense: true,
                           ),
                           controller: TextEditingController(
@@ -196,7 +204,9 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 themeExtension,
                 icon: Icons.settings_outlined,
                 title: '游戏参数',
-                subtitle: settings.gameArguments.isEmpty ? '无自定义参数' : settings.gameArguments.join(' '),
+                subtitle: settings.gameArguments.isEmpty
+                    ? '无自定义参数'
+                    : settings.gameArguments.join(' '),
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
@@ -235,16 +245,16 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
       children: [
         Text(
           '全局游戏设置',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 4),
         Text(
           '配置 Java、内存、游戏目录等全局设置',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
       ],
     );
@@ -277,9 +287,9 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
               const SizedBox(width: 12),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -317,15 +327,15 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -362,24 +372,21 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
         ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-        ),
+        Switch(value: value, onChanged: onChanged),
       ],
     );
   }
@@ -401,15 +408,15 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
         leading: Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
         title: Text(
           title,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
         ),
         subtitle: Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -428,9 +435,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '留空将自动检测 Java。手动指定时请确保路径指向 java.exe',
-            ),
+            const Text('留空将自动检测 Java。手动指定时请确保路径指向 java.exe'),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
@@ -439,15 +444,12 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              '检测到的 Java：',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+            Text('检测到的 Java：', style: Theme.of(context).textTheme.bodySmall),
             Text(
               _detectJavaPath(),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
             ),
           ],
         ),
@@ -474,7 +476,8 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
   String _detectJavaPath() {
     final javaHome = Platform.environment['JAVA_HOME'];
     if (javaHome != null) {
-      final javaPath = '$javaHome${Platform.pathSeparator}bin${Platform.pathSeparator}java';
+      final javaPath =
+          '$javaHome${Platform.pathSeparator}bin${Platform.pathSeparator}java';
       if (Platform.isWindows) {
         return '$javaPath.exe';
       }
@@ -516,8 +519,6 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 value: memoryMB.toDouble(),
                 min: 1024,
                 max: 16384,
-                divisions: 15,
-                label: '$memoryMB MB',
                 onChanged: (value) {
                   setState(() => memoryMB = value.round());
                 },
@@ -598,8 +599,6 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 value: width.toDouble(),
                 min: 640,
                 max: 3840,
-                divisions: 30,
-                label: '$width',
                 onChanged: (value) {
                   setState(() => width = value.round());
                 },
@@ -609,8 +608,6 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
                 value: height.toDouble(),
                 min: 480,
                 max: 2160,
-                divisions: 20,
-                label: '$height',
                 onChanged: (value) {
                   setState(() => height = value.round());
                 },

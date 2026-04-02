@@ -13,6 +13,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import 'core/widgets/shard_background.dart';
 import 'core/widgets/shard_bottom_nav_bar.dart';
+import 'core/theme/shard_scroll_behavior.dart';
 import 'features/home/pages/home_page.dart';
 import 'features/game_instance/pages/game_instance_page.dart';
 import 'features/download/pages/download_page.dart';
@@ -53,6 +54,7 @@ class ShardXLApp extends ConsumerWidget {
       title: 'ShardXL',
       debugShowCheckedModeBanner: false,
       theme: shardTheme.toThemeData(),
+      scrollBehavior: const ShardScrollBehavior(),
       home: const HomePage(),
     );
   }
@@ -74,11 +76,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   // 底部导航项配置
   static const _navItems = [
-    NavItem(
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home,
-      label: '主页',
-    ),
+    NavItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: '主页'),
     NavItem(
       icon: Icons.construction_outlined,
       selectedIcon: Icons.construction,
@@ -127,7 +125,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final navBarHeight = 70.0 + MediaQuery.of(context).padding.bottom;
-            
+
             return Stack(
               children: [
                 // 内容层

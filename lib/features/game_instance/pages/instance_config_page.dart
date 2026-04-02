@@ -20,7 +20,7 @@ class VersionIconData {
 
 VersionIconData getVersionIconData(String version) {
   final v = version.toLowerCase();
-  
+
   if (v.contains('neoforge')) {
     return const VersionIconData(
       assetPath: 'assets/icons/neoforge.png',
@@ -68,7 +68,7 @@ VersionIconData getVersionIconData(String version) {
 
 String getVersionTypeLabel(String version) {
   final v = version.toLowerCase();
-  
+
   if (v.contains('neoforge')) {
     return 'NeoForge';
   } else if (v.contains('forge')) {
@@ -136,16 +136,10 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 左侧配置列表
-                Expanded(
-                  flex: 3,
-                  child: _buildConfigList(settings, config),
-                ),
+                Expanded(flex: 3, child: _buildConfigList(settings, config)),
                 const SizedBox(width: 32),
                 // 右侧快速操作
-                SizedBox(
-                  width: 200,
-                  child: _buildQuickActions(),
-                ),
+                SizedBox(width: 200, child: _buildQuickActions()),
               ],
             ),
           ),
@@ -167,22 +161,21 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
             icon: const Icon(Icons.arrow_back),
             tooltip: '返回',
           ),
-        if (!widget.isEmbedded)
-          const SizedBox(width: 16),
+        if (!widget.isEmbedded) const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '运行配置',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             Text(
               widget.version,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -249,7 +242,9 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                       '实例路径: .minecraft/versions/${widget.version}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withOpacity(0.6),
                       ),
                     ),
                   ],
@@ -278,12 +273,19 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
           Container(
             width: 6,
             height: 6,
-            decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: Colors.green,
+              shape: BoxShape.circle,
+            ),
           ),
           const SizedBox(width: 6),
           const Text(
             '就绪',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
+            ),
           ),
         ],
       ),
@@ -299,7 +301,11 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
       ),
     );
   }
@@ -308,7 +314,10 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
     return FilledButton.icon(
       onPressed: () {},
       icon: const Icon(Icons.play_arrow_rounded, size: 24),
-      label: const Text('启动游戏', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+      label: const Text(
+        '启动游戏',
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+      ),
       style: FilledButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -336,7 +345,8 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                   value: config.versionIsolation ? '启用' : '禁用',
                   options: const ['启用', '禁用'],
                   onChanged: (value) {
-                    ref.read(instanceConfigProvider.notifier)
+                    ref
+                        .read(instanceConfigProvider.notifier)
                         .setVersionIsolation(value == '启用');
                   },
                 ),
@@ -348,7 +358,8 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                   value: config.integrityCheck ? '启用' : '禁用',
                   options: const ['启用', '禁用'],
                   onChanged: (value) {
-                    ref.read(instanceConfigProvider.notifier)
+                    ref
+                        .read(instanceConfigProvider.notifier)
                         .setIntegrityCheck(value == '启用');
                   },
                 ),
@@ -374,7 +385,9 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                           Icon(
                             Icons.memory,
                             size: 20,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -383,15 +396,15 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                               children: [
                                 const Text(
                                   '内存分配',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  style: TextStyle(fontWeight: FontWeight.w500),
                                 ),
                                 Text(
                                   '为此版本分配的内存大小 (MB)',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -409,18 +422,25 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                       const SizedBox(height: 16),
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
-                          activeTrackColor: Theme.of(context).colorScheme.primary,
-                          inactiveTrackColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          activeTrackColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          inactiveTrackColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
                           thumbColor: Theme.of(context).colorScheme.primary,
-                          overlayColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          overlayColor: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.1),
                         ),
                         child: Slider(
-                          value: (config.memoryMB ?? settings.memoryMB).toDouble(),
+                          value: (config.memoryMB ?? settings.memoryMB)
+                              .toDouble(),
                           min: 512,
                           max: 8192,
-                          divisions: 15,
                           onChanged: (value) {
-                            ref.read(instanceConfigProvider.notifier)
+                            ref
+                                .read(instanceConfigProvider.notifier)
                                 .setMemoryMB(value.toInt());
                           },
                         ),
@@ -432,14 +452,18 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                             '512 MB',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                           Text(
                             '8192 MB',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -459,7 +483,9 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                           Icon(
                             Icons.terminal,
                             size: 20,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 12),
                           const Expanded(
@@ -468,9 +494,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                               children: [
                                 Text(
                                   'JVM 参数',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                  style: TextStyle(fontWeight: FontWeight.w500),
                                 ),
                                 Text(
                                   '自定义 Java 虚拟机启动参数',
@@ -487,18 +511,29 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                       const SizedBox(height: 12),
                       TextField(
                         decoration: InputDecoration(
-                          hintText: '例如: -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions',
+                          hintText:
+                              '例如: -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                         ),
                         controller: TextEditingController(
-                          text: config.jvmArguments?.join(' ') ?? settings.jvmArguments.join(' '),
+                          text:
+                              config.jvmArguments?.join(' ') ??
+                              settings.jvmArguments.join(' '),
                         ),
                         onSubmitted: (value) {
-                          final args = value.split(' ').where((s) => s.isNotEmpty).toList();
-                          ref.read(instanceConfigProvider.notifier).setJvmArguments(args);
+                          final args = value
+                              .split(' ')
+                              .where((s) => s.isNotEmpty)
+                              .toList();
+                          ref
+                              .read(instanceConfigProvider.notifier)
+                              .setJvmArguments(args);
                         },
                       ),
                     ],
@@ -523,7 +558,9 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                       : '使用全局设置 (自动检测)',
                   hintText: '留空使用全局设置',
                   onSubmitted: (value) {
-                    ref.read(instanceConfigProvider.notifier).setJavaPath(value);
+                    ref
+                        .read(instanceConfigProvider.notifier)
+                        .setJavaPath(value);
                   },
                 ),
               ],
@@ -546,7 +583,9 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                   subtitle: const Text('游戏以全屏模式启动'),
                   value: config.fullscreen ?? settings.fullscreen,
                   onChanged: (value) {
-                    ref.read(instanceConfigProvider.notifier).setFullscreen(value);
+                    ref
+                        .read(instanceConfigProvider.notifier)
+                        .setFullscreen(value);
                   },
                 ),
                 if (!(config.fullscreen ?? settings.fullscreen)) ...[
@@ -567,9 +606,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                             children: [
                               Text(
                                 '窗口大小',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.w500),
                               ),
                               Text(
                                 '游戏窗口的宽度和高度',
@@ -587,18 +624,22 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                             decoration: const InputDecoration(
                               labelText: '宽',
                               border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
                             ),
                             keyboardType: TextInputType.number,
                             controller: TextEditingController(
-                              text: (config.windowWidth ?? settings.windowWidth).toString(),
+                              text: (config.windowWidth ?? settings.windowWidth)
+                                  .toString(),
                             ),
                             onSubmitted: (value) {
                               final width = int.tryParse(value);
                               if (width != null) {
-                                ref.read(instanceConfigProvider.notifier).setWindowSize(
-                                  width: width,
-                                );
+                                ref
+                                    .read(instanceConfigProvider.notifier)
+                                    .setWindowSize(width: width);
                               }
                             },
                           ),
@@ -612,18 +653,23 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                             decoration: const InputDecoration(
                               labelText: '高',
                               border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
                             ),
                             keyboardType: TextInputType.number,
                             controller: TextEditingController(
-                              text: (config.windowHeight ?? settings.windowHeight).toString(),
+                              text:
+                                  (config.windowHeight ?? settings.windowHeight)
+                                      .toString(),
                             ),
                             onSubmitted: (value) {
                               final height = int.tryParse(value);
                               if (height != null) {
-                                ref.read(instanceConfigProvider.notifier).setWindowSize(
-                                  height: height,
-                                );
+                                ref
+                                    .read(instanceConfigProvider.notifier)
+                                    .setWindowSize(height: height);
                               }
                             },
                           ),
@@ -698,7 +744,10 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
                 onTap: () {},
               ),
               const SizedBox(height: 24),
-              Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1)),
+              Divider(
+                height: 1,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+              ),
               const SizedBox(height: 24),
               _buildActionButton(
                 icon: Icons.delete_outline_rounded,
@@ -725,7 +774,11 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: color?.withOpacity(0.1) ?? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+          color:
+              color?.withOpacity(0.1) ??
+              Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -734,10 +787,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
             const SizedBox(width: 10),
             Text(
               label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -754,17 +804,17 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
     required ValueChanged<String> onChanged,
   }) {
     return ListTile(
-      leading: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
+      leading: Icon(
+        icon,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
       title: Text(title),
       subtitle: Text(subtitle),
       trailing: DropdownButton<String>(
         value: value,
         underline: const SizedBox(),
         items: options.map((option) {
-          return DropdownMenuItem(
-            value: option,
-            child: Text(option),
-          );
+          return DropdownMenuItem(value: option, child: Text(option));
         }).toList(),
         onChanged: (newValue) {
           if (newValue != null) {
@@ -783,7 +833,10 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
     required ValueChanged<String> onSubmitted,
   }) {
     return ListTile(
-      leading: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
+      leading: Icon(
+        icon,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
       title: Text(title),
       subtitle: Text(subtitle),
       trailing: SizedBox(
@@ -792,7 +845,10 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
           decoration: InputDecoration(
             hintText: hintText,
             border: const OutlineInputBorder(),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
           ),
           onSubmitted: onSubmitted,
         ),
