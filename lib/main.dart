@@ -124,25 +124,39 @@ class _HomePageState extends ConsumerState<HomePage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: ShardBackground(
-        child: Column(
-          children: [
-            // 主内容区
-            Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: KeyedSubtree(
-                  key: ValueKey(_selectedIndex),
-                  child: _pages[_selectedIndex],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final navBarHeight = 70.0 + MediaQuery.of(context).padding.bottom;
+            
+            return Stack(
+              children: [
+                // 内容层
+                Positioned.fill(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: KeyedSubtree(
+                      key: ValueKey(_selectedIndex),
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: navBarHeight),
+                        child: _pages[_selectedIndex],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            // 底部导航栏
-            ShardBottomNavBar(
-              items: _navItems,
-              selectedIndex: _selectedIndex,
-              onTap: (index) => setState(() => _selectedIndex = index),
-            ),
-          ],
+                // 导航栏层
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: ShardBottomNavBar(
+                    items: _navItems,
+                    selectedIndex: _selectedIndex,
+                    onTap: (index) => setState(() => _selectedIndex = index),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
