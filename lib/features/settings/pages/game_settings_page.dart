@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../game_instance/providers/dartcraft_provider.dart';
 import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/shadcn_button.dart';
+import '../../../core/widgets/shadcn_components.dart';
+import '../../../core/theme/shard_theme.dart';
 
 class GameSettingsPage extends ConsumerStatefulWidget {
   const GameSettingsPage({super.key});
@@ -23,177 +26,395 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(gameSettingsProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 页面标题
+          _buildHeader(context, colorScheme),
+          const SizedBox(height: 20),
+          
+          // Java 设置
+          _buildSettingsSection(
+            context,
+            colorScheme,
+            themeExtension,
+            title: 'Java 设置',
+            icon: Icons.code,
+            children: [
+              _buildSettingTile(
+                context,
+                colorScheme,
+                themeExtension,
+                icon: Icons.code,
+                title: 'Java 路径',
+                subtitle: settings.javaPath.isEmpty ? '自动检测' : settings.javaPath,
+                onTap: () => _showJavaPathDialog(settings),
+              ),
+              const SizedBox(height: 12),
+              _buildSettingTile(
+                context,
+                colorScheme,
+                themeExtension,
+                icon: Icons.memory,
+                title: '内存分配',
+                subtitle: '${settings.memoryMB} MB',
+                onTap: () => _showMemoryDialog(settings),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // 游戏目录
+          _buildSettingsSection(
+            context,
+            colorScheme,
+            themeExtension,
+            title: '游戏目录',
+            icon: Icons.folder,
+            children: [
+              _buildSettingTile(
+                context,
+                colorScheme,
+                themeExtension,
+                icon: Icons.folder,
+                title: '游戏目录',
+                subtitle: settings.gameDirectory.isEmpty ? '未设置' : settings.gameDirectory,
+                onTap: () => _showGameDirectoryDialog(settings),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // 窗口设置
+          _buildSettingsSection(
+            context,
+            colorScheme,
+            themeExtension,
+            title: '窗口设置',
+            icon: Icons.aspect_ratio,
+            children: [
+              _buildSettingTile(
+                context,
+                colorScheme,
+                themeExtension,
+                icon: Icons.aspect_ratio,
+                title: '游戏窗口',
+                subtitle: settings.fullscreen ? '全屏模式' : '${settings.windowWidth} x ${settings.windowHeight}',
+                onTap: () => _showWindowDialog(settings),
+              ),
+              const SizedBox(height: 12),
+              _buildSwitchTile(
+                context,
+                colorScheme,
+                icon: Icons.fullscreen,
+                title: '全屏启动',
+                subtitle: '游戏以全屏模式启动',
+                value: settings.fullscreen,
+                onChanged: (value) {
+                  ref.read(gameSettingsProvider.notifier).setFullscreen(value);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // 高级参数
+          _buildSettingsSection(
+            context,
+            colorScheme,
+            themeExtension,
+            title: '高级参数',
+            icon: Icons.terminal,
+            children: [
+              _buildExpandableTile(
+                context,
+                colorScheme,
+                themeExtension,
+                icon: Icons.terminal,
+                title: 'JVM 参数',
+                subtitle: settings.jvmArguments.isEmpty ? '无自定义参数' : settings.jvmArguments.join(' '),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '推荐参数（自动添加）：',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '-Xmx${settings.memoryMB}M -Xms${settings.memoryMB ~/ 2}M',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontFamily: 'monospace',
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '自定义参数：',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          decoration: InputDecoration(
+                            hintText: '例如: -XX:+UseG1GC -XX:+UseConcMarkSweepGC',
+                            isDense: true,
+                          ),
+                          controller: TextEditingController(
+                            text: settings.jvmArguments.join(' '),
+                          ),
+                          onSubmitted: (value) {
+                            final args = value
+                                .split(' ')
+                                .where((s) => s.isNotEmpty)
+                                .toList();
+                            ref
+                                .read(gameSettingsProvider.notifier)
+                                .setJvmArguments(args);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _buildExpandableTile(
+                context,
+                colorScheme,
+                themeExtension,
+                icon: Icons.settings,
+                title: '游戏参数',
+                subtitle: settings.gameArguments.isEmpty ? '无自定义参数' : settings.gameArguments.join(' '),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: '例如: --fancy --fast',
+                        isDense: true,
+                      ),
+                      controller: TextEditingController(
+                        text: settings.gameArguments.join(' '),
+                      ),
+                      onSubmitted: (value) {
+                        final args = value
+                            .split(' ')
+                            .where((s) => s.isNotEmpty)
+                            .toList();
+                        ref
+                            .read(gameSettingsProvider.notifier)
+                            .setGameArguments(args);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, ColorScheme colorScheme) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Text(
-                '全局游戏设置',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+        Text(
+          '全局游戏设置',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
-            ],
-          ),
         ),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-            children: [
-              GlassCard(
-                child: ListTile(
-                  leading: const Icon(Icons.code),
-                  title: const Text('Java 路径'),
-                  subtitle: Text(
-                    settings.javaPath.isEmpty ? '自动检测' : settings.javaPath,
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showJavaPathDialog(settings),
-                ),
+        const SizedBox(height: 4),
+        Text(
+          '配置 Java、内存、游戏目录等全局设置',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(height: 8),
-              GlassCard(
-                child: ListTile(
-                  leading: const Icon(Icons.memory),
-                  title: const Text('内存分配'),
-                  subtitle: Text('${settings.memoryMB} MB'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showMemoryDialog(settings),
-                ),
-              ),
-              const SizedBox(height: 8),
-              GlassCard(
-                child: ListTile(
-                  leading: const Icon(Icons.folder),
-                  title: const Text('游戏目录'),
-                  subtitle: Text(
-                    settings.gameDirectory.isEmpty
-                        ? '未设置'
-                        : settings.gameDirectory,
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showGameDirectoryDialog(settings),
-                ),
-              ),
-              const SizedBox(height: 8),
-              GlassCard(
-                child: ListTile(
-                  leading: const Icon(Icons.aspect_ratio),
-                  title: const Text('游戏窗口'),
-                  subtitle: Text(
-                    settings.fullscreen
-                        ? '全屏模式'
-                        : '${settings.windowWidth} x ${settings.windowHeight}',
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showWindowDialog(settings),
-                ),
-              ),
-              const SizedBox(height: 8),
-              GlassCard(
-                child: SwitchListTile(
-                  secondary: const Icon(Icons.fullscreen),
-                  title: const Text('全屏启动'),
-                  subtitle: const Text('游戏以全屏模式启动'),
-                  value: settings.fullscreen,
-                  onChanged: (value) {
-                    ref.read(gameSettingsProvider.notifier).setFullscreen(value);
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              GlassCard(
-                child: ExpansionTile(
-                  leading: const Icon(Icons.terminal),
-                  title: const Text('JVM 参数'),
-                  subtitle: Text(settings.jvmArguments.isEmpty
-                      ? '无自定义参数'
-                      : settings.jvmArguments.join(' ')),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            '推荐参数（自动添加）：',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '-Xmx${settings.memoryMB}M -Xms${settings.memoryMB ~/ 2}M',
-                            style: const TextStyle(fontFamily: 'monospace'),
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            '自定义参数：',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: '例如: -XX:+UseG1GC -XX:+UseConcMarkSweepGC',
-                            ),
-                            controller: TextEditingController(
-                              text: settings.jvmArguments.join(' '),
-                            ),
-                            onSubmitted: (value) {
-                              final args = value
-                                  .split(' ')
-                                  .where((s) => s.isNotEmpty)
-                                  .toList();
-                              ref
-                                  .read(gameSettingsProvider.notifier)
-                                  .setJvmArguments(args);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              GlassCard(
-                child: ExpansionTile(
-                  leading: const Icon(Icons.settings),
-                  title: const Text('游戏参数'),
-                  subtitle: Text(settings.gameArguments.isEmpty
-                      ? '无自定义参数'
-                      : settings.gameArguments.join(' ')),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: '例如: --fancy --fast',
-                        ),
-                        controller: TextEditingController(
-                          text: settings.gameArguments.join(' '),
-                        ),
-                        onSubmitted: (value) {
-                          final args = value
-                              .split(' ')
-                              .where((s) => s.isNotEmpty)
-                              .toList();
-                          ref
-                              .read(gameSettingsProvider.notifier)
-                              .setGameArguments(args);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSettingsSection(
+    BuildContext context,
+    ColorScheme colorScheme,
+    ShardThemeExtension? themeExtension, {
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(
+                    themeExtension?.buttonBorderRadius ?? 10.0,
+                  ),
+                ),
+                child: Icon(icon, size: 18, color: colorScheme.primary),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingTile(
+    BuildContext context,
+    ColorScheme colorScheme,
+    ShardThemeExtension? themeExtension, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(
+        themeExtension?.buttonBorderRadius ?? 10.0,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSwitchTile(
+    BuildContext context,
+    ColorScheme colorScheme, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExpandableTile(
+    BuildContext context,
+    ColorScheme colorScheme,
+    ShardThemeExtension? themeExtension, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Widget> children,
+  }) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        leading: Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        children: children,
+      ),
     );
   }
 
@@ -214,7 +435,6 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             TextField(
               controller: controller,
               decoration: const InputDecoration(
-                border: OutlineInputBorder(),
                 hintText: '例如: C:\\Program Files\\Java\\bin\\java.exe',
               ),
             ),
@@ -232,11 +452,12 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
           ],
         ),
         actions: [
-          TextButton(
+          ShadcnButton(
             onPressed: () => Navigator.pop(context),
+            variant: ShadcnButtonVariant.outline,
             child: const Text('取消'),
           ),
-          FilledButton(
+          ShadcnButton(
             onPressed: () {
               ref
                   .read(gameSettingsProvider.notifier)
@@ -308,11 +529,12 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             ],
           ),
           actions: [
-            TextButton(
+            ShadcnButton(
               onPressed: () => Navigator.pop(context),
+              variant: ShadcnButtonVariant.outline,
               child: const Text('取消'),
             ),
-            FilledButton(
+            ShadcnButton(
               onPressed: () {
                 ref.read(gameSettingsProvider.notifier).setMemoryMB(memoryMB);
                 Navigator.pop(context);
@@ -334,16 +556,16 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
-            border: OutlineInputBorder(),
             hintText: '例如: C:\\Users\\xxx\\AppData\\Roaming\\.minecraft',
           ),
         ),
         actions: [
-          TextButton(
+          ShadcnButton(
             onPressed: () => Navigator.pop(context),
+            variant: ShadcnButtonVariant.outline,
             child: const Text('取消'),
           ),
-          FilledButton(
+          ShadcnButton(
             onPressed: () {
               ref
                   .read(gameSettingsProvider.notifier)
@@ -396,11 +618,12 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             ],
           ),
           actions: [
-            TextButton(
+            ShadcnButton(
               onPressed: () => Navigator.pop(context),
+              variant: ShadcnButtonVariant.outline,
               child: const Text('取消'),
             ),
-            FilledButton(
+            ShadcnButton(
               onPressed: () {
                 ref
                     .read(gameSettingsProvider.notifier)

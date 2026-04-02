@@ -11,6 +11,7 @@ import '../providers/theme_provider.dart';
 import '../../../core/theme/shard_theme.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/shadcn_button.dart';
+import '../../../core/widgets/shadcn_components.dart';
 
 class ThemeSettingsPage extends ConsumerWidget {
   const ThemeSettingsPage({super.key});
@@ -22,46 +23,72 @@ class ThemeSettingsPage extends ConsumerWidget {
     final notifier = ref.read(shardThemeProvider.notifier);
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Column(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 页面标题
+          _buildHeader(context, colorScheme, notifier),
+          const SizedBox(height: 20),
+          
+          // 主题模式
+          _buildThemeModeSection(context, shardTheme, notifier, colorScheme),
+          const SizedBox(height: 16),
+          
+          // 主题色
+          _buildColorSection(context, shardTheme, notifier, colorScheme),
+          const SizedBox(height: 16),
+          
+          // 玻璃效果
+          _buildGlassSection(context, shardTheme, notifier, colorScheme),
+          const SizedBox(height: 16),
+          
+          // UI 参数
+          _buildUISection(context, shardTheme, notifier, colorScheme),
+          const SizedBox(height: 16),
+          
+          // 背景类型
+          _buildBackgroundSection(context, shardTheme, notifier, colorScheme),
+          const SizedBox(height: 16),
+          
+          // 效果预览
+          _buildPreviewSection(context, colorScheme, shardTheme),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, ColorScheme colorScheme, ShardThemeNotifier notifier) {
+    return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '主题设置',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
               ),
-              const Spacer(),
-              ShadcnButton(
-                onPressed: () => notifier.resetToDefault(),
-                variant: ShadcnButtonVariant.outline,
-                size: ShadcnButtonSize.sm,
-                icon: Icons.restore,
-                child: const Text('重置'),
+              const SizedBox(height: 4),
+              Text(
+                '自定义启动器的外观和感觉',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
               ),
             ],
           ),
         ),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-            children: [
-              _buildThemeModeSection(context, shardTheme, notifier, colorScheme),
-              const SizedBox(height: 16),
-              _buildColorSection(context, shardTheme, notifier, colorScheme),
-              const SizedBox(height: 16),
-              _buildGlassSection(context, shardTheme, notifier, colorScheme),
-              const SizedBox(height: 16),
-              _buildUISection(context, shardTheme, notifier, colorScheme),
-              const SizedBox(height: 16),
-              _buildBackgroundSection(context, shardTheme, notifier, colorScheme),
-              const SizedBox(height: 16),
-              _buildPreviewSection(context, colorScheme),
-            ],
-          ),
+        ShadcnButton(
+          onPressed: () => notifier.resetToDefault(),
+          variant: ShadcnButtonVariant.outline,
+          size: ShadcnButtonSize.sm,
+          icon: Icons.restore,
+          child: const Text('重置'),
         ),
       ],
     );
@@ -73,21 +100,12 @@ class ThemeSettingsPage extends ConsumerWidget {
     ShardThemeNotifier notifier,
     ColorScheme colorScheme,
   ) {
-    return GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SectionHeader(
-            icon: Icons.brightness_6_rounded,
-            title: '主题模式',
-            color: colorScheme.primary,
-          ),
-          const SizedBox(height: 12),
-          _ThemeModeSelector(
-            isDark: shardTheme.isDark,
-            onChanged: (value) => notifier.updateIsDark(value),
-          ),
-        ],
+    return _SettingsSection(
+      title: '主题模式',
+      icon: Icons.brightness_6_rounded,
+      child: _ThemeModeSelector(
+        isDark: shardTheme.isDark,
+        onChanged: (value) => notifier.updateIsDark(value),
       ),
     );
   }
@@ -98,21 +116,12 @@ class ThemeSettingsPage extends ConsumerWidget {
     ShardThemeNotifier notifier,
     ColorScheme colorScheme,
   ) {
-    return GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SectionHeader(
-            icon: Icons.palette_rounded,
-            title: '主题色',
-            color: colorScheme.primary,
-          ),
-          const SizedBox(height: 16),
-          _ColorPicker(
-            currentColor: shardTheme.primaryColor,
-            onColorChanged: (color) => notifier.updatePrimaryColor(color),
-          ),
-        ],
+    return _SettingsSection(
+      title: '主题色',
+      icon: Icons.palette_rounded,
+      child: _ColorPicker(
+        currentColor: shardTheme.primaryColor,
+        onColorChanged: (color) => notifier.updatePrimaryColor(color),
       ),
     );
   }
@@ -123,36 +132,31 @@ class ThemeSettingsPage extends ConsumerWidget {
     ShardThemeNotifier notifier,
     ColorScheme colorScheme,
   ) {
-    return GlassCard(
+    return _SettingsSection(
+      title: '玻璃效果',
+      icon: Icons.blur_on_rounded,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(
-            icon: Icons.blur_on_rounded,
-            title: '玻璃效果',
-            color: colorScheme.primary,
-          ),
-          const SizedBox(height: 8),
-          _SettingTile(
+          _SettingSwitch(
             icon: Icons.gradient_rounded,
             title: '启用毛玻璃',
             subtitle: 'Liquid Glass 风格',
-            trailing: Switch(
-              value: shardTheme.enableGlassEffect,
-              onChanged: (value) => notifier.updateEnableGlassEffect(value),
+            value: shardTheme.enableGlassEffect,
+            onChanged: (value) => notifier.updateEnableGlassEffect(value),
+          ),
+          if (shardTheme.enableGlassEffect) ...[
+            const SizedBox(height: 16),
+            _SettingSlider(
+              icon: Icons.opacity_rounded,
+              title: '卡片不透明度',
+              value: shardTheme.cardOpacity,
+              min: 0.15,
+              max: 0.95,
+              divisions: 80,
+              valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
+              onChanged: (value) => notifier.updateCardOpacity(value),
             ),
-          ),
-          const Divider(height: 24),
-          _SliderTile(
-            icon: Icons.opacity_rounded,
-            title: '卡片不透明度',
-            value: shardTheme.cardOpacity,
-            min: 0.15,
-            max: 0.95,
-            divisions: 80,
-            valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
-            onChanged: (value) => notifier.updateCardOpacity(value),
-          ),
+          ],
         ],
       ),
     );
@@ -164,17 +168,12 @@ class ThemeSettingsPage extends ConsumerWidget {
     ShardThemeNotifier notifier,
     ColorScheme colorScheme,
   ) {
-    return GlassCard(
+    return _SettingsSection(
+      title: 'UI 参数',
+      icon: Icons.tune_rounded,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(
-            icon: Icons.tune_rounded,
-            title: 'UI 参数',
-            color: colorScheme.primary,
-          ),
-          const SizedBox(height: 8),
-          _SliderTile(
+          _SettingSlider(
             icon: Icons.zoom_out_map_rounded,
             title: '界面缩放',
             value: shardTheme.uiScale,
@@ -184,8 +183,8 @@ class ThemeSettingsPage extends ConsumerWidget {
             valueFormatter: (v) => '${v.toStringAsFixed(2)}x',
             onChanged: (value) => notifier.updateUiScale(value),
           ),
-          const Divider(height: 24),
-          _SliderTile(
+          const SizedBox(height: 16),
+          _SettingSlider(
             icon: Icons.speed_rounded,
             title: '动画速率',
             value: shardTheme.animationSpeed,
@@ -195,8 +194,8 @@ class ThemeSettingsPage extends ConsumerWidget {
             valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
             onChanged: (value) => notifier.updateAnimationSpeed(value),
           ),
-          const Divider(height: 24),
-          _SliderTile(
+          const SizedBox(height: 16),
+          _SettingSlider(
             icon: Icons.rounded_corner_rounded,
             title: '圆角大小',
             value: shardTheme.borderRadius,
@@ -217,16 +216,11 @@ class ThemeSettingsPage extends ConsumerWidget {
     ShardThemeNotifier notifier,
     ColorScheme colorScheme,
   ) {
-    return GlassCard(
+    return _SettingsSection(
+      title: '背景类型',
+      icon: Icons.wallpaper_rounded,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(
-            icon: Icons.wallpaper_rounded,
-            title: '背景类型',
-            color: colorScheme.primary,
-          ),
-          const SizedBox(height: 12),
           _BackgroundTypeSelector(
             currentType: shardTheme.backgroundType,
             onTypeChanged: (type) => notifier.updateBackgroundType(type),
@@ -243,83 +237,94 @@ class ThemeSettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPreviewSection(BuildContext context, ColorScheme colorScheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(
-            '效果预览',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-        ),
-        const _PreviewCard(),
-      ],
+  Widget _buildPreviewSection(BuildContext context, ColorScheme colorScheme, ShardTheme shardTheme) {
+    return _SettingsSection(
+      title: '效果预览',
+      icon: Icons.preview_rounded,
+      child: const _PreviewCard(),
     );
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Color color;
+// ========================
+// 设置区域组件
+// ========================
 
-  const _SectionHeader({
-    required this.icon,
+class _SettingsSection extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  const _SettingsSection({
     required this.title,
-    required this.color,
+    required this.icon,
+    required this.child,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(
-              themeExtension?.buttonBorderRadius ?? 10.0,
-            ),
-          ),
-          child: Icon(icon, size: 18, color: color),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w500,
+
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(
+                    themeExtension?.buttonBorderRadius ?? 10.0,
+                  ),
+                ),
+                child: Icon(icon, size: 18, color: colorScheme.primary),
               ),
-        ),
-      ],
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
     );
   }
 }
 
-class _SettingTile extends StatelessWidget {
+// ========================
+// 设置项组件
+// ========================
+
+class _SettingSwitch extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Widget trailing;
+  final bool value;
+  final ValueChanged<bool> onChanged;
 
-  const _SettingTile({
+  const _SettingSwitch({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.trailing,
+    required this.value,
+    required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -331,23 +336,25 @@ class _SettingTile extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
               ),
-              const SizedBox(height: 2),
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: colorScheme.onSurfaceVariant,
                     ),
               ),
             ],
           ),
         ),
-        trailing,
+        Switch(
+          value: value,
+          onChanged: onChanged,
+        ),
       ],
     );
   }
 }
 
-class _SliderTile extends StatelessWidget {
+class _SettingSlider extends StatelessWidget {
   final IconData icon;
   final String title;
   final double value;
@@ -357,7 +364,7 @@ class _SliderTile extends StatelessWidget {
   final String Function(double) valueFormatter;
   final ValueChanged<double> onChanged;
 
-  const _SliderTile({
+  const _SettingSlider({
     required this.icon,
     required this.title,
     required this.value,
@@ -374,7 +381,6 @@ class _SliderTile extends StatelessWidget {
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
@@ -426,6 +432,10 @@ class _SliderTile extends StatelessWidget {
     );
   }
 }
+
+// ========================
+// 主题模式选择器
+// ========================
 
 class _ThemeModeSelector extends StatelessWidget {
   final bool isDark;
@@ -503,15 +513,6 @@ class _ThemeModeOption extends StatelessWidget {
           borderRadius: BorderRadius.circular(
             themeExtension?.buttonBorderRadius ?? 10.0,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.2),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -541,6 +542,10 @@ class _ThemeModeOption extends StatelessWidget {
   }
 }
 
+// ========================
+// 颜色选择器
+// ========================
+
 class _ColorPicker extends StatelessWidget {
   final Color currentColor;
   final ValueChanged<Color> onColorChanged;
@@ -567,8 +572,9 @@ class _ColorPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    
+
     return Column(
       children: [
         Wrap(
@@ -587,7 +593,7 @@ class _ColorPicker extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(
               themeExtension?.buttonBorderRadius ?? 10.0,
             ),
@@ -602,7 +608,7 @@ class _ColorPicker extends StatelessWidget {
                   color: currentColor,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                    color: colorScheme.outline.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -677,6 +683,10 @@ class _ColorOption extends StatelessWidget {
     return luminance > 0.5 ? Colors.black : Colors.white;
   }
 }
+
+// ========================
+// 背景类型选择器
+// ========================
 
 class _BackgroundTypeSelector extends StatelessWidget {
   final String currentType;
@@ -787,157 +797,9 @@ class _BackgroundTypeChip extends StatelessWidget {
   }
 }
 
-class _PreviewCard extends ConsumerWidget {
-  const _PreviewCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeState = ref.watch(shardThemeProvider);
-    final shardTheme = themeState.theme;
-    final colorScheme = Theme.of(context).colorScheme;
-    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-
-    return GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.rocket_launch_rounded,
-                  color: colorScheme.primary,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'ShardXL 启动器',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Minecraft 启动器',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(
-                themeExtension?.buttonBorderRadius ?? 10.0,
-              ),
-            ),
-            child: Column(
-              children: [
-                _PreviewInfoRow(
-                  icon: Icons.palette_rounded,
-                  label: '主题色',
-                  value: '#${shardTheme.primaryColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
-                ),
-                const SizedBox(height: 8),
-                _PreviewInfoRow(
-                  icon: Icons.blur_on_rounded,
-                  label: '玻璃效果',
-                  value: shardTheme.enableGlassEffect ? '已开启' : '已关闭',
-                ),
-                const SizedBox(height: 8),
-                _PreviewInfoRow(
-                  icon: Icons.opacity_rounded,
-                  label: '不透明度',
-                  value: '${(shardTheme.cardOpacity * 100).toStringAsFixed(0)}%',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.play_arrow_rounded, size: 18),
-                  label: const Text('启动游戏'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.inventory_2_rounded, size: 18),
-                  label: const Text('版本管理'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PreviewInfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _PreviewInfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-        ),
-        const Spacer(),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
-                fontFamily: 'monospace',
-              ),
-        ),
-      ],
-    );
-  }
-}
+// ========================
+// 图片背景选择器
+// ========================
 
 class _ImageBackgroundSelector extends ConsumerStatefulWidget {
   final String? currentImagePath;
@@ -1009,6 +871,7 @@ class _ImageBackgroundSelectorState
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1018,18 +881,28 @@ class _ImageBackgroundSelectorState
           Stack(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: _buildImagePreview(),
+                borderRadius: BorderRadius.circular(
+                  themeExtension?.cardBorderRadius ?? 10.0,
+                ),
+                child: Image.file(
+                  File(widget.currentImagePath!),
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               ),
               Positioned(
                 top: 8,
                 right: 8,
-                child: IconButton.filled(
-                  onPressed: () => widget.onImageSelected(null),
-                  icon: const Icon(Icons.close_rounded),
-                  style: IconButton.styleFrom(
-                    backgroundColor: colorScheme.errorContainer,
-                    foregroundColor: colorScheme.onErrorContainer,
+                child: GestureDetector(
+                  onTap: () => widget.onImageSelected(null),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.close, size: 16, color: Colors.white),
                   ),
                 ),
               ),
@@ -1037,45 +910,135 @@ class _ImageBackgroundSelectorState
           ),
           const SizedBox(height: 12),
         ],
-        OutlinedButton.icon(
-          onPressed: _showImageSourceDialog,
-          icon: const Icon(Icons.add_photo_alternate_rounded),
-          label: Text(widget.currentImagePath == null ||
-                  widget.currentImagePath!.isEmpty
-              ? '选择图片'
-              : '更换图片'),
+        SizedBox(
+          width: double.infinity,
+          child: ShadcnButton(
+            onPressed: _showImageSourceDialog,
+            variant: ShadcnButtonVariant.outline,
+            icon: Icons.image_rounded,
+            child: Text(widget.currentImagePath != null ? '更换图片' : '选择图片'),
+          ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildImagePreview() {
-    final file = File(widget.currentImagePath!);
-    if (file.existsSync()) {
-      return Image.file(
-        file,
-        width: double.infinity,
-        height: 150,
-        fit: BoxFit.cover,
-      );
-    }
-    return Image.asset(
-      widget.currentImagePath!,
-      width: double.infinity,
-      height: 150,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) => Container(
-        width: double.infinity,
-        height: 150,
-        color: Theme.of(context).colorScheme.surfaceContainerHigh,
-        child: Center(
-          child: Icon(
-            Icons.broken_image_rounded,
-            size: 48,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+// ========================
+// 预览卡片
+// ========================
+
+class _PreviewCard extends ConsumerWidget {
+  const _PreviewCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeState = ref.watch(shardThemeProvider);
+    final shardTheme = themeState.theme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
+
+    return Column(
+      children: [
+        // 预览信息
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(
+              themeExtension?.buttonBorderRadius ?? 10.0,
+            ),
+          ),
+          child: Column(
+            children: [
+              _PreviewInfoRow(
+                icon: Icons.palette_rounded,
+                label: '主题色',
+                value: '#${shardTheme.primaryColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
+              ),
+              const SizedBox(height: 8),
+              _PreviewInfoRow(
+                icon: Icons.blur_on_rounded,
+                label: '玻璃效果',
+                value: shardTheme.enableGlassEffect ? '已开启' : '已关闭',
+              ),
+              const SizedBox(height: 8),
+              _PreviewInfoRow(
+                icon: Icons.opacity_rounded,
+                label: '不透明度',
+                value: '${(shardTheme.cardOpacity * 100).toStringAsFixed(0)}%',
+              ),
+              const SizedBox(height: 8),
+              _PreviewInfoRow(
+                icon: Icons.rounded_corner_rounded,
+                label: '圆角',
+                value: '${shardTheme.borderRadius.toStringAsFixed(0)}px',
+              ),
+            ],
           ),
         ),
-      ),
+        const SizedBox(height: 12),
+        
+        // 按钮预览
+        Row(
+          children: [
+            Expanded(
+              child: ShadcnButton(
+                onPressed: () {},
+                icon: Icons.play_arrow_rounded,
+                child: const Text('启动游戏'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ShadcnButton(
+                onPressed: () {},
+                variant: ShadcnButtonVariant.outline,
+                icon: Icons.inventory_2_rounded,
+                child: const Text('版本管理'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _PreviewInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _PreviewInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+                fontFamily: 'monospace',
+              ),
+        ),
+      ],
     );
   }
 }
