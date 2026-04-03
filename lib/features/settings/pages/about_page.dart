@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/shadcn_components.dart';
+import '../../../core/widgets/faded_edge_scroll_view.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -13,13 +14,14 @@ class AboutPage extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context, colorScheme),
-          const SizedBox(height: 20),
+    return FadedEdgeWrapper(
+      scrollView: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context, colorScheme),
+            const SizedBox(height: 20),
           
           // Logo 和名称
           Center(
@@ -232,6 +234,7 @@ class AboutPage extends StatelessWidget {
           ),
           const SizedBox(height: 100),
         ],
+      ),
       ),
     );
   }

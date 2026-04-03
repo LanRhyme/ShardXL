@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/faded_edge_scroll_view.dart';
 import '../../../core/theme/shard_theme.dart';
 
 class LauncherSettingsPage extends StatelessWidget {
@@ -13,14 +14,15 @@ class LauncherSettingsPage extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 页面标题
-          _buildHeader(context, colorScheme),
-          const SizedBox(height: 20),
+    return FadedEdgeWrapper(
+      scrollView: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 页面标题
+            _buildHeader(context, colorScheme),
+            const SizedBox(height: 20),
           
           // 通知设置
           _buildSettingsSection(
@@ -146,6 +148,7 @@ class LauncherSettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: 100),
         ],
+      ),
       ),
     );
   }

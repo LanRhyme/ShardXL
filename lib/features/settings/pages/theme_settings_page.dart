@@ -12,6 +12,7 @@ import '../../../core/theme/shard_theme.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/shadcn_button.dart';
 import '../../../core/widgets/shadcn_components.dart';
+import '../../../core/widgets/faded_edge_scroll_view.dart';
 
 class ThemeSettingsPage extends ConsumerWidget {
   const ThemeSettingsPage({super.key});
@@ -23,11 +24,12 @@ class ThemeSettingsPage extends ConsumerWidget {
     final notifier = ref.read(shardThemeProvider.notifier);
     final colorScheme = Theme.of(context).colorScheme;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return FadedEdgeWrapper(
+      scrollView: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // 页面标题
           _buildHeader(context, colorScheme, notifier),
           const SizedBox(height: 20),
@@ -56,6 +58,7 @@ class ThemeSettingsPage extends ConsumerWidget {
           _buildPreviewSection(context, colorScheme, shardTheme),
           const SizedBox(height: 100),
         ],
+      ),
       ),
     );
   }

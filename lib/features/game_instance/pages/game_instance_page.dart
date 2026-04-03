@@ -7,6 +7,7 @@ import '../../auth/pages/auth_page.dart';
 import '../providers/dartcraft_provider.dart';
 import '../providers/game_instances_provider.dart';
 import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/faded_edge_scroll_view.dart';
 import 'instance_config_page.dart';
 
 enum _MenuView {
@@ -797,38 +798,40 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
           crossAxisCount = 5;
         }
 
-        return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(24, 16, 32, 100),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            childAspectRatio: 1.0,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
+        return FadedEdgeWrapper(
+          scrollView: GridView.builder(
+            padding: const EdgeInsets.fromLTRB(24, 16, 32, 100),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: 1.0,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            itemCount: versions.length,
+            itemBuilder: (context, index) {
+              final version = versions[index];
+              final isSelected = _selectedVersion == version;
+              return _VersionCard(
+                key: ValueKey(version),
+                version: version,
+                settings: settings,
+                authState: authState,
+                isSelected: isSelected,
+                onTap: () => setState(() => _selectedVersion = version),
+                onLaunch: () => _launchGame(version, authState, settings),
+                onConfig: () {
+                  setState(() {
+                    _selectedVersion = version;
+                    _selectedView = _MenuView.config;
+                  });
+                },
+                onOpenFolder: () => _openInstanceFolder(version, settings),
+                onDelete: () => _showDeleteConfirmDialog(version),
+              );
+            },
           ),
-          itemCount: versions.length,
-          itemBuilder: (context, index) {
-            final version = versions[index];
-            final isSelected = _selectedVersion == version;
-            return _VersionCard(
-              key: ValueKey(version),
-              version: version,
-              settings: settings,
-              authState: authState,
-              isSelected: isSelected,
-              onTap: () => setState(() => _selectedVersion = version),
-              onLaunch: () => _launchGame(version, authState, settings),
-              onConfig: () {
-                setState(() {
-                  _selectedVersion = version;
-                  _selectedView = _MenuView.config;
-                });
-              },
-              onOpenFolder: () => _openInstanceFolder(version, settings),
-              onDelete: () => _showDeleteConfirmDialog(version),
-            );
-          },
         );
-      }
+      },
     );
   }
 

@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/shadcn_components.dart';
+import '../../../core/widgets/faded_edge_scroll_view.dart';
 
 class OtherSettingsPage extends StatelessWidget {
   const OtherSettingsPage({super.key});
@@ -12,13 +13,14 @@ class OtherSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context, colorScheme),
-          const SizedBox(height: 20),
+    return FadedEdgeWrapper(
+      scrollView: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context, colorScheme),
+            const SizedBox(height: 20),
           _buildSettingsSection(
             context,
             colorScheme,
@@ -143,6 +145,7 @@ class OtherSettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: 100),
         ],
+      ),
       ),
     );
   }
