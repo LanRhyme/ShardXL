@@ -954,12 +954,9 @@ class _VersionDownloadDetailPageState extends ConsumerState<VersionDownloadDetai
 
   void _startDownload() async {
     final settings = ref.read(gameSettingsProvider);
-    if (settings.gameDirectory.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先在设置中配置游戏目录')),
-      );
-      return;
-    }
+    final gameDirectory = settings.gameDirectory.isEmpty 
+        ? GameSettingsNotifier.getDefaultMinecraftDir() 
+        : settings.gameDirectory;
 
     setState(() => _isDownloading = true);
 

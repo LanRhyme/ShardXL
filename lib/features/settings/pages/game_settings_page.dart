@@ -72,29 +72,6 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
           ),
           const SizedBox(height: 16),
 
-          // 游戏目录
-          _buildSettingsSection(
-            context,
-            colorScheme,
-            themeExtension,
-            title: '游戏目录',
-            icon: Icons.folder_open_outlined,
-            children: [
-              _buildSettingTile(
-                context,
-                colorScheme,
-                themeExtension,
-                icon: Icons.folder_outlined,
-                title: '游戏目录',
-                subtitle: settings.gameDirectory.isEmpty
-                    ? '未设置'
-                    : settings.gameDirectory,
-                onTap: () => _showGameDirectoryDialog(settings),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
           // 窗口设置
           _buildSettingsSection(
             context,
@@ -533,38 +510,6 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showGameDirectoryDialog(GameSettings settings) {
-    final controller = TextEditingController(text: settings.gameDirectory);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('游戏目录'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: '例如: C:\\Users\\xxx\\AppData\\Roaming\\.minecraft',
-          ),
-        ),
-        actions: [
-          ShadcnButton(
-            onPressed: () => Navigator.pop(context),
-            variant: ShadcnButtonVariant.outline,
-            child: const Text('取消'),
-          ),
-          ShadcnButton(
-            onPressed: () {
-              ref
-                  .read(gameSettingsProvider.notifier)
-                  .setGameDirectory(controller.text);
-              Navigator.pop(context);
-            },
-            child: const Text('保存'),
-          ),
-        ],
       ),
     );
   }
