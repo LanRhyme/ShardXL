@@ -801,9 +801,9 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
           padding: const EdgeInsets.fromLTRB(24, 16, 32, 100),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            childAspectRatio: 0.9,
-            crossAxisSpacing: 20,
-            mainAxisSpacing: 20,
+            childAspectRatio: 1.0,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
           ),
           itemCount: versions.length,
           itemBuilder: (context, index) {
@@ -979,6 +979,7 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
   @override
   Widget build(BuildContext context) {
     final iconData = _getVersionIconData(widget.version);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return MouseRegion(
       onEnter: (_) {
@@ -991,144 +992,138 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
       },
       child: ScaleTransition(
         scale: _scaleAnimation,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              if (_isHovered || widget.isSelected)
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 8),
-                ),
-            ],
-          ),
-          child: GlassCard(
-            onTap: widget.onTap,
-            padding: EdgeInsets.zero,
-            child: Stack(
-              children: [
-                // 选中状态背景光晕
-                if (widget.isSelected)
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
-                          width: 2,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                if (_isHovered || widget.isSelected)
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: 0.15),
+                    blurRadius: 16,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 6),
+                  ),
+              ],
+            ),
+            child: GlassCard(
+              hoverable: true,
+              padding: EdgeInsets.zero,
+              child: Stack(
+                children: [
+                  if (widget.isSelected)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: colorScheme.primary.withValues(alpha: 0.5),
+                              width: 2,
+                            ),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                colorScheme.primary.withValues(alpha: 0.08),
+                                colorScheme.primary.withValues(alpha: 0.02),
+                              ],
+                            ),
+                          ),
                         ),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.0),
+                      ),
+                    ),
+                  Center(
+                    child: IgnorePointer(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              iconData.assetPath!,
+                              width: 56,
+                              height: 56,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: iconData.gradientColors,
+                                  ),
+                                ),
+                                child: const Icon(Icons.grass, size: 28, color: Colors.white),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              widget.version,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: iconData.shadowColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                _getVersionTypeLabel(widget.version),
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: iconData.shadowColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ),
                   ),
-                
-                // 主要内容
-                Positioned.fill(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // 图标容器
-                        Hero(
-                          tag: 'icon_${widget.version}',
-                          child: Image.asset(
-                            iconData.assetPath!,
-                            width: 72,
-                            height: 72,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              width: 72,
-                              height: 72,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(18),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: iconData.gradientColors,
-                                ),
-                              ),
-                              child: const Icon(Icons.grass, size: 36, color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // 版本名称
-                        Text(
-                          widget.version,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.2,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 6),
-                        // 类型标签
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: iconData.shadowColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: iconData.shadowColor.withValues(alpha: 0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            _getVersionTypeLabel(widget.version),
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: iconData.shadowColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                  Positioned(
+                  top: 4,
+                  right: 4,
+                  child: SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: PopupMenuButton<String>(
+                      tooltip: '选项',
+                      splashRadius: 14,
+                      icon: Icon(
+                        Icons.more_vert_rounded,
+                        size: 16,
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      itemBuilder: (context) => [
+                        _buildPopupItem('launch', Icons.play_arrow_rounded, '启动'),
+                        _buildPopupItem('config', Icons.settings_outlined, '配置'),
+                        _buildPopupItem('folder', Icons.folder_open_outlined, '目录'),
+                        const PopupMenuDivider(),
+                        _buildPopupItem('delete', Icons.delete_outline_rounded, '移除', isDestructive: true),
                       ],
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'launch': widget.onLaunch(); break;
+                          case 'config': widget.onConfig(); break;
+                          case 'folder': widget.onOpenFolder(); break;
+                          case 'delete': widget.onDelete(); break;
+                        }
+                      },
                     ),
-                  ),
-                ),
-
-                // 更多选项
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: PopupMenuButton<String>(
-                    tooltip: '选项',
-                    splashRadius: 20,
-                    icon: Icon(
-                      Icons.more_vert_rounded,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                    ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    itemBuilder: (context) => [
-                      _buildPopupItem('launch', Icons.play_arrow_rounded, '立即启动'),
-                      _buildPopupItem('config', Icons.settings_outlined, '运行配置'),
-                      _buildPopupItem('folder', Icons.folder_open_outlined, '浏览文件'),
-                      const PopupMenuDivider(),
-                      _buildPopupItem('delete', Icons.delete_outline_rounded, '移除实例', isDestructive: true),
-                    ],
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'launch': widget.onLaunch(); break;
-                        case 'config': widget.onConfig(); break;
-                        case 'folder': widget.onOpenFolder(); break;
-                        case 'delete': widget.onDelete(); break;
-                      }
-                    },
                   ),
                 ),
               ],
@@ -1136,6 +1131,7 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
           ),
         ),
       ),
+    ),
     );
   }
 
