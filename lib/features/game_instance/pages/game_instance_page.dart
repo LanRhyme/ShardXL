@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/pages/auth_page.dart';
 import '../providers/dartcraft_provider.dart';
@@ -186,8 +187,8 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
-                      Theme.of(context).colorScheme.surface.withOpacity(0),
+                      Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      Theme.of(context).colorScheme.surface.withValues(alpha: 0),
                     ],
                   ),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -201,7 +202,7 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
                           iconData.assetPath!,
                           width: 80,
                           height: 80,
-                          errorBuilder: (_, __, ___) => Container(
+                          errorBuilder: (context, error, stackTrace) => Container(
                             width: 80,
                             height: 80,
                             decoration: BoxDecoration(
@@ -250,7 +251,7 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
                     Icon(
                       Icons.dashboard_rounded,
                       size: 48,
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 12),
                     const Text(
@@ -267,7 +268,7 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
             
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1)),
+              child: Divider(height: 1, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1)),
             ),
             
             Expanded(
@@ -324,34 +325,140 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
             data: (versions) {
               final filteredVersions = _filterVersions(versions);
               if (filteredVersions.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.inbox_outlined,
-                        size: 64,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '暂无符合条件的版本',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                return _buildEmptyState(gameSettings);
               }
               return _buildVersionGrid(filteredVersions, gameSettings, authState);
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('加载失败: $e')),
+            error: (e, stackTrace) => _buildErrorState(e.toString(), gameSettings),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEmptyState(GameSettings settings) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.inbox_outlined,
+            size: 64,
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '暂无符合条件的版本',
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark 
+                  ? colorScheme.onSurface.withValues(alpha: 0.05)
+                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.folder_outlined,
+                      size: 16,
+                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '当前目录:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  settings.gameDirectory.isEmpty ? '未设置' : settings.gameDirectory,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: _selectGameDirectory,
+            icon: const Icon(Icons.folder_open_rounded, size: 18),
+            label: const Text('选择游戏目录'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error, GameSettings settings) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline_rounded,
+            size: 64,
+            color: colorScheme.error.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '加载失败',
+            style: TextStyle(
+              color: colorScheme.error,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            decoration: BoxDecoration(
+              color: colorScheme.errorContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              error,
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onErrorContainer,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: _selectGameDirectory,
+            icon: const Icon(Icons.folder_open_rounded, size: 18),
+            label: const Text('选择游戏目录'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -376,13 +483,13 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
               size: 56,
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 24),
@@ -396,7 +503,7 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
           Text(
             subtitle,
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
               fontSize: 14,
             ),
           ),
@@ -414,58 +521,47 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
   }
 
   Widget _buildMenuItem(_MenuItem item, bool isSelected) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      margin: const EdgeInsets.only(bottom: 4),
+      duration: const Duration(milliseconds: 150),
+      margin: const EdgeInsets.only(bottom: 2),
       child: InkWell(
         onTap: () {
           setState(() => _selectedView = item.view);
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? Theme.of(context).colorScheme.primary.withOpacity(0.12)
+                ? isDark 
+                    ? colorScheme.primary.withValues(alpha: 0.15)
+                    : colorScheme.primary.withValues(alpha: 0.1)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.2), width: 1)
-                : null,
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             children: [
               Icon(
                 item.icon,
-                size: 20,
+                size: 18,
                 color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Text(
                 item.label,
                 style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: isSelected
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
                 ),
               ),
-              if (isSelected)
-                const Spacer()
-              else
-                const SizedBox.shrink(),
-              if (isSelected)
-                Container(
-                  width: 4,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                ),
             ],
           ),
         ),
@@ -474,33 +570,42 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
   }
 
   Widget _buildSearchHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 24, 32, 16),
       child: Row(
         children: [
           Expanded(
             child: Container(
-              height: 48,
+              height: 44,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
-                borderRadius: BorderRadius.circular(14),
+                color: isDark 
+                    ? colorScheme.onSurface.withValues(alpha: 0.05)
+                    : colorScheme.surface,
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                  color: isDark 
+                      ? colorScheme.outline.withValues(alpha: 0.2)
+                      : colorScheme.outline.withValues(alpha: 0.5),
+                  width: 1,
                 ),
               ),
               child: TextField(
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: '搜索您的游戏实例...',
+                  hintText: '搜索游戏实例...',
                   prefixIcon: Icon(
                     Icons.search_rounded,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
+                    size: 18,
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   hintStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4),
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                    fontSize: 14,
                   ),
                 ),
                 onChanged: (value) {
@@ -509,17 +614,17 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           _buildActionButton(
             icon: Icons.refresh_rounded,
             tooltip: '同步并刷新',
             onTap: () => ref.refresh(installedVersionsProvider),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           _buildActionButton(
-            icon: Icons.add_rounded,
-            tooltip: '创建新实例',
-            onTap: _showCreateInstanceDialog,
+            icon: Icons.folder_open_rounded,
+            tooltip: '选择游戏目录',
+            onTap: _selectGameDirectory,
             isPrimary: true,
           ),
         ],
@@ -533,26 +638,42 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
     required VoidCallback onTap,
     bool isPrimary = false,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Tooltip(
       message: tooltip,
       child: Material(
         color: isPrimary 
-            ? Theme.of(context).colorScheme.primary 
-            : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(14),
+            ? colorScheme.primary 
+            : isDark 
+                ? colorScheme.onSurface.withValues(alpha: 0.08)
+                : colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(8),
           child: Container(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
+            decoration: isPrimary 
+                ? null 
+                : BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isDark 
+                          ? colorScheme.outline.withValues(alpha: 0.2)
+                          : colorScheme.outline.withValues(alpha: 0.5),
+                      width: 1,
+                    ),
+                  ),
             alignment: Alignment.center,
             child: Icon(
               icon,
-              size: 22,
+              size: 18,
               color: isPrimary 
-                  ? Theme.of(context).colorScheme.onPrimary 
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ? colorScheme.onPrimary 
+                  : colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -561,62 +682,81 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
   }
 
   Widget _buildSortButton() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(10),
+        color: isDark 
+            ? colorScheme.onSurface.withValues(alpha: 0.05)
+            : colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark 
+              ? colorScheme.outline.withValues(alpha: 0.2)
+              : colorScheme.outline.withValues(alpha: 0.5),
+          width: 1,
+        ),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.sort_rounded, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(Icons.sort_rounded, size: 14, color: colorScheme.onSurfaceVariant),
           const SizedBox(width: 8),
           Text(
             '最近玩过',
             style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 13,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
-          const Icon(Icons.arrow_drop_down, size: 18),
+          const SizedBox(width: 4),
+          Icon(Icons.arrow_drop_down, size: 16, color: colorScheme.onSurfaceVariant),
         ],
       ),
     );
   }
 
   Widget _buildFilterTabs() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: _filters.map((filter) {
         final isSelected = _selectedFilter == filter;
         return Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            child: FilterChip(
-              selected: isSelected,
-              label: Text(filter),
-              onSelected: (selected) {
-                setState(() => _selectedFilter = filter);
-              },
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.2),
-              selectedColor: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
-              checkmarkColor: Theme.of(context).colorScheme.primary,
-              side: BorderSide(
-                color: isSelected 
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.3) 
-                    : Colors.transparent,
-                width: 1,
-              ),
-              labelStyle: TextStyle(
-                fontSize: 13,
+          padding: const EdgeInsets.only(right: 8),
+          child: GestureDetector(
+            onTap: () => setState(() => _selectedFilter = filter),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
                 color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    ? colorScheme.primary
+                    : isDark 
+                        ? colorScheme.onSurface.withValues(alpha: 0.05)
+                        : colorScheme.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isSelected
+                      ? colorScheme.primary
+                      : isDark 
+                          ? colorScheme.outline.withValues(alpha: 0.2)
+                          : colorScheme.outline.withValues(alpha: 0.5),
+                  width: 1,
+                ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              child: Text(
+                filter,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isSelected
+                      ? colorScheme.onPrimary
+                      : colorScheme.onSurfaceVariant,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -692,24 +832,14 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
     );
   }
 
-  void _showCreateInstanceDialog() {
-    showDialog(
+  Future<void> _selectGameDirectory() async {
+    await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('新建游戏实例'),
-        content: const Text('请前往下载页面安装新版本'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('前往下载'),
-          ),
-        ],
+      builder: (context) => _GameDirectoryDialog(
+        ref: ref,
+        onDirectorySelected: (dir) {
+          ref.invalidate(installedVersionsProvider);
+        },
       ),
     );
   }
@@ -917,7 +1047,7 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
                             iconData.assetPath!,
                             width: 72,
                             height: 72,
-                            errorBuilder: (_, __, ___) => Container(
+                            errorBuilder: (context, error, stackTrace) => Container(
                               width: 72,
                               height: 72,
                               decoration: BoxDecoration(
@@ -1030,5 +1160,283 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
         ],
       ),
     );
+  }
+}
+
+class _GameDirectoryDialog extends ConsumerStatefulWidget {
+  final WidgetRef ref;
+  final ValueChanged<String>? onDirectorySelected;
+
+  const _GameDirectoryDialog({
+    required this.ref,
+    this.onDirectorySelected,
+  });
+
+  @override
+  ConsumerState<_GameDirectoryDialog> createState() => _GameDirectoryDialogState();
+}
+
+class _GameDirectoryDialogState extends ConsumerState<_GameDirectoryDialog> {
+  @override
+  Widget build(BuildContext context) {
+    final settings = ref.watch(gameSettingsProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        width: 480,
+        constraints: const BoxConstraints(maxHeight: 500),
+        decoration: BoxDecoration(
+          color: isDark 
+              ? colorScheme.surface.withValues(alpha: 0.95)
+              : colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark 
+                ? colorScheme.outline.withValues(alpha: 0.2)
+                : colorScheme.outline.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.folder_open_rounded,
+                    size: 24,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '游戏目录管理',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    splashRadius: 20,
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: colorScheme.outline.withValues(alpha: 0.1)),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: settings.savedGameDirectories.length,
+                itemBuilder: (context, index) {
+                  final dir = settings.savedGameDirectories[index];
+                  final isSelected = settings.gameDirectory == dir;
+                  final isDefault = dir == GameSettingsNotifier.getDefaultMinecraftDir();
+
+                  return _buildDirectoryItem(
+                    dir: dir,
+                    isSelected: isSelected,
+                    isDefault: isDefault,
+                    colorScheme: colorScheme,
+                    isDark: isDark,
+                  );
+                },
+              ),
+            ),
+            Divider(height: 1, color: colorScheme.outline.withValues(alpha: 0.1)),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _addNewDirectory,
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('添加目录'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDirectoryItem({
+    required String dir,
+    required bool isSelected,
+    required bool isDefault,
+    required ColorScheme colorScheme,
+    required bool isDark,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _selectDirectory(dir),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? colorScheme.primary.withValues(alpha: isDark ? 0.15 : 0.08)
+                : Colors.transparent,
+            border: isSelected
+                ? Border(
+                    left: BorderSide(
+                      color: colorScheme.primary,
+                      width: 3,
+                    ),
+                  )
+                : null,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isDefault ? Icons.videogame_asset_rounded : Icons.folder_rounded,
+                size: 20,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isDefault ? '官方 Minecraft 目录' : _getDirectoryName(dir),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      dir,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
+              if (!isDefault) ...[
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () => _removeDirectory(dir),
+                  icon: Icon(
+                    Icons.remove_circle_outline_rounded,
+                    size: 18,
+                    color: colorScheme.error.withValues(alpha: 0.7),
+                  ),
+                  splashRadius: 18,
+                  tooltip: '移除',
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getDirectoryName(String path) {
+    final parts = path.split(Platform.pathSeparator);
+    return parts.isNotEmpty ? parts.last : path;
+  }
+
+  Future<void> _selectDirectory(String dir) async {
+    await ref.read(gameSettingsProvider.notifier).setGameDirectory(dir);
+    widget.onDirectorySelected?.call(dir);
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('已切换到: $dir'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _addNewDirectory() async {
+    final result = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: '选择 Minecraft 游戏目录',
+    );
+
+    if (result != null) {
+      await ref.read(gameSettingsProvider.notifier).addGameDirectory(result);
+      await ref.read(gameSettingsProvider.notifier).setGameDirectory(result);
+      widget.onDirectorySelected?.call(result);
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('已添加: $result'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeDirectory(String dir) async {
+    final settings = ref.read(gameSettingsProvider);
+    if (settings.gameDirectory == dir) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('无法移除当前使用的目录'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    await ref.read(gameSettingsProvider.notifier).removeGameDirectory(dir);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('已移除: $dir'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }

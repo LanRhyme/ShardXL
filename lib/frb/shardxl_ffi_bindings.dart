@@ -1,6 +1,7 @@
 // ShardXL-Lib FFI Bindings
 // Manual Dart FFI bindings for ShardXL-Lib Rust library
 
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'package:ffi/ffi.dart';
@@ -64,10 +65,10 @@ String _fromCString(Pointer<Int8> ptr) {
   while (true) {
     final b = ptr.elementAt(i).value;
     if (b == 0) break;
-    bytes.add(b);
+    bytes.add(b & 0xFF);
     i++;
   }
-  return String.fromCharCodes(bytes);
+  return utf8.decode(bytes);
 }
 
 class MinecraftVersionData {

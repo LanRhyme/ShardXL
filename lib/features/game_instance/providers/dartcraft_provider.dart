@@ -36,6 +36,7 @@ class GameSettings {
   final bool fullscreen;
   final List<String> jvmArguments;
   final List<String> gameArguments;
+  final List<String> savedGameDirectories;
 
   const GameSettings({
     this.javaPath = '',
@@ -46,6 +47,7 @@ class GameSettings {
     this.fullscreen = false,
     this.jvmArguments = const [],
     this.gameArguments = const [],
+    this.savedGameDirectories = const [],
   });
 
   GameSettings copyWith({
@@ -57,6 +59,7 @@ class GameSettings {
     bool? fullscreen,
     List<String>? jvmArguments,
     List<String>? gameArguments,
+    List<String>? savedGameDirectories,
   }) {
     return GameSettings(
       javaPath: javaPath ?? this.javaPath,
@@ -67,6 +70,7 @@ class GameSettings {
       fullscreen: fullscreen ?? this.fullscreen,
       jvmArguments: jvmArguments ?? this.jvmArguments,
       gameArguments: gameArguments ?? this.gameArguments,
+      savedGameDirectories: savedGameDirectories ?? this.savedGameDirectories,
     );
   }
 
@@ -85,17 +89,20 @@ class GameSettingsNotifier extends StateNotifier<GameSettings> {
   static const _keyFullscreen = 'game_fullscreen';
   static const _keyJvmArgs = 'game_jvm_args';
   static const _keyGameArgs = 'game_game_args';
+  static const _keySavedGameDirectories = 'saved_game_directories';
 
   Future<void> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     final javaPath = prefs.getString(_keyJavaPath) ?? '';
     final memoryMB = prefs.getInt(_keyMemoryMB) ?? 4096;
-    final gameDirectory = prefs.getString(_keyGameDirectory) ?? _getDefaultGameDir();
+    final defaultDir = _getDefaultGameDir();
+    final gameDirectory = prefs.getString(_keyGameDirectory) ?? defaultDir;
     final windowWidth = prefs.getInt(_keyWindowWidth) ?? 1920;
     final windowHeight = prefs.getInt(_keyWindowHeight) ?? 1080;
     final fullscreen = prefs.getBool(_keyFullscreen) ?? false;
     final jvmArgs = prefs.getStringList(_keyJvmArgs) ?? [];
     final gameArgs = prefs.getStringList(_keyGameArgs) ?? [];
+    final savedDirs = prefs.getStringList(_keySavedGameDirectories) ?? [defaultDir];
 
     state = GameSettings(
       javaPath: javaPath,
@@ -106,21 +113,28 @@ class GameSettingsNotifier extends StateNotifier<GameSettings> {
       fullscreen: fullscreen,
       jvmArguments: jvmArgs,
       gameArguments: gameArgs,
+      savedGameDirectories: savedDirs,
     );
+  }
+
+  static String getDefaultMinecraftDir() {
+    if (Platform.isWindows) {
+      return '${Platform.environment['APPDATA'] ?? ''}/.minecraft';
+    } else if (Platform.isMacOS) {
+      return '${Platform.environment['HOME'] ?? ''}/Library/Application Support/minecraft';
+    } else {
+      return '${Platform.environment['HOME'] ?? ''}/.minecraft';
+    }
   }
 
   String _getDefaultGameDir() {
     try {
-      return getDefaultGameDirectory();
+      final ffiDir = getDefaultGameDirectory();
+      if (ffiDir.isNotEmpty) return ffiDir;
     } catch (e) {
-      if (Platform.isWindows) {
-        return '${Platform.environment['APPDATA'] ?? ''}/.minecraft';
-      } else if (Platform.isMacOS) {
-        return '${Platform.environment['HOME'] ?? ''}/Library/Application Support/minecraft';
-      } else {
-        return '${Platform.environment['HOME'] ?? ''}/.minecraft';
-      }
+      // FFI 不可用，使用默认目录
     }
+    return getDefaultMinecraftDir();
   }
 
   Future<void> setJavaPath(String path) async {
@@ -138,7 +152,34 @@ class GameSettingsNotifier extends StateNotifier<GameSettings> {
   Future<void> setGameDirectory(String dir) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyGameDirectory, dir);
-    state = state.copyWith(gameDirectory: dir);
+    
+    // 如果目录不在已保存列表中，添加它
+    final savedDirs = List<String>.from(state.savedGameDirectories);
+    if (!savedDirs.contains(dir)) {
+      savedDirs.insert(0, dir);
+      await prefs.setStringList(_keySavedGameDirectories, savedDirs);
+      state = state.copyWith(gameDirectory: dir, savedGameDirectories: savedDirs);
+    } else {
+      state = state.copyWith(gameDirectory: dir);
+    }
+  }
+
+  Future<void> addGameDirectory(String dir) async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedDirs = List<String>.from(state.savedGameDirectories);
+    if (!savedDirs.contains(dir)) {
+      savedDirs.insert(0, dir);
+      await prefs.setStringList(_keySavedGameDirectories, savedDirs);
+      state = state.copyWith(savedGameDirectories: savedDirs);
+    }
+  }
+
+  Future<void> removeGameDirectory(String dir) async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedDirs = List<String>.from(state.savedGameDirectories);
+    savedDirs.remove(dir);
+    await prefs.setStringList(_keySavedGameDirectories, savedDirs);
+    state = state.copyWith(savedGameDirectories: savedDirs);
   }
 
   Future<void> setWindowSize(int width, int height) async {
@@ -215,7 +256,7 @@ final installedVersionsProvider = FutureProvider<List<String>>((ref) async {
   final settings = ref.watch(gameSettingsProvider);
   final dir = settings.gameDirectory;
   if (dir.isEmpty) return [];
-  
+
   try {
     return await Future.microtask(() => getInstalledVersions(dir));
   } catch (e) {

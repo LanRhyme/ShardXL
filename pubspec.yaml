@@ -33,6 +33,9 @@ dependencies:
   # FFI
   ffi: ^2.1.0
 
+  # File Picker
+  file_picker: ^8.1.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
