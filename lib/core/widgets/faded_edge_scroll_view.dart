@@ -1,8 +1,9 @@
 // ShardXL 羽化边缘滚动视图组件
 // lib/core/widgets/faded_edge_scroll_view.dart
 //
-// 在滚动视图的顶部和底部添加透明度羽化效果
-// 符合 shadcn-ui 设计风格
+// 提供滚动视图的羽化边缘效果
+// 使用 ShaderMask 实现内容边缘透明渐变
+// 注意：需要在 BackdropFilter 外部使用，否则会阻断毛玻璃效果
 
 import 'package:flutter/material.dart';
 
@@ -88,27 +89,99 @@ class _FadedEdgeScrollViewState extends State<FadedEdgeScrollView> {
       );
     }
 
-    return ShaderMask(
-      shaderCallback: (Rect bounds) {
-        return LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            if (widget.enableTopFade && _showTopFade) Colors.transparent else Colors.white,
-            Colors.white,
-            Colors.white,
-            if (widget.enableBottomFade && _showBottomFade) Colors.transparent else Colors.white,
-          ],
-          stops: [
-            0.0,
-            widget.enableTopFade && _showTopFade ? (widget.fadeHeight / bounds.height).clamp(0.0, 0.15) : 0.0,
-            widget.enableBottomFade && _showBottomFade ? (1.0 - widget.fadeHeight / bounds.height).clamp(0.85, 1.0) : 1.0,
-            1.0,
-          ],
-        ).createShader(bounds);
-      },
-      blendMode: BlendMode.dstIn,
+    return _FadedEdgeContainer(
+      fadeHeight: widget.fadeHeight,
+      showTopFade: widget.enableTopFade && _showTopFade,
+      showBottomFade: widget.enableBottomFade && _showBottomFade,
       child: scrollView,
+    );
+  }
+}
+
+/// 羽化边缘容器
+/// 使用 ShaderMask + BlendMode.dstIn 实现内容边缘透明渐变
+class _FadedEdgeContainer extends StatelessWidget {
+  final Widget child;
+  final double fadeHeight;
+  final bool showTopFade;
+  final bool showBottomFade;
+
+  const _FadedEdgeContainer({
+    required this.child,
+    required this.fadeHeight,
+    required this.showTopFade,
+    required this.showBottomFade,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = constraints.maxHeight;
+        if (height.isInfinite || height <= 0) {
+          return child;
+        }
+
+        final double topStop = showTopFade ? (fadeHeight / height).clamp(0.0, 0.5) : 0.0;
+        final double bottomStop = showBottomFade
+            ? (1.0 - fadeHeight / height).clamp(0.5, 1.0)
+            : 1.0;
+
+        return ShaderMask(
+          shaderCallback: (Rect bounds) {
+            if (showTopFade && showBottomFade) {
+              return LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: const [
+                  Color(0x00000000),
+                  Color(0xFF000000),
+                  Color(0xFF000000),
+                  Color(0x00000000),
+                ],
+                stops: [
+                  0.0,
+                  topStop,
+                  bottomStop,
+                  1.0,
+                ],
+              ).createShader(bounds);
+            } else if (showTopFade) {
+              return LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: const [
+                  Color(0x00000000),
+                  Color(0xFF000000),
+                ],
+                stops: [
+                  0.0,
+                  topStop,
+                ],
+              ).createShader(bounds);
+            } else if (showBottomFade) {
+              return LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: const [
+                  Color(0x00000000),
+                  Color(0xFF000000),
+                ],
+                stops: [
+                  0.0,
+                  1.0 - bottomStop,
+                ],
+              ).createShader(bounds);
+            } else {
+              return LinearGradient(
+                colors: const [Color(0xFF000000), Color(0xFF000000)],
+              ).createShader(bounds);
+            }
+          },
+          blendMode: BlendMode.dstIn,
+          child: child,
+        );
+      },
     );
   }
 }
@@ -137,8 +210,6 @@ class FadedEdgeWrapper extends StatefulWidget {
 class _FadedEdgeWrapperState extends State<FadedEdgeWrapper> {
   bool _showTopFade = false;
   bool _showBottomFade = true;
-  double _lastPixels = 0;
-  double _lastMaxExtent = 0;
 
   void _updateFadeFromNotification(ScrollNotification notification) {
     final metrics = notification.metrics;
@@ -146,13 +217,10 @@ class _FadedEdgeWrapperState extends State<FadedEdgeWrapper> {
     final canScrollUp = metrics.pixels > 0;
     final canScrollDown = metrics.pixels < metrics.maxScrollExtent;
 
-    if (_showTopFade != canScrollUp || _showBottomFade != canScrollDown ||
-        _lastPixels != metrics.pixels || _lastMaxExtent != metrics.maxScrollExtent) {
+    if (_showTopFade != canScrollUp || _showBottomFade != canScrollDown) {
       setState(() {
         _showTopFade = canScrollUp;
         _showBottomFade = canScrollDown;
-        _lastPixels = metrics.pixels;
-        _lastMaxExtent = metrics.maxScrollExtent;
       });
     }
   }
@@ -166,27 +234,68 @@ class _FadedEdgeWrapperState extends State<FadedEdgeWrapper> {
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final height = constraints.maxHeight;
+          if (height.isInfinite || height <= 0) {
+            return widget.scrollView;
+          }
+
+          final double topStop = widget.enableTopFade && _showTopFade
+              ? (widget.fadeHeight / height).clamp(0.0, 0.5)
+              : 0.0;
+          final double bottomStop = widget.enableBottomFade && _showBottomFade
+              ? (1.0 - widget.fadeHeight / height).clamp(0.5, 1.0)
+              : 1.0;
+
           return ShaderMask(
             shaderCallback: (Rect bounds) {
-              final topFadeStop = (widget.fadeHeight / bounds.height).clamp(0.0, 0.12);
-              final bottomFadeStart = (1.0 - widget.fadeHeight / bounds.height).clamp(0.88, 1.0);
-
-              return LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  if (widget.enableTopFade && _showTopFade) Colors.transparent else Colors.white,
-                  Colors.white,
-                  Colors.white,
-                  if (widget.enableBottomFade && _showBottomFade) Colors.transparent else Colors.white,
-                ],
-                stops: [
-                  0.0,
-                  widget.enableTopFade && _showTopFade ? topFadeStop : 0.0,
-                  widget.enableBottomFade && _showBottomFade ? bottomFadeStart : 1.0,
-                  1.0,
-                ],
-              ).createShader(bounds);
+              if (widget.enableTopFade && _showTopFade && widget.enableBottomFade && _showBottomFade) {
+                return LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: const [
+                    Color(0x00000000),
+                    Color(0xFF000000),
+                    Color(0xFF000000),
+                    Color(0x00000000),
+                  ],
+                  stops: [
+                    0.0,
+                    topStop,
+                    bottomStop,
+                    1.0,
+                  ],
+                ).createShader(bounds);
+              } else if (widget.enableTopFade && _showTopFade) {
+                return LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: const [
+                    Color(0x00000000),
+                    Color(0xFF000000),
+                  ],
+                  stops: [
+                    0.0,
+                    topStop,
+                  ],
+                ).createShader(bounds);
+              } else if (widget.enableBottomFade && _showBottomFade) {
+                return LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: const [
+                    Color(0x00000000),
+                    Color(0xFF000000),
+                  ],
+                  stops: [
+                    0.0,
+                    1.0 - bottomStop,
+                  ],
+                ).createShader(bounds);
+              } else {
+                return LinearGradient(
+                  colors: const [Color(0xFF000000), Color(0xFF000000)],
+                ).createShader(bounds);
+              }
             },
             blendMode: BlendMode.dstIn,
             child: widget.scrollView,

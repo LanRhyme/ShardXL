@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/shard_theme.dart';
-import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/shard_card.dart';
 import '../../../core/widgets/shadcn_components.dart';
 import '../../../core/widgets/shadcn_button.dart';
 
@@ -135,7 +135,7 @@ class HomePageContent extends ConsumerWidget {
     required String label,
     required Color color,
   }) {
-    return GlassCard(
+    return ShardCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -258,7 +258,7 @@ class HomePageContent extends ConsumerWidget {
     required IconData iconData,
     required Color color,
   }) {
-    return GlassCard(
+    return ShardCard(
       onTap: () {},
       hoverable: true,
       child: Row(
@@ -325,7 +325,7 @@ class HomePageContent extends ConsumerWidget {
               ),
         ),
         const SizedBox(height: 12),
-        GlassCard(
+        ShardCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

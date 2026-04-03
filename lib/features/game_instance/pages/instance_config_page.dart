@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/widgets/glass_card.dart';
-import '../providers/dartcraft_provider.dart';
+import '../../../core/widgets/shard_card.dart';
+import '../providers/game_provider.dart';
 import '../providers/instance_config_provider.dart';
 
 class VersionIconData {
@@ -186,7 +186,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
   Widget _buildVersionInfoCard() {
     final iconData = getVersionIconData(widget.version);
 
-    return GlassCard(
+    return ShardCard(
       padding: const EdgeInsets.all(24),
       child: Row(
         children: [
@@ -335,7 +335,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
           // 版本设置
           _buildSectionHeader(Icons.auto_awesome_rounded, '版本设置'),
           const SizedBox(height: 16),
-          GlassCard(
+          ShardCard(
             child: Column(
               children: [
                 _buildDropdownTile(
@@ -371,7 +371,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
           // 游戏设置
           _buildSectionHeader(Icons.gamepad_rounded, '游戏设置'),
           const SizedBox(height: 16),
-          GlassCard(
+          ShardCard(
             child: Column(
               children: [
                 // 内存分配滑块
@@ -547,7 +547,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
           // Java 设置
           _buildSectionHeader(Icons.terminal_rounded, 'Java 设置'),
           const SizedBox(height: 16),
-          GlassCard(
+          ShardCard(
             child: Column(
               children: [
                 _buildTextFieldTile(
@@ -571,7 +571,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
           // 窗口设置
           _buildSectionHeader(Icons.aspect_ratio_rounded, '运行窗口'),
           const SizedBox(height: 16),
-          GlassCard(
+          ShardCard(
             child: Column(
               children: [
                 SwitchListTile(
@@ -712,7 +712,7 @@ class _InstanceConfigPageState extends ConsumerState<InstanceConfigPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        GlassCard(
+        ShardCard(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

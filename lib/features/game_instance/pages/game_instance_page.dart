@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../auth/pages/auth_page.dart';
-import '../providers/dartcraft_provider.dart';
+import '../providers/game_provider.dart';
 import '../providers/game_instances_provider.dart';
-import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/shard_card.dart';
 import '../../../core/widgets/faded_edge_scroll_view.dart';
 import 'instance_config_page.dart';
 
@@ -174,7 +174,7 @@ class _GameInstancePageState extends ConsumerState<GameInstancePage> {
     return Container(
       width: 220,
       margin: const EdgeInsets.all(16),
-      child: GlassCard(
+      child: ShardCard(
         padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1011,7 +1011,7 @@ class _VersionCardState extends State<_VersionCard> with SingleTickerProviderSta
                   ),
               ],
             ),
-            child: GlassCard(
+            child: ShardCard(
               hoverable: true,
               padding: EdgeInsets.zero,
               child: Stack(

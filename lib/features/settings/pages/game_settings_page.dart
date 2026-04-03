@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../game_instance/providers/dartcraft_provider.dart';
-import '../../../core/widgets/glass_card.dart';
+import '../../game_instance/providers/game_provider.dart';
+import '../../../core/widgets/shard_card.dart';
 import '../../../core/widgets/shadcn_button.dart';
 import '../../../core/widgets/faded_edge_scroll_view.dart';
 import '../../../core/theme/shard_theme.dart';
@@ -270,7 +270,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
     required IconData icon,
     required List<Widget> children,
   }) {
-    return GlassCard(
+    return ShardCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

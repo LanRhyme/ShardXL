@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
-import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/shard_card.dart';
 
 class AuthPage extends ConsumerStatefulWidget {
   const AuthPage({super.key});
@@ -42,7 +42,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
               const Center(child: CircularProgressIndicator()),
             ] else ...[
               if (authState.error != null)
-                GlassCard(
+                ShardCard(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
@@ -76,7 +76,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       methodName = 'Ely.by';
     }
 
-    return GlassCard(
+    return ShardCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -112,7 +112,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   Widget _buildOfflineAuth() {
-    return GlassCard(
+    return ShardCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -163,7 +163,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   Widget _buildMicrosoftAuth() {
-    return GlassCard(
+    return ShardCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -204,7 +204,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   Widget _buildElyByAuth() {
-    return GlassCard(
+    return ShardCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

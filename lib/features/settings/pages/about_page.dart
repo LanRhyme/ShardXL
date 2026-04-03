@@ -2,7 +2,7 @@
 // lib/features/settings/pages/about_page.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/shard_card.dart';
 import '../../../core/widgets/shadcn_components.dart';
 import '../../../core/widgets/faded_edge_scroll_view.dart';
 
@@ -75,7 +75,7 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 32),
           
           // 版本信息
-          GlassCard(
+          ShardCard(
             child: Column(
               children: [
                 _buildInfoTile(
@@ -127,7 +127,7 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 16),
           
           // 相关链接
-          GlassCard(
+          ShardCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -179,7 +179,7 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 16),
           
           // 致谢
-          GlassCard(
+          ShardCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

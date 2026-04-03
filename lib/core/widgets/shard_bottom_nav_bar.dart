@@ -5,13 +5,11 @@
 // - ShardBottomNavBar: 主底部导航栏
 // - ShardFloatingBottomNavBar: 悬浮底部导航栏（包裹 ShardBottomNavBar）
 
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../theme/shard_theme.dart';
-import '../../features/settings/providers/theme_provider.dart';
 
 // ========================
 // 尺寸测量组件
@@ -177,17 +175,11 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final themeState = ref.watch(shardThemeProvider);
-    final enableGlass = themeState.theme.enableGlassEffect;
-    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    final blurSigma = themeExtension?.glassBlurSigma ?? 16.0;
 
     final navBarContent = Container(
       padding: EdgeInsets.fromLTRB(12, 28, 12, 8 + bottomPadding),
       decoration: BoxDecoration(
-        color: enableGlass
-            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.8)
-            : colorScheme.surfaceContainerHighest,
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
         border: widget.showTopBorder
             ? Border(
                 top: BorderSide(
@@ -270,12 +262,7 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
 
     return ClipPath(
       clipper: _InvertedRoundedClipper(),
-      child: enableGlass
-          ? BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-              child: navBarContent,
-            )
-          : navBarContent,
+      child: navBarContent,
     );
   }
 
@@ -403,17 +390,11 @@ class ShardFloatingBottomNavBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final themeState = ref.watch(shardThemeProvider);
-    final enableGlass = themeState.theme.enableGlassEffect;
-    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    final blurSigma = themeExtension?.glassBlurSigma ?? 16.0;
 
     final navBarCard = Card(
       elevation: 4,
       margin: EdgeInsets.zero,
-      color: enableGlass
-          ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.8)
-          : colorScheme.surfaceContainerHighest,
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(999),
         side: BorderSide(
@@ -437,15 +418,7 @@ class ShardFloatingBottomNavBar extends ConsumerWidget {
     return Container(
       margin: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding + marginBottom),
       alignment: Alignment.center,
-      child: enableGlass
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-                child: navBarCard,
-              ),
-            )
-          : navBarCard,
+      child: navBarCard,
     );
   }
 }

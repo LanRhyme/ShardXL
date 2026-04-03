@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../game_instance/providers/dartcraft_provider.dart';
-import '../../../core/widgets/glass_card.dart';
+import '../../game_instance/providers/game_provider.dart';
+import '../../../core/widgets/shard_card.dart';
 import '../../../core/widgets/shadcn_components.dart';
 import '../../../core/widgets/shadcn_button.dart';
 import '../../../core/theme/shard_theme.dart';
@@ -226,7 +226,7 @@ class _DownloadPageState extends ConsumerState<DownloadPage> {
 
     final versionColor = _getVersionColor(version.versionType);
 
-    return GlassCard(
+    return ShardCard(
       margin: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [

@@ -2,7 +2,7 @@
 // lib/features/settings/pages/launcher_settings_page.dart
 
 import 'package:flutter/material.dart';
-import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/shard_card.dart';
 import '../../../core/widgets/faded_edge_scroll_view.dart';
 import '../../../core/theme/shard_theme.dart';
 
@@ -182,7 +182,7 @@ class LauncherSettingsPage extends StatelessWidget {
     required IconData icon,
     required List<Widget> children,
   }) {
-    return GlassCard(
+    return ShardCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

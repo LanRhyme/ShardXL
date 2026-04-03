@@ -2,6 +2,7 @@
 // lib/core/widgets/shard_background.dart
 
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ import '../../../features/settings/providers/theme_provider.dart';
 
 /// 动态背景组件
 /// 根据主题配置显示不同类型的背景
+/// 当启用毛玻璃效果时，在背景和内容之间添加 BackdropFilter
 class ShardBackground extends ConsumerStatefulWidget {
   final Widget child;
 
@@ -45,22 +47,26 @@ class _ShardBackgroundState extends ConsumerState<ShardBackground> {
     }
     _previousBackgroundType = currentBackgroundType;
 
+    final backgroundWidget = Positioned.fill(
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 800),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        child: _buildBackground(
+          colorScheme: colorScheme,
+          primaryColor: shardTheme.primaryColor,
+          backgroundType: currentBackgroundType,
+          backgroundImagePath: shardTheme.backgroundImagePath,
+          glassBlurSigma: shardTheme.glassBlurSigma,
+          maskOpacity: shardTheme.maskOpacity,
+        ),
+      ),
+    );
+
     return RepaintBoundary(
       child: Stack(
         children: [
-          Positioned.fill(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 800),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              child: _buildBackground(
-                colorScheme: colorScheme,
-                primaryColor: shardTheme.primaryColor,
-                backgroundType: currentBackgroundType,
-                backgroundImagePath: shardTheme.backgroundImagePath,
-              ),
-            ),
-          ),
+          backgroundWidget,
           widget.child,
         ],
       ),
@@ -85,6 +91,8 @@ class _ShardBackgroundState extends ConsumerState<ShardBackground> {
     required Color primaryColor,
     required String backgroundType,
     String? backgroundImagePath,
+    double glassBlurSigma = 10.0,
+    double maskOpacity = 0.5,
   }) {
     switch (backgroundType) {
       case 'solid':
@@ -97,6 +105,8 @@ class _ShardBackgroundState extends ConsumerState<ShardBackground> {
         return _ImageBackground(
           colorScheme: colorScheme,
           imagePath: backgroundImagePath,
+          glassBlurSigma: glassBlurSigma,
+          maskOpacity: maskOpacity,
         );
 
       case 'dynamic':
@@ -261,10 +271,14 @@ class _GradientBackgroundState extends State<_GradientBackground>
 class _ImageBackground extends StatelessWidget {
   final ColorScheme colorScheme;
   final String? imagePath;
+  final double glassBlurSigma;
+  final double maskOpacity;
 
   const _ImageBackground({
     required this.colorScheme,
     this.imagePath,
+    this.glassBlurSigma = 10.0,
+    this.maskOpacity = 0.5,
   });
 
   @override
@@ -278,14 +292,24 @@ class _ImageBackground extends StatelessWidget {
             _buildImage()
           else
             _buildPlaceholder(),
+          if (glassBlurSigma > 0)
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: glassBlurSigma,
+                  sigmaY: glassBlurSigma,
+                ),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  colorScheme.surfaceContainerLowest.withValues(alpha: 0.3),
-                  colorScheme.surfaceContainerLowest.withValues(alpha: 0.7),
+                  colorScheme.surfaceContainerLowest.withValues(alpha: maskOpacity * 0.6),
+                  colorScheme.surfaceContainerLowest.withValues(alpha: maskOpacity * 1.4),
                 ],
               ),
             ),

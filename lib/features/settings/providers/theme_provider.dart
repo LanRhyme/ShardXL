@@ -96,13 +96,6 @@ class ShardThemeNotifier extends Notifier<ThemeState> {
     await _saveTheme(newTheme);
   }
 
-  /// 更新毛玻璃效果开关
-  Future<void> updateEnableGlassEffect(bool enable) async {
-    final newTheme = state.theme.copyWith(enableGlassEffect: enable);
-    state = state.copyWith(theme: newTheme);
-    await _saveTheme(newTheme);
-  }
-
   /// 更新卡片不透明度
   Future<void> updateCardOpacity(double opacity) async {
     final clampedOpacity = opacity.clamp(0.15, 0.95);
@@ -148,6 +141,22 @@ class ShardThemeNotifier extends Notifier<ThemeState> {
   /// 更新背景图片
   Future<void> updateBackgroundImage(String? imagePath) async {
     final newTheme = state.theme.copyWith(backgroundImagePath: imagePath);
+    state = state.copyWith(theme: newTheme);
+    await _saveTheme(newTheme);
+  }
+
+  /// 更新图片背景模糊程度
+  Future<void> updateGlassBlurSigma(double sigma) async {
+    final clampedSigma = sigma.clamp(0.0, 50.0);
+    final newTheme = state.theme.copyWith(glassBlurSigma: clampedSigma);
+    state = state.copyWith(theme: newTheme);
+    await _saveTheme(newTheme);
+  }
+
+  /// 更新图片背景遮罩不透明度
+  Future<void> updateMaskOpacity(double opacity) async {
+    final clampedOpacity = opacity.clamp(0.0, 1.0);
+    final newTheme = state.theme.copyWith(maskOpacity: clampedOpacity);
     state = state.copyWith(theme: newTheme);
     await _saveTheme(newTheme);
   }

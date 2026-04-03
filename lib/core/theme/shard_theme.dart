@@ -22,9 +22,6 @@ class ShardTheme {
   // 玻璃效果参数
   // ========================
 
-  /// 启用毛玻璃效果（默认 true）
-  final bool enableGlassEffect;
-
   /// 卡片不透明度（范围 0.15 ~ 0.95，默认 0.65）
   final double cardOpacity;
 
@@ -55,16 +52,23 @@ class ShardTheme {
   /// 背景图片路径（仅在 backgroundType 为 'image' 时使用）
   final String? backgroundImagePath;
 
+  /// 图片背景模糊程度（仅在 backgroundType 为 'image' 时使用）
+  final double glassBlurSigma;
+
+  /// 图片背景遮罩不透明度（仅在 backgroundType 为 'image' 时使用）
+  final double maskOpacity;
+
   const ShardTheme({
     this.isDark = true,
     this.primaryColor = const Color(0xFF7C4DFF),
-    this.enableGlassEffect = true,
     this.cardOpacity = 0.65,
     this.uiScale = 1.0,
     this.animationSpeed = 1.0,
     this.borderRadius = 6.0,
     this.backgroundType = 'solid',
     this.backgroundImagePath,
+    this.glassBlurSigma = 10.0,
+    this.maskOpacity = 0.5,
   });
 
   // ========================
@@ -74,24 +78,26 @@ class ShardTheme {
   ShardTheme copyWith({
     bool? isDark,
     Color? primaryColor,
-    bool? enableGlassEffect,
     double? cardOpacity,
     double? uiScale,
     double? animationSpeed,
     double? borderRadius,
     String? backgroundType,
     String? backgroundImagePath,
+    double? glassBlurSigma,
+    double? maskOpacity,
   }) {
     return ShardTheme(
       isDark: isDark ?? this.isDark,
       primaryColor: primaryColor ?? this.primaryColor,
-      enableGlassEffect: enableGlassEffect ?? this.enableGlassEffect,
       cardOpacity: cardOpacity ?? this.cardOpacity,
       uiScale: uiScale ?? this.uiScale,
       animationSpeed: animationSpeed ?? this.animationSpeed,
       borderRadius: borderRadius ?? this.borderRadius,
       backgroundType: backgroundType ?? this.backgroundType,
       backgroundImagePath: backgroundImagePath ?? this.backgroundImagePath,
+      glassBlurSigma: glassBlurSigma ?? this.glassBlurSigma,
+      maskOpacity: maskOpacity ?? this.maskOpacity,
     );
   }
 
@@ -103,13 +109,14 @@ class ShardTheme {
     return {
       'isDark': isDark,
       'primaryColor': primaryColor.toARGB32(),
-      'enableGlassEffect': enableGlassEffect,
       'cardOpacity': cardOpacity,
       'uiScale': uiScale,
       'animationSpeed': animationSpeed,
       'borderRadius': borderRadius,
       'backgroundType': backgroundType,
       'backgroundImagePath': backgroundImagePath,
+      'glassBlurSigma': glassBlurSigma,
+      'maskOpacity': maskOpacity,
     };
   }
 
@@ -117,13 +124,14 @@ class ShardTheme {
     return ShardTheme(
       isDark: map['isDark'] ?? true,
       primaryColor: Color(map['primaryColor'] ?? 0xFF7C4DFF),
-      enableGlassEffect: map['enableGlassEffect'] ?? true,
       cardOpacity: (map['cardOpacity'] ?? 0.65).toDouble(),
       uiScale: (map['uiScale'] ?? 1.0).toDouble(),
       animationSpeed: (map['animationSpeed'] ?? 1.0).toDouble(),
       borderRadius: (map['borderRadius'] ?? 10.0).toDouble(),
       backgroundType: map['backgroundType'] ?? 'gradient',
       backgroundImagePath: map['backgroundImagePath'] as String?,
+      glassBlurSigma: (map['glassBlurSigma'] ?? 10.0).toDouble(),
+      maskOpacity: (map['maskOpacity'] ?? 0.5).toDouble(),
     );
   }
 
@@ -309,11 +317,9 @@ class ShardTheme {
             width: 1,
           ),
         ),
-        color: enableGlassEffect
-            ? effectiveColorScheme.surfaceContainerHigh.withValues(
-                alpha: cardOpacity,
-              )
-            : effectiveColorScheme.surfaceContainerHigh,
+        color: effectiveColorScheme.surfaceContainerHigh.withValues(
+          alpha: cardOpacity,
+        ),
       ),
 
       // shadcn-ui 风格的 AppBar 主题
@@ -508,13 +514,14 @@ class ShardTheme {
     return other is ShardTheme &&
         other.isDark == isDark &&
         other.primaryColor == primaryColor &&
-        other.enableGlassEffect == enableGlassEffect &&
         other.cardOpacity == cardOpacity &&
         other.uiScale == uiScale &&
         other.animationSpeed == animationSpeed &&
         other.borderRadius == borderRadius &&
         other.backgroundType == backgroundType &&
-        other.backgroundImagePath == backgroundImagePath;
+        other.backgroundImagePath == backgroundImagePath &&
+        other.glassBlurSigma == glassBlurSigma &&
+        other.maskOpacity == maskOpacity;
   }
 
   @override
@@ -522,13 +529,14 @@ class ShardTheme {
     return Object.hash(
       isDark,
       primaryColor,
-      enableGlassEffect,
       cardOpacity,
       uiScale,
       animationSpeed,
       borderRadius,
       backgroundType,
       backgroundImagePath,
+      glassBlurSigma,
+      maskOpacity,
     );
   }
 }

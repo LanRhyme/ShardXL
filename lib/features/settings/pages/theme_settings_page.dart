@@ -9,9 +9,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../providers/theme_provider.dart';
 import '../../../core/theme/shard_theme.dart';
-import '../../../core/widgets/glass_card.dart';
+import '../../../core/widgets/shard_card.dart';
 import '../../../core/widgets/shadcn_button.dart';
-import '../../../core/widgets/shadcn_components.dart';
 import '../../../core/widgets/faded_edge_scroll_view.dart';
 
 class ThemeSettingsPage extends ConsumerWidget {
@@ -40,10 +39,6 @@ class ThemeSettingsPage extends ConsumerWidget {
 
           // 主题色
           _buildColorSection(context, shardTheme, notifier, colorScheme),
-          const SizedBox(height: 16),
-
-          // 玻璃效果
-          _buildGlassSection(context, shardTheme, notifier, colorScheme),
           const SizedBox(height: 16),
 
           // UI 参数
@@ -133,41 +128,6 @@ class ThemeSettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildGlassSection(
-    BuildContext context,
-    ShardTheme shardTheme,
-    ShardThemeNotifier notifier,
-    ColorScheme colorScheme,
-  ) {
-    return _SettingsSection(
-      title: '玻璃效果',
-      icon: Icons.blur_on_outlined,
-      child: Column(
-        children: [
-          _SettingSwitch(
-            icon: Icons.grain_outlined,
-            title: '启用毛玻璃',
-            subtitle: 'Liquid Glass 风格',
-            value: shardTheme.enableGlassEffect,
-            onChanged: (value) => notifier.updateEnableGlassEffect(value),
-          ),
-          if (shardTheme.enableGlassEffect) ...[
-            const SizedBox(height: 16),
-            _SettingSlider(
-              icon: Icons.opacity_outlined,
-              title: '卡片不透明度',
-              value: shardTheme.cardOpacity,
-              min: 0.15,
-              max: 0.95,
-              valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
-              onChanged: (value) => notifier.updateCardOpacity(value),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildUISection(
     BuildContext context,
     ShardTheme shardTheme,
@@ -208,6 +168,16 @@ class ThemeSettingsPage extends ConsumerWidget {
             valueFormatter: (v) => '${v.toStringAsFixed(0)}px',
             onChanged: (value) => notifier.updateBorderRadius(value),
           ),
+          const SizedBox(height: 16),
+          _SettingSlider(
+            icon: Icons.opacity_outlined,
+            title: '卡片不透明度',
+            value: shardTheme.cardOpacity,
+            min: 0.15,
+            max: 0.95,
+            valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
+            onChanged: (value) => notifier.updateCardOpacity(value),
+          ),
         ],
       ),
     );
@@ -230,9 +200,13 @@ class ThemeSettingsPage extends ConsumerWidget {
           ),
           if (shardTheme.backgroundType == 'image') ...[
             const SizedBox(height: 16),
-            _ImageBackgroundSelector(
+            _ImageBackgroundSettings(
               currentImagePath: shardTheme.backgroundImagePath,
+              glassBlurSigma: shardTheme.glassBlurSigma,
+              maskOpacity: shardTheme.maskOpacity,
               onImageSelected: (path) => notifier.updateBackgroundImage(path),
+              onGlassBlurChanged: (value) => notifier.updateGlassBlurSigma(value),
+              onMaskOpacityChanged: (value) => notifier.updateMaskOpacity(value),
             ),
           ],
         ],
@@ -273,7 +247,7 @@ class _SettingsSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
-    return GlassCard(
+    return ShardCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -307,59 +281,8 @@ class _SettingsSection extends StatelessWidget {
 }
 
 // ========================
-// 设置项组件
+// 滑块设置项
 // ========================
-
-class _SettingSwitch extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _SettingSwitch({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                ),
-                Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch(value: value, onChanged: onChanged),
-        ],
-      ),
-    );
-  }
-}
 
 class _SettingSlider extends StatelessWidget {
   final IconData icon;
@@ -813,25 +736,33 @@ class _BackgroundTypeChip extends StatelessWidget {
 }
 
 // ========================
-// 图片背景选择器
+// 图片背景设置
 // ========================
 
-class _ImageBackgroundSelector extends ConsumerStatefulWidget {
+class _ImageBackgroundSettings extends ConsumerStatefulWidget {
   final String? currentImagePath;
+  final double glassBlurSigma;
+  final double maskOpacity;
   final ValueChanged<String?> onImageSelected;
+  final ValueChanged<double> onGlassBlurChanged;
+  final ValueChanged<double> onMaskOpacityChanged;
 
-  const _ImageBackgroundSelector({
+  const _ImageBackgroundSettings({
     this.currentImagePath,
+    required this.glassBlurSigma,
+    required this.maskOpacity,
     required this.onImageSelected,
+    required this.onGlassBlurChanged,
+    required this.onMaskOpacityChanged,
   });
 
   @override
-  ConsumerState<_ImageBackgroundSelector> createState() =>
-      _ImageBackgroundSelectorState();
+  ConsumerState<_ImageBackgroundSettings> createState() =>
+      _ImageBackgroundSettingsState();
 }
 
-class _ImageBackgroundSelectorState
-    extends ConsumerState<_ImageBackgroundSelector> {
+class _ImageBackgroundSettingsState
+    extends ConsumerState<_ImageBackgroundSettings> {
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage(ImageSource source) async {
@@ -888,57 +819,135 @@ class _ImageBackgroundSelectorState
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (widget.currentImagePath != null &&
-            widget.currentImagePath!.isNotEmpty) ...[
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  themeExtension?.cardBorderRadius ?? 10.0,
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(
+          themeExtension?.cardBorderRadius ?? 10.0,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.currentImagePath != null &&
+              widget.currentImagePath!.isNotEmpty)
+            Expanded(
+              flex: 3,
+              child: _buildThumbnail(colorScheme, themeExtension),
+            )
+          else
+            Expanded(
+              flex: 3,
+              child: _buildPlaceholder(colorScheme, themeExtension),
+            ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 5,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShadcnButton(
+                  onPressed: _showImageSourceDialog,
+                  variant: ShadcnButtonVariant.outline,
+                  size: ShadcnButtonSize.sm,
+                  icon: Icons.image_rounded,
+                  child: Text(widget.currentImagePath != null
+                      ? '更换图片'
+                      : '选择图片'),
                 ),
-                child: Image.file(
-                  File(widget.currentImagePath!),
-                  height: 120,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: GestureDetector(
-                  onTap: () => widget.onImageSelected(null),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.close,
-                      size: 16,
-                      color: Colors.white,
-                    ),
+                if (widget.currentImagePath != null) ...[
+                  const SizedBox(height: 12),
+                  _SettingSlider(
+                    icon: Icons.blur_on_outlined,
+                    title: '模糊效果',
+                    value: widget.glassBlurSigma,
+                    min: 0.0,
+                    max: 50.0,
+                    valueFormatter: (v) => v.toStringAsFixed(0),
+                    onChanged: widget.onGlassBlurChanged,
                   ),
+                  const SizedBox(height: 8),
+                  _SettingSlider(
+                    icon: Icons.opacity_outlined,
+                    title: '遮罩不透明度',
+                    value: widget.maskOpacity,
+                    min: 0.0,
+                    max: 1.0,
+                    valueFormatter: (v) => '${(v * 100).toStringAsFixed(0)}%',
+                    onChanged: widget.onMaskOpacityChanged,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThumbnail(ColorScheme colorScheme, ShardThemeExtension? themeExtension) {
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(
+              themeExtension?.cardBorderRadius ?? 10.0,
+            ),
+            child: Image.file(
+              File(widget.currentImagePath!),
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => _buildPlaceholder(
+                colorScheme,
+                themeExtension,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: () => widget.onImageSelected(null),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close,
+                  size: 12,
+                  color: Colors.white,
                 ),
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 12),
         ],
-        SizedBox(
-          width: double.infinity,
-          child: ShadcnButton(
-            onPressed: _showImageSourceDialog,
-            variant: ShadcnButtonVariant.outline,
-            icon: Icons.image_rounded,
-            child: Text(widget.currentImagePath != null ? '更换图片' : '选择图片'),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(ColorScheme colorScheme, ShardThemeExtension? themeExtension) {
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(
+            themeExtension?.cardBorderRadius ?? 10.0,
           ),
         ),
-      ],
+        child: Center(
+          child: Icon(
+            Icons.image_outlined,
+            size: 32,
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -978,14 +987,8 @@ class _PreviewCard extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               _PreviewInfoRow(
-                icon: Icons.blur_on_rounded,
-                label: '玻璃效果',
-                value: shardTheme.enableGlassEffect ? '已开启' : '已关闭',
-              ),
-              const SizedBox(height: 8),
-              _PreviewInfoRow(
                 icon: Icons.opacity_rounded,
-                label: '不透明度',
+                label: '卡片不透明度',
                 value: '${(shardTheme.cardOpacity * 100).toStringAsFixed(0)}%',
               ),
               const SizedBox(height: 8),
