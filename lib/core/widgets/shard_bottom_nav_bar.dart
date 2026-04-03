@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../theme/shard_theme.dart';
+import '../notifications/notification_manager.dart';
 
 // ========================
 // 尺寸测量组件
@@ -33,7 +34,10 @@ class MeasureSize extends SingleChildRenderObjectWidget {
   }
 
   @override
-  void updateRenderObject(BuildContext context, MeasureSizeRenderObject renderObject) {
+  void updateRenderObject(
+    BuildContext context,
+    MeasureSizeRenderObject renderObject,
+  ) {
     renderObject.onChange = onChange;
   }
 }
@@ -87,6 +91,7 @@ class ShardBottomNavBar extends ConsumerStatefulWidget {
   final int selectedIndex;
   final ValueChanged<int> onTap;
   final bool showTopBorder;
+  final VoidCallback? onNotificationTap;
 
   const ShardBottomNavBar({
     super.key,
@@ -94,6 +99,7 @@ class ShardBottomNavBar extends ConsumerStatefulWidget {
     required this.selectedIndex,
     required this.onTap,
     this.showTopBorder = true,
+    this.onNotificationTap,
   });
 
   @override
@@ -148,9 +154,8 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
   /// 触发指示器从 fromIndex 移动到 toIndex 的动画
   void _animateToIndex(int from, int to) {
     final theme = Theme.of(context);
-    final factor = theme.extension<ShardThemeExtension>()
-            ?.animationDurationFactor ??
-        1.0;
+    final factor =
+        theme.extension<ShardThemeExtension>()?.animationDurationFactor ?? 1.0;
 
     _fromIndex = from;
     _toIndex = to;
@@ -197,9 +202,13 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
-                children: List.generate(widget.items.length, (index) {
-                  return _buildNavItem(index);
-                }),
+                children: [
+                  ...List.generate(widget.items.length, (index) {
+                    return _buildNavItem(index);
+                  }),
+                  const Spacer(),
+                  _buildNotificationButton(context),
+                ],
               ),
               Positioned(
                 left: 0,
@@ -219,9 +228,11 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
                         ? 1.0 + (maxScale - 1.0) * (pos * 2)
                         : maxScale - (maxScale - 1.0) * ((pos - 0.5) * 2);
 
-                    final fromWidth = _itemWidths[_fromIndex] ?? defaultItemWidth;
+                    final fromWidth =
+                        _itemWidths[_fromIndex] ?? defaultItemWidth;
                     final toWidth = _itemWidths[_toIndex] ?? defaultItemWidth;
-                    final currentWidth = fromWidth + (toWidth - fromWidth) * pos;
+                    final currentWidth =
+                        fromWidth + (toWidth - fromWidth) * pos;
 
                     double fromLeft = 0;
                     double toLeft = 0;
@@ -234,7 +245,8 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
                     final currentLeft = fromLeft + (toLeft - fromLeft) * pos;
 
                     final indicatorWidth = currentWidth * 0.5 * scale;
-                    final indicatorLeft = currentLeft + (currentWidth - indicatorWidth) / 2;
+                    final indicatorLeft =
+                        currentLeft + (currentWidth - indicatorWidth) / 2;
 
                     return Container(
                       width: double.infinity,
@@ -260,10 +272,7 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
       ),
     );
 
-    return ClipPath(
-      clipper: _InvertedRoundedClipper(),
-      child: navBarContent,
-    );
+    return ClipPath(clipper: _InvertedRoundedClipper(), child: navBarContent);
   }
 
   /// 构建单个导航项
@@ -302,7 +311,9 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
                   item.label,
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                     color: isSelected
                         ? colorScheme.primary
                         : colorScheme.onSurfaceVariant,
@@ -314,6 +325,78 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
         ),
       ),
     );
+  }
+
+  Widget _buildNotificationButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ListenableBuilder(
+      listenable: _NotificationChangeNotifier(),
+      builder: (context, _) {
+        final count = NotificationManager.unreadCount;
+
+        return GestureDetector(
+          onTap: widget.onNotificationTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Center(
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    Icons.notifications_outlined,
+                    size: 20,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: colorScheme.error,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 12,
+                          minHeight: 12,
+                        ),
+                        child: Text(
+                          count > 99 ? '99+' : '$count',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w600,
+                            height: 1,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _NotificationChangeNotifier extends ChangeNotifier {
+  _NotificationChangeNotifier() {
+    NotificationManager.instance.addListener(_update);
+  }
+
+  void _update() => notifyListeners();
+
+  @override
+  void dispose() {
+    NotificationManager.instance.removeListener(_update);
+    super.dispose();
   }
 }
 
@@ -332,8 +415,10 @@ class _InvertedRoundedClipper extends CustomClipper<Path> {
     // 凹槽左侧曲线（向下进入凹槽）
     // 控制点在左上，终点在左下
     path.quadraticBezierTo(
-      0, notchHeight, // 控制点：向下
-      notchRadius, notchHeight, // 终点：向右
+      0,
+      notchHeight, // 控制点：向下
+      notchRadius,
+      notchHeight, // 终点：向右
     );
 
     // 凹槽底部直线（占满整个宽度）
@@ -342,8 +427,10 @@ class _InvertedRoundedClipper extends CustomClipper<Path> {
     // 凹槽右侧曲线（向上退出凹槽）
     // 控制点在右下，终点在右上
     path.quadraticBezierTo(
-      size.width, notchHeight, // 控制点
-      size.width, 0, // 终点：向上回到顶部
+      size.width,
+      notchHeight, // 控制点
+      size.width,
+      0, // 终点：向上回到顶部
     );
 
     // 顶部右边直线
@@ -488,9 +575,8 @@ class _ShardFloatingNavBarContentState
 
   void _animateToIndex(int from, int to) {
     final theme = Theme.of(context);
-    final factor = theme.extension<ShardThemeExtension>()
-            ?.animationDurationFactor ??
-        1.0;
+    final factor =
+        theme.extension<ShardThemeExtension>()?.animationDurationFactor ?? 1.0;
 
     _fromIndex = from;
     _toIndex = to;
@@ -550,7 +636,8 @@ class _ShardFloatingNavBarContentState
                 final currentLeft = fromLeft + (toLeft - fromLeft) * pos;
 
                 final indicatorWidth = currentWidth * scale;
-                final indicatorLeft = currentLeft + (currentWidth - indicatorWidth) / 2;
+                final indicatorLeft =
+                    currentLeft + (currentWidth - indicatorWidth) / 2;
 
                 return Transform.translate(
                   offset: Offset(indicatorLeft, 0),
@@ -613,7 +700,9 @@ class _ShardFloatingNavBarContentState
                   item.label,
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w500
+                        : FontWeight.normal,
                     color: isSelected
                         ? colorScheme.onPrimaryContainer
                         : colorScheme.onSurfaceVariant,

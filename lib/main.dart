@@ -15,6 +15,8 @@ import 'core/widgets/shard_background.dart';
 import 'core/widgets/shard_bottom_nav_bar.dart';
 import 'core/widgets/shard_window_title_bar.dart';
 import 'core/theme/shard_scroll_behavior.dart';
+import 'core/notifications/widgets/notification_popup.dart';
+import 'core/notifications/widgets/notification_panel.dart';
 import 'features/home/pages/home_page.dart';
 import 'features/game_instance/pages/game_instance_page.dart';
 import 'features/download/pages/download_page.dart';
@@ -88,6 +90,7 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   int _selectedIndex = 0;
+  bool _showNotificationPanel = false;
 
   // 底部导航项配置
   static const _navItems = [
@@ -134,49 +137,72 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
-    final titleBarHeight = isDesktop ? 32.0 : 0.0;
+    final isDesktop =
+        Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: ShardBackground(
-        child: Column(
+        child: Stack(
           children: [
-            if (isDesktop) const ShardWindowTitleBar(),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final navBarHeight = 70.0 + MediaQuery.of(context).padding.bottom;
+            Column(
+              children: [
+                if (isDesktop) const ShardWindowTitleBar(),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final navBarHeight =
+                          70.0 + MediaQuery.of(context).padding.bottom;
 
-                  return Stack(
-                    children: [
-                      Positioned.fill(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 200),
-                          child: KeyedSubtree(
-                            key: ValueKey(_selectedIndex),
-                            child: Padding(
-                              padding: EdgeInsets.only(bottom: navBarHeight),
-                              child: _pages[_selectedIndex],
+                      return Stack(
+                        children: [
+                          Positioned.fill(
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: KeyedSubtree(
+                                key: ValueKey(_selectedIndex),
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: navBarHeight,
+                                  ),
+                                  child: _pages[_selectedIndex],
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: ShardBottomNavBar(
-                          items: _navItems,
-                          selectedIndex: _selectedIndex,
-                          onTap: (index) => setState(() => _selectedIndex = index),
-                        ),
-                      ),
-                    ],
-                  );
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: ShardBottomNavBar(
+                              items: _navItems,
+                              selectedIndex: _selectedIndex,
+                              onTap: (index) =>
+                                  setState(() => _selectedIndex = index),
+                              onNotificationTap: () {
+                                setState(() {
+                                  _showNotificationPanel =
+                                      !_showNotificationPanel;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const NotificationPopup(),
+            if (_showNotificationPanel)
+              NotificationPanel(
+                onClose: () {
+                  setState(() {
+                    _showNotificationPanel = false;
+                  });
                 },
               ),
-            ),
           ],
         ),
       ),
