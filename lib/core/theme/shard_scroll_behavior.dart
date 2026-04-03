@@ -24,7 +24,7 @@ class ShardScrollBehavior extends ScrollBehavior {
     // 使用自定义的滚动条样式
     return Scrollbar(
       controller: details.controller,
-      thumbVisibility: false,
+      thumbVisibility: true,
       trackVisibility: false,
       interactive: true,
       radius: const Radius.circular(8),

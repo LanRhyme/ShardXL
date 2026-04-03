@@ -98,28 +98,6 @@ class GlassCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-                // shadcn-ui 风格的微妙渐变
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: borderRadius,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: isDark
-                            ? [
-                                Colors.white.withValues(alpha: 0.03),
-                                Colors.white.withValues(alpha: 0.0),
-                              ]
-                            : [
-                                Colors.white.withValues(alpha: 0.5),
-                                Colors.white.withValues(alpha: 0.0),
-                              ],
-                        stops: const [0.0, 0.3],
-                      ),
-                    ),
-                  ),
-                ),
                 Padding(
                   padding: padding ?? const EdgeInsets.all(16),
                   child: onTap != null

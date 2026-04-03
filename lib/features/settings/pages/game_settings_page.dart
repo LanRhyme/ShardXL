@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../game_instance/providers/dartcraft_provider.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/shadcn_button.dart';
-import '../../../core/widgets/shadcn_components.dart';
 import '../../../core/theme/shard_theme.dart';
 
 class GameSettingsPage extends ConsumerStatefulWidget {
@@ -362,32 +361,35 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        Switch(value: value, onChanged: onChanged),
-      ],
+          Switch(value: value, onChanged: onChanged),
+        ],
+      ),
     );
   }
 
@@ -402,74 +404,58 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
   }) {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        tilePadding: EdgeInsets.zero,
-        childrenPadding: EdgeInsets.zero,
-        leading: Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
-        title: Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+      child: _ExpandableTileContent(
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
         children: children,
       ),
     );
   }
 
-  void _showJavaPathDialog(settings) {
+  void _showJavaPathDialog(GameSettings settings) {
     final controller = TextEditingController(text: settings.javaPath);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Java 路径'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('留空将自动检测 Java。手动指定时请确保路径指向 java.exe'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                hintText: '例如: C:\\Program Files\\Java\\bin\\java.exe',
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Java 路径'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('留空将自动检测 Java。手动指定时请确保路径指向 java.exe'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  hintText: '例如: C:\\Program Files\\Java\\bin\\java.exe',
+                ),
               ),
+              const SizedBox(height: 8),
+              Text('检测到的 Java：', style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                _detectJavaPath(),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
+              ),
+            ],
+          ),
+          actions: [
+            ShadcnButton(
+              onPressed: () => Navigator.pop(context),
+              variant: ShadcnButtonVariant.outline,
+              child: const Text('取消'),
             ),
-            const SizedBox(height: 8),
-            Text('检测到的 Java：', style: Theme.of(context).textTheme.bodySmall),
-            Text(
-              _detectJavaPath(),
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
+            ShadcnButton(
+              onPressed: () {
+                ref.read(gameSettingsProvider.notifier).setJavaPath(controller.text);
+                Navigator.pop(context);
+              },
+              child: const Text('保存'),
             ),
           ],
-        ),
-        actions: [
-          ShadcnButton(
-            onPressed: () => Navigator.pop(context),
-            variant: ShadcnButtonVariant.outline,
-            child: const Text('取消'),
-          ),
-          ShadcnButton(
-            onPressed: () {
-              ref
-                  .read(gameSettingsProvider.notifier)
-                  .setJavaPath(controller.text);
-              Navigator.pop(context);
-            },
-            child: const Text('保存'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -499,7 +485,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
     return '未检测到 Java';
   }
 
-  void _showMemoryDialog(settings) {
+  void _showMemoryDialog(GameSettings settings) {
     int memoryMB = settings.memoryMB;
 
     showDialog(
@@ -548,7 +534,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
     );
   }
 
-  void _showGameDirectoryDialog(settings) {
+  void _showGameDirectoryDialog(GameSettings settings) {
     final controller = TextEditingController(text: settings.gameDirectory);
     showDialog(
       context: context,
@@ -580,7 +566,7 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
     );
   }
 
-  void _showWindowDialog(settings) {
+  void _showWindowDialog(GameSettings settings) {
     int width = settings.windowWidth;
     int height = settings.windowHeight;
 
@@ -632,6 +618,91 @@ class _GameSettingsPageState extends ConsumerState<GameSettingsPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ExpandableTileContent extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final List<Widget> children;
+
+  const _ExpandableTileContent({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.children,
+  });
+
+  @override
+  State<_ExpandableTileContent> createState() => _ExpandableTileContentState();
+}
+
+class _ExpandableTileContentState extends State<_ExpandableTileContent> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        InkWell(
+          onTap: () => setState(() => _isExpanded = !_isExpanded),
+          borderRadius: BorderRadius.circular(
+            Theme.of(context).extension<ShardThemeExtension>()?.buttonBorderRadius ?? 10.0,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Icon(widget.icon, size: 20, color: colorScheme.onSurfaceVariant),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                      Text(
+                        widget.subtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                AnimatedRotation(
+                  turns: _isExpanded ? 0.25 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedCrossFade(
+          firstChild: const SizedBox.shrink(),
+          secondChild: Padding(
+            padding: const EdgeInsets.only(left: 32),
+            child: Column(children: widget.children),
+          ),
+          crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 200),
+        ),
+      ],
     );
   }
 }

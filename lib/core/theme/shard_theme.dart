@@ -251,7 +251,8 @@ class ShardTheme {
       brightness: isDark ? Brightness.dark : Brightness.light,
     ).textTheme;
 
-    // fontFamily 已通过 ThemeData.fontFamily 统一设置，无需在每个 TextStyle 中重复
+    // 注：ThemeData.fontFamily 已设置全局字体，但为确保在各个组件中一致显示，
+    // _buildTextTheme 仅进行字体大小缩放，不重复设置 fontFamily
     return base.copyWith(
       displayLarge: base.displayLarge?.copyWith(fontSize: 57 * scale),
       displayMedium: base.displayMedium?.copyWith(fontSize: 45 * scale),

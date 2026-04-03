@@ -326,31 +326,34 @@ class _SettingSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-              ),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                 ),
-              ),
-            ],
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        Switch(value: value, onChanged: onChanged),
-      ],
+          Switch(value: value, onChanged: onChanged),
+        ],
+      ),
     );
   }
 }
@@ -379,55 +382,58 @@ class _SettingSlider extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
 
-    return Column(
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(
-                  themeExtension?.buttonBorderRadius ?? 10.0,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                 ),
               ),
-              child: Text(
-                valueFormatter(value),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: colorScheme.primary,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(
+                    themeExtension?.buttonBorderRadius ?? 10.0,
+                  ),
+                ),
+                child: Text(
+                  valueFormatter(value),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        SliderTheme(
-          data: SliderThemeData(
-            trackHeight: 4,
-            thumbShape: const RoundSliderThumbShape(
-              enabledThumbRadius: 6,
-              elevation: 2,
-              pressedElevation: 4,
-            ),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-            overlayColor: colorScheme.primary.withValues(alpha: 0.12),
-            trackShape: const RoundedRectSliderTrackShape(),
+            ],
           ),
-          child: Slider(value: value, min: min, max: max, onChanged: onChanged),
-        ),
-      ],
+          const SizedBox(height: 8),
+          SliderTheme(
+            data: SliderThemeData(
+              trackHeight: 4,
+              thumbShape: const RoundSliderThumbShape(
+                enabledThumbRadius: 6,
+                elevation: 2,
+                pressedElevation: 4,
+              ),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+              overlayColor: colorScheme.primary.withValues(alpha: 0.12),
+              trackShape: const RoundedRectSliderTrackShape(),
+            ),
+            child: Slider(value: value, min: min, max: max, onChanged: onChanged),
+          ),
+        ],
+      ),
     );
   }
 }

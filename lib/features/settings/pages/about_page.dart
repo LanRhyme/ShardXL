@@ -264,7 +264,7 @@ class AboutPage extends StatelessWidget {
     required Widget trailing,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Row(
         children: [
           Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
