@@ -13,6 +13,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import 'core/widgets/shard_background.dart';
 import 'core/widgets/shard_bottom_nav_bar.dart';
+import 'core/widgets/shard_window_title_bar.dart';
 import 'core/theme/shard_scroll_behavior.dart';
 import 'features/home/pages/home_page.dart';
 import 'features/game_instance/pages/game_instance_page.dart';
@@ -24,10 +25,24 @@ import 'features/settings/providers/theme_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 初始化窗口管理器（桌面平台）
-  await windowManager.ensureInitialized();
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    await windowManager.ensureInitialized();
 
-  // 初始化 flutter_acrylic（Windows 透明窗口）
+    const windowOptions = WindowOptions(
+      size: Size(1200, 800),
+      minimumSize: Size(800, 600),
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
+
   if (Platform.isWindows) {
     await Window.initialize();
   }
@@ -119,42 +134,50 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    final titleBarHeight = isDesktop ? 32.0 : 0.0;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: ShardBackground(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final navBarHeight = 70.0 + MediaQuery.of(context).padding.bottom;
+        child: Column(
+          children: [
+            if (isDesktop) const ShardWindowTitleBar(),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final navBarHeight = 70.0 + MediaQuery.of(context).padding.bottom;
 
-            return Stack(
-              children: [
-                // 内容层
-                Positioned.fill(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: KeyedSubtree(
-                      key: ValueKey(_selectedIndex),
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: navBarHeight),
-                        child: _pages[_selectedIndex],
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: KeyedSubtree(
+                            key: ValueKey(_selectedIndex),
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: navBarHeight),
+                              child: _pages[_selectedIndex],
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                // 导航栏层
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: ShardBottomNavBar(
-                    items: _navItems,
-                    selectedIndex: _selectedIndex,
-                    onTap: (index) => setState(() => _selectedIndex = index),
-                  ),
-                ),
-              ],
-            );
-          },
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: ShardBottomNavBar(
+                          items: _navItems,
+                          selectedIndex: _selectedIndex,
+                          onTap: (index) => setState(() => _selectedIndex = index),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
