@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/shard_card.dart';
 import '../../../core/widgets/shadcn_components.dart';
 import '../../../core/widgets/faded_edge_scroll_view.dart';
+import '../widgets/developer_options_dialog.dart';
 
 class OtherSettingsPage extends StatelessWidget {
   const OtherSettingsPage({super.key});
@@ -91,24 +92,13 @@ class OtherSettingsPage extends StatelessWidget {
             title: '开发者',
             icon: Icons.code_outlined,
             children: [
-              _buildSwitchTile(
+              _buildSettingTile(
                 context,
                 colorScheme,
                 icon: Icons.bug_report_outlined,
-                title: '调试模式',
-                subtitle: '显示详细调试信息',
-                value: false,
-                onChanged: (value) {},
-              ),
-              const SizedBox(height: 8),
-              _buildSwitchTile(
-                context,
-                colorScheme,
-                icon: Icons.terminal_outlined,
-                title: '控制台输出',
-                subtitle: '显示游戏控制台日志',
-                value: true,
-                onChanged: (value) {},
+                title: '开发者选项',
+                subtitle: '调试模式、性能监控、日志设置',
+                onTap: () => DeveloperOptionsDialog.show(context),
               ),
             ],
           ),
