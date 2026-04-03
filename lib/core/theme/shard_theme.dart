@@ -60,7 +60,7 @@ class ShardTheme {
 
   const ShardTheme({
     this.isDark = true,
-    this.primaryColor = const Color(0xFF7C4DFF),
+    this.primaryColor = const Color(0xFF4A90D9),
     this.cardOpacity = 0.65,
     this.uiScale = 1.0,
     this.animationSpeed = 1.0,
@@ -123,7 +123,7 @@ class ShardTheme {
   factory ShardTheme.fromMap(Map<String, dynamic> map) {
     return ShardTheme(
       isDark: map['isDark'] ?? true,
-      primaryColor: Color(map['primaryColor'] ?? 0xFF7C4DFF),
+      primaryColor: Color(map['primaryColor'] ?? 0xFF4A90D9),
       cardOpacity: (map['cardOpacity'] ?? 0.65).toDouble(),
       uiScale: (map['uiScale'] ?? 1.0).toDouble(),
       animationSpeed: (map['animationSpeed'] ?? 1.0).toDouble(),
@@ -144,113 +144,98 @@ class ShardTheme {
   // 生成 Material 3 ThemeData
   // ========================
 
-  /// 基于 primaryColor 动态生成和谐的深色配色方案
-  ///
-  /// 使用 HSL 颜色空间，从 primaryColor 提取色相，
-  /// 然后生成低饱和度、低亮度的 surface 颜色
-  ColorScheme _buildDarkColorScheme(ColorScheme base, Color primary) {
+  /// 构建完整的 ColorScheme，保留用户选择颜色的饱和度和明度
+  ColorScheme _buildColorScheme(Color primary, bool isDark) {
     final hsl = HSLColor.fromColor(primary);
     final hue = hsl.hue;
     final sat = hsl.saturation;
+    final light = hsl.lightness;
 
-    // 背景层：极低饱和度，深色调
-    final surfaceContainerLowest = HSLColor.fromAHSL(
+    // 生成 primaryContainer：比 primary 更亮/更淡
+    final primaryContainer = HSLColor.fromAHSL(
       1.0,
       hue,
-      sat * 0.08, // 8% 原始饱和度
-      0.06, // 6% 亮度
+      sat * 0.7,
+      isDark ? (light + 0.15).clamp(0.0, 0.4) : (light + 0.25).clamp(0.5, 0.85),
     ).toColor();
 
-    // surface 层：略微带色
-    final surfaceContainer = HSLColor.fromAHSL(
+    // 生成 secondary：色相偏移 30 度
+    final secondary = HSLColor.fromAHSL(
       1.0,
-      hue,
-      sat * 0.10,
-      0.10,
+      (hue + 30) % 360,
+      sat * 0.8,
+      light,
     ).toColor();
 
-    // 卡片层：稍亮
-    final surfaceContainerHigh = HSLColor.fromAHSL(
+    // 生成 secondaryContainer
+    final secondaryContainer = HSLColor.fromAHSL(
       1.0,
-      hue,
-      sat * 0.12,
-      0.14,
+      (hue + 30) % 360,
+      sat * 0.5,
+      isDark ? (light + 0.15).clamp(0.0, 0.4) : (light + 0.25).clamp(0.5, 0.85),
     ).toColor();
 
-    // 最高层：用于悬浮元素
-    final surfaceContainerHighest = HSLColor.fromAHSL(
+    // 生成 tertiary：色相偏移 60 度
+    final tertiary = HSLColor.fromAHSL(
       1.0,
-      hue,
-      sat * 0.14,
-      0.18,
+      (hue + 60) % 360,
+      sat * 0.6,
+      light,
     ).toColor();
 
-    // surface 主色
-    final surface = HSLColor.fromAHSL(1.0, hue, sat * 0.10, 0.09).toColor();
+    // 生成 error：保持红色系
+    final error = HSLColor.fromAHSL(1.0, 0, sat * 0.8, isDark ? 0.5 : 0.45).toColor();
+    final errorContainer = HSLColor.fromAHSL(1.0, 0, sat * 0.3, isDark ? 0.15 : 0.9).toColor();
 
-    return base.copyWith(
+    // Surface 颜色
+    final surface = HSLColor.fromAHSL(1.0, hue, sat * 0.10, isDark ? 0.09 : 0.93).toColor();
+    final surfaceContainerLowest = HSLColor.fromAHSL(1.0, hue, sat * 0.08, isDark ? 0.06 : 0.91).toColor();
+    final surfaceContainer = HSLColor.fromAHSL(1.0, hue, sat * 0.10, isDark ? 0.10 : 0.94).toColor();
+    final surfaceContainerHigh = HSLColor.fromAHSL(1.0, hue, sat * 0.12, isDark ? 0.14 : 0.96).toColor();
+    final surfaceContainerHighest = HSLColor.fromAHSL(1.0, hue, sat * 0.14, isDark ? 0.18 : 0.98).toColor();
+
+    // Outline
+    final outline = HSLColor.fromAHSL(1.0, hue, sat * 0.2, isDark ? 0.25 : 0.55).toColor();
+    final outlineVariant = HSLColor.fromAHSL(1.0, hue, sat * 0.1, isDark ? 0.15 : 0.75).toColor();
+
+    return ColorScheme(
+      brightness: isDark ? Brightness.dark : Brightness.light,
+      primary: primary,
+      onPrimary: _getContrastColor(primary),
+      primaryContainer: primaryContainer,
+      onPrimaryContainer: _getContrastColor(primaryContainer),
+      secondary: secondary,
+      onSecondary: _getContrastColor(secondary),
+      secondaryContainer: secondaryContainer,
+      onSecondaryContainer: _getContrastColor(secondaryContainer),
+      tertiary: tertiary,
+      onTertiary: _getContrastColor(tertiary),
+      error: error,
+      onError: _getContrastColor(error),
+      errorContainer: errorContainer,
+      onErrorContainer: _getContrastColor(errorContainer),
       surface: surface,
+      onSurface: isDark ? Colors.white.withValues(alpha: 0.92) : Colors.black.withValues(alpha: 0.87),
       surfaceContainerLowest: surfaceContainerLowest,
+      surfaceContainerLow: surfaceContainer,
       surfaceContainer: surfaceContainer,
       surfaceContainerHigh: surfaceContainerHigh,
       surfaceContainerHighest: surfaceContainerHighest,
-      // 保持良好的文字对比度
-      onSurface: Colors.white.withValues(alpha: 0.92),
-      onSurfaceVariant: Colors.white.withValues(alpha: 0.70),
+      onSurfaceVariant: isDark ? Colors.white.withValues(alpha: 0.70) : Colors.black.withValues(alpha: 0.60),
+      outline: outline,
+      outlineVariant: outlineVariant,
+      shadow: isDark ? Colors.black : Colors.black.withValues(alpha: 0.15),
+      scrim: Colors.black,
+      inverseSurface: isDark ? surfaceContainerHighest : surfaceContainerLowest,
+      onInverseSurface: isDark ? Colors.black : Colors.white,
+      inversePrimary: HSLColor.fromAHSL(1.0, hue, sat, isDark ? 0.7 : 0.3).toColor(),
     );
   }
 
-  /// 基于 primaryColor 动态生成和谐的浅色配色方案
-  ///
-  /// 浅色模式层级：background(最深) → surface → card(最浅/最突出)
-  ColorScheme _buildLightColorScheme(ColorScheme base, Color primary) {
-    final hsl = HSLColor.fromColor(primary);
-    final hue = hsl.hue;
-    final sat = hsl.saturation;
-
-    // 浅色模式：背景最深，层级越高颜色越浅（越突出）
-    final surfaceContainerLowest = HSLColor.fromAHSL(
-      1.0,
-      hue,
-      sat * 0.06,
-      0.91, // 最深，作为背景
-    ).toColor();
-
-    final surfaceContainer = HSLColor.fromAHSL(
-      1.0,
-      hue,
-      sat * 0.05,
-      0.94, // 稍浅
-    ).toColor();
-
-    final surfaceContainerHigh = HSLColor.fromAHSL(
-      1.0,
-      hue,
-      sat * 0.04,
-      0.96, // 更浅，用于卡片
-    ).toColor();
-
-    final surfaceContainerHighest = HSLColor.fromAHSL(
-      1.0,
-      hue,
-      sat * 0.03,
-      0.98, // 最浅，最突出
-    ).toColor();
-
-    final surface = HSLColor.fromAHSL(
-      1.0,
-      hue,
-      sat * 0.05,
-      0.93, // 介于 background 和 card 之间
-    ).toColor();
-
-    return base.copyWith(
-      surface: surface,
-      surfaceContainerLowest: surfaceContainerLowest,
-      surfaceContainer: surfaceContainer,
-      surfaceContainerHigh: surfaceContainerHigh,
-      surfaceContainerHighest: surfaceContainerHighest,
-    );
+  /// 获取对比色（用于文字）
+  Color _getContrastColor(Color background) {
+    final luminance = background.computeLuminance();
+    return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
   /// 构建带缩放的 TextTheme
@@ -283,24 +268,14 @@ class ShardTheme {
 
   /// 根据当前配置生成完整的 ThemeData（shadcn-ui 风格）
   ThemeData toThemeData() {
-    // 根据 primaryColor 生成完整的 ColorScheme
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: primaryColor,
-      brightness: isDark ? Brightness.dark : Brightness.light,
-    );
+    final colorScheme = _buildColorScheme(primaryColor, isDark);
 
-    // 深色/浅色模式下的自定义 surface 颜色（基于 primaryColor 动态生成）
-    final effectiveColorScheme = isDark
-        ? _buildDarkColorScheme(colorScheme, primaryColor)
-        : _buildLightColorScheme(colorScheme, primaryColor);
-
-    // shadcn-ui 风格的圆角系统
     final scaledBorderRadius = borderRadius * uiScale;
 
     return ThemeData(
       useMaterial3: true,
       brightness: isDark ? Brightness.dark : Brightness.light,
-      colorScheme: effectiveColorScheme,
+      colorScheme: colorScheme,
       scaffoldBackgroundColor: Colors.transparent,
       fontFamily: 'AlimamaFangYuanTi',
       // 字体缩放 - 使用自定义 TextTheme
@@ -318,7 +293,7 @@ class ShardTheme {
             width: 1,
           ),
         ),
-        color: effectiveColorScheme.surfaceContainerHigh.withValues(
+        color: colorScheme.surfaceContainerHigh.withValues(
           alpha: cardOpacity,
         ),
       ),
@@ -331,7 +306,7 @@ class ShardTheme {
         titleTextStyle: TextStyle(
           fontSize: 20 * uiScale,
           fontWeight: FontWeight.w600,
-          color: effectiveColorScheme.onSurface,
+          color: colorScheme.onSurface,
           fontFamily: 'AlimamaFangYuanTi',
         ),
       ),
@@ -382,7 +357,7 @@ class ShardTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(scaledBorderRadius),
           ),
-          side: BorderSide(color: effectiveColorScheme.outline, width: 1),
+          side: BorderSide(color: colorScheme.outline, width: 1),
           textStyle: TextStyle(
             fontSize: 14 * uiScale,
             fontWeight: FontWeight.w500,
@@ -411,42 +386,42 @@ class ShardTheme {
 
       // 导航栏主题
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: effectiveColorScheme.surfaceContainerLowest,
+        backgroundColor: colorScheme.surfaceContainerLowest,
         selectedIconTheme: IconThemeData(
           size: 24 * uiScale,
-          color: effectiveColorScheme.primary,
+          color: colorScheme.primary,
         ),
         unselectedIconTheme: IconThemeData(
           size: 24 * uiScale,
-          color: effectiveColorScheme.onSurfaceVariant,
+          color: colorScheme.onSurfaceVariant,
         ),
-        indicatorColor: effectiveColorScheme.primary.withValues(alpha: 0.24),
+        indicatorColor: colorScheme.primary.withValues(alpha: 0.24),
       ),
 
       // shadcn-ui 风格的输入框主题
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: effectiveColorScheme.surfaceContainerHigh.withValues(
+        fillColor: colorScheme.surfaceContainerHigh.withValues(
           alpha: 0.5,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(scaledBorderRadius),
-          borderSide: BorderSide(color: effectiveColorScheme.outline, width: 1),
+          borderSide: BorderSide(color: colorScheme.outline, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(scaledBorderRadius),
-          borderSide: BorderSide(color: effectiveColorScheme.outline, width: 1),
+          borderSide: BorderSide(color: colorScheme.outline, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(scaledBorderRadius),
-          borderSide: BorderSide(color: effectiveColorScheme.primary, width: 2),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: 16 * uiScale,
           vertical: 12 * uiScale,
         ),
         hintStyle: TextStyle(
-          color: effectiveColorScheme.onSurfaceVariant,
+          color: colorScheme.onSurfaceVariant,
           fontSize: 14 * uiScale,
           fontFamily: 'AlimamaFangYuanTi',
         ),
@@ -456,15 +431,15 @@ class ShardTheme {
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return effectiveColorScheme.primary;
+            return colorScheme.primary;
           }
-          return effectiveColorScheme.outline;
+          return colorScheme.outline;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return effectiveColorScheme.primary.withValues(alpha: 0.3);
+            return colorScheme.primary.withValues(alpha: 0.3);
           }
-          return effectiveColorScheme.surfaceContainerHighest;
+          return colorScheme.surfaceContainerHighest;
         }),
       ),
 
@@ -477,10 +452,10 @@ class ShardTheme {
           pressedElevation: 4,
         ),
         overlayShape: RoundSliderOverlayShape(overlayRadius: 20 * uiScale),
-        activeTrackColor: effectiveColorScheme.primary,
-        inactiveTrackColor: effectiveColorScheme.surfaceContainerHighest,
-        thumbColor: effectiveColorScheme.primary,
-        overlayColor: effectiveColorScheme.primary.withValues(alpha: 0.12),
+        activeTrackColor: colorScheme.primary,
+        inactiveTrackColor: colorScheme.surfaceContainerHighest,
+        thumbColor: colorScheme.primary,
+        overlayColor: colorScheme.primary.withValues(alpha: 0.12),
         activeTickMarkColor: Colors.transparent,
         inactiveTickMarkColor: Colors.transparent,
         trackShape: const RoundedRectSliderTrackShape(),

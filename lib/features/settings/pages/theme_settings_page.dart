@@ -11,6 +11,7 @@ import '../providers/theme_provider.dart';
 import '../../../core/theme/shard_theme.dart';
 import '../../../core/widgets/shard_card.dart';
 import '../../../core/widgets/shadcn_button.dart';
+import '../../../core/widgets/shadcn_color_picker.dart';
 import '../../../core/widgets/faded_edge_scroll_view.dart';
 
 class ThemeSettingsPage extends ConsumerWidget {
@@ -467,21 +468,6 @@ class _ColorPicker extends StatelessWidget {
     required this.onColorChanged,
   });
 
-  static const List<Color> presetColors = [
-    Color(0xFF7C4DFF),
-    Color(0xFF6200EA),
-    Color(0xFF2979FF),
-    Color(0xFF00B0FF),
-    Color(0xFF00E5FF),
-    Color(0xFF00E676),
-    Color(0xFF76FF03),
-    Color(0xFFFFEA00),
-    Color(0xFFFF9100),
-    Color(0xFFFF1744),
-    Color(0xFFFF4081),
-    Color(0xFFE040FB),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -492,14 +478,50 @@ class _ColorPicker extends StatelessWidget {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: presetColors.map((color) {
-            final isSelected = color.toARGB32() == currentColor.toARGB32();
-            return _ColorOption(
-              color: color,
-              isSelected: isSelected,
-              onTap: () => onColorChanged(color),
-            );
-          }).toList(),
+          children: [
+            ...ShadcnColorPicker.defaultPresetColors.map((color) {
+              final isSelected = color.toARGB32() == currentColor.toARGB32();
+              return GestureDetector(
+                onTap: () => onColorChanged(color),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected
+                          ? colorScheme.onSurface
+                          : colorScheme.outline.withValues(alpha: 0.2),
+                      width: isSelected ? 2 : 1,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: color.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: isSelected
+                      ? Icon(
+                          Icons.check_rounded,
+                          color: _getContrastColor(color),
+                          size: 18,
+                        )
+                      : null,
+                ),
+              );
+            }),
+            ShadcnColorPicker(
+              currentColor: currentColor,
+              onColorChanged: onColorChanged,
+              size: 36,
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Container(
@@ -537,56 +559,6 @@ class _ColorPicker extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ColorOption extends StatelessWidget {
-  final Color color;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ColorOption({
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.onSurface
-                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : null,
-        ),
-        child: isSelected
-            ? Icon(
-                Icons.check_rounded,
-                color: _getContrastColor(color),
-                size: 18,
-              )
-            : null,
-      ),
     );
   }
 
