@@ -2,98 +2,23 @@
 # .rules
 
 ## 项目概述
-ShardXL 是一个 Minecraft Java 版启动器，使用 Flutter 开发，支持桌面（Windows/macOS/Linux）和 Android 平台。
+ShardXL 是一个跨平台 Minecraft Java 版启动器，使用 Flutter 开发 UI 层，Rust 编写核心游戏逻辑。支持桌面（Windows/macOS/Linux）和 Android 平台。
 
-## 技术栈
-- 框架: Flutter 3.41.6+
-- 状态管理: Flutter Riverpod
-- 主题系统: Material 3 + 自定义 ShardTheme
-- 窗口管理: window_manager
+## 核心架构
+- **UI 层**: Flutter + Riverpod + shadcn-ui 风格
+- **核心逻辑**: Rust (`external/ShardXL-Lib`)
+- **Android 核心**: PojavLauncher 移植 (`external/ShardXL-AndroidCore`)
+- **FFI 绑定**: `lib/frb/shardxl_ffi_bindings.dart`
 
-## 代码规范
+## 设计风格
+- shadcn-ui 设计语言
+- 深色模式优先
+- 毛玻璃效果
+- 默认圆角 6px
 
-### 1. 文件组织
-```
-lib/
-├── core/
-│   ├── theme/           # 主题相关
-│   ├── widgets/         # 通用组件
-│   └── utils/           # 工具类
-├── features/
-│   ├── settings/        # 设置功能
-│   │   ├── pages/
-│   │   ├── providers/
-│   │   └── widgets/
-│   └── [feature]/       # 其他功能模块
-└── main.dart
-```
+## 组件复用
+编写 UI 时优先使用 `core/widgets/` 下的已有组件：
+- GlassCard, ShadcnButton, ShadcnInput, ShadcnBadge 等
 
-### 2. 命名规范
-- 文件名: snake_case.dart
-- 类名: PascalCase
-- 变量/方法: camelCase
-- 常量: SCREAMING_SNAKE_CASE
-- Provider: xxxProvider
-
-### 3. 主题使用规范
-- 始终使用 ColorScheme 颜色，不要硬编码颜色值
-- 使用 Theme.of(context) 访问主题
-- 自定义扩展通过 ThemeExtension 访问
-- 玻璃效果组件使用 GlassCard
-
-### 4. 状态管理规范
-- 使用 Riverpod Notifier 管理复杂状态
-- Provider 放在 features/[name]/providers/ 目录
-- 全局 Provider 放在 core/providers/ 目录
-
-### 5. 注释规范
-- 所有文件头部添加中文说明
-- 公开 API 添加文档注释 (///)
-- 复杂逻辑添加行内注释
-
-### 6. 依赖管理
-- 优先使用已有依赖
-- 新增依赖需在 pubspec.yaml 中添加版本约束
-- 避免引入过于庞大的依赖
-
-## 主题系统规则
-
-### 核心原则
-1. Material 3 优先
-2. 深色模式默认
-3. 用户可自定义 primaryColor
-4. 其他颜色自动生成
-
-### 颜色层级
-- background: surfaceContainerLowest（最深）
-- surface: surfaceContainer（中等）
-- card: surfaceContainerHigh（较浅）
-- 确保清晰的视觉层级
-
-### 玻璃效果规则
-- 启用时使用 BackdropFilter
-- 禁用时回退到普通 Card
-- 始终提供 fallback
-
-### 可访问性
-- 确保足够的对比度
-- 支持动态字体大小
-- 动画可关闭
-
-## 错误处理
-- 使用 try-catch 处理异步操作
-- 加载状态使用 isLoading 标志
-- 错误信息使用 debugPrint 输出
-
-## 测试规范
-- 核心逻辑必须有单元测试
-- UI 组件使用 widget 测试
-- 使用 flutter_test 包
-
-## Git 规范
-- 提交信息使用中文
-- feat: 新功能
-- fix: 修复
-- refactor: 重构
-- docs: 文档
-- style: 样式
+## 详细规则
+详见 [`.trae/rules/project_rules.md`](.trae/rules/project_rules.md)

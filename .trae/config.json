@@ -1,23 +1,34 @@
 {
   "name": "ShardXL",
-  "description": "Minecraft Java Edition Launcher",
+  "description": "Cross-platform Minecraft Java Edition Launcher with Rust backend",
   "version": "1.0.0",
   "framework": "flutter",
   "stateManagement": "riverpod",
-  "themeSystem": "custom_material3",
+  "themeSystem": "custom_material3_shadcn",
+  "backend": {
+    "language": "rust",
+    "coreLibrary": "external/ShardXL-Lib",
+    "androidCore": "external/ShardXL-AndroidCore",
+    "ffiBindings": "lib/frb/shardxl_ffi_bindings.dart"
+  },
   "ai": {
     "skill": ".skill",
     "rules": ".rules",
+    "projectRules": ".trae/rules/project_rules.md",
     "context": {
       "include": [
         "lib/**/*.dart",
+        "external/ShardXL-Lib/**/*.rs",
+        "external/ShardXL-Lib/**/Cargo.toml",
         "pubspec.yaml",
         "*.md"
       ],
       "exclude": [
         ".dart_tool/**",
         "build/**",
-        ".flutter-plugins-dependencies"
+        ".flutter-plugins-dependencies",
+        "external/ShardXL-Lib/target/**",
+        "external/ShardXL-AndroidCore/**/build/**"
       ]
     }
   },
@@ -38,9 +49,11 @@
     }
   },
   "theme": {
+    "style": "shadcn-ui",
     "defaultPrimaryColor": "#7C4DFF",
     "defaultDarkMode": true,
     "enableGlassEffect": true,
-    "cardOpacity": 0.65
+    "cardOpacity": 0.65,
+    "defaultBorderRadius": 6.0
   }
 }

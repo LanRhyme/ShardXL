@@ -1,10 +1,11 @@
-# ShardXL AI 技能配置
-# .skill
+---
+name: "shardxl-development"
+description: "ShardXL cross-platform Minecraft Java launcher development assistant. Invoke when developing Flutter UI, Rust backend, FFI bindings, or Android platform features for ShardXL project."
+---
 
-## 基本信息
-name: ShardXL Development Skill
-version: 2.0.0
-description: ShardXL 跨平台 Minecraft Java 版启动器开发辅助技能
+# ShardXL Development Skill
+
+ShardXL 跨平台 Minecraft Java 版启动器开发辅助技能。
 
 ## 能力范围
 
