@@ -31,14 +31,6 @@ class AboutPage extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        colorScheme.primary,
-                        colorScheme.secondary,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -48,10 +40,39 @@ class AboutPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.catching_pokemon_outlined,
-                    size: 48,
-                    color: colorScheme.onPrimary,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        colorScheme.primary,
+                        BlendMode.srcIn,
+                      ),
+                      child: Image.asset(
+                        'assets/icons/logo.png',
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  colorScheme.primary,
+                                  colorScheme.secondary,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.games_outlined,
+                              size: 48,
+                              color: colorScheme.onPrimary,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),

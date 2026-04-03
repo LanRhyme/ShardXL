@@ -257,26 +257,27 @@ class ShardTheme {
   TextTheme _buildTextTheme(bool isDark, double scale) {
     final base = ThemeData(
       brightness: isDark ? Brightness.dark : Brightness.light,
+      fontFamily: 'AlimamaFangYuanTi',
     ).textTheme;
 
-    // 注：ThemeData.fontFamily 已设置全局字体，但为确保在各个组件中一致显示，
-    // _buildTextTheme 仅进行字体大小缩放，不重复设置 fontFamily
+    const fontFamily = 'AlimamaFangYuanTi';
+
     return base.copyWith(
-      displayLarge: base.displayLarge?.copyWith(fontSize: 57 * scale),
-      displayMedium: base.displayMedium?.copyWith(fontSize: 45 * scale),
-      displaySmall: base.displaySmall?.copyWith(fontSize: 36 * scale),
-      headlineLarge: base.headlineLarge?.copyWith(fontSize: 32 * scale),
-      headlineMedium: base.headlineMedium?.copyWith(fontSize: 28 * scale),
-      headlineSmall: base.headlineSmall?.copyWith(fontSize: 24 * scale),
-      titleLarge: base.titleLarge?.copyWith(fontSize: 22 * scale),
-      titleMedium: base.titleMedium?.copyWith(fontSize: 16 * scale),
-      titleSmall: base.titleSmall?.copyWith(fontSize: 14 * scale),
-      bodyLarge: base.bodyLarge?.copyWith(fontSize: 16 * scale),
-      bodyMedium: base.bodyMedium?.copyWith(fontSize: 14 * scale),
-      bodySmall: base.bodySmall?.copyWith(fontSize: 12 * scale),
-      labelLarge: base.labelLarge?.copyWith(fontSize: 14 * scale),
-      labelMedium: base.labelMedium?.copyWith(fontSize: 12 * scale),
-      labelSmall: base.labelSmall?.copyWith(fontSize: 11 * scale),
+      displayLarge: base.displayLarge?.copyWith(fontSize: 57 * scale, fontFamily: fontFamily),
+      displayMedium: base.displayMedium?.copyWith(fontSize: 45 * scale, fontFamily: fontFamily),
+      displaySmall: base.displaySmall?.copyWith(fontSize: 36 * scale, fontFamily: fontFamily),
+      headlineLarge: base.headlineLarge?.copyWith(fontSize: 32 * scale, fontFamily: fontFamily),
+      headlineMedium: base.headlineMedium?.copyWith(fontSize: 28 * scale, fontFamily: fontFamily),
+      headlineSmall: base.headlineSmall?.copyWith(fontSize: 24 * scale, fontFamily: fontFamily),
+      titleLarge: base.titleLarge?.copyWith(fontSize: 22 * scale, fontFamily: fontFamily),
+      titleMedium: base.titleMedium?.copyWith(fontSize: 16 * scale, fontFamily: fontFamily),
+      titleSmall: base.titleSmall?.copyWith(fontSize: 14 * scale, fontFamily: fontFamily),
+      bodyLarge: base.bodyLarge?.copyWith(fontSize: 16 * scale, fontFamily: fontFamily),
+      bodyMedium: base.bodyMedium?.copyWith(fontSize: 14 * scale, fontFamily: fontFamily),
+      bodySmall: base.bodySmall?.copyWith(fontSize: 12 * scale, fontFamily: fontFamily),
+      labelLarge: base.labelLarge?.copyWith(fontSize: 14 * scale, fontFamily: fontFamily),
+      labelMedium: base.labelMedium?.copyWith(fontSize: 12 * scale, fontFamily: fontFamily),
+      labelSmall: base.labelSmall?.copyWith(fontSize: 11 * scale, fontFamily: fontFamily),
     );
   }
 

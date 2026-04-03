@@ -48,10 +48,6 @@ class ThemeSettingsPage extends ConsumerWidget {
           // 背景类型
           _buildBackgroundSection(context, shardTheme, notifier, colorScheme),
           const SizedBox(height: 16),
-
-          // 效果预览
-          _buildPreviewSection(context, colorScheme, shardTheme),
-          const SizedBox(height: 100),
         ],
       ),
       ),
@@ -211,18 +207,6 @@ class ThemeSettingsPage extends ConsumerWidget {
           ],
         ],
       ),
-    );
-  }
-
-  Widget _buildPreviewSection(
-    BuildContext context,
-    ColorScheme colorScheme,
-    ShardTheme shardTheme,
-  ) {
-    return _SettingsSection(
-      title: '效果预览',
-      icon: Icons.visibility_outlined,
-      child: const _PreviewCard(),
     );
   }
 }
@@ -647,17 +631,19 @@ class _BackgroundTypeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: types.map((type) {
-        final isSelected = type.value == currentType;
-        return _BackgroundTypeChip(
-          type: type,
-          isSelected: isSelected,
-          onTap: () => onTypeChanged(type.value),
-        );
-      }).toList(),
+    return Center(
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: types.map((type) {
+          final isSelected = type.value == currentType;
+          return _BackgroundTypeChip(
+            type: type,
+            isSelected: isSelected,
+            onTap: () => onTypeChanged(type.value),
+          );
+        }).toList(),
+      ),
     );
   }
 }
@@ -948,120 +934,6 @@ class _ImageBackgroundSettingsState
           ),
         ),
       ),
-    );
-  }
-}
-
-// ========================
-// 预览卡片
-// ========================
-
-class _PreviewCard extends ConsumerWidget {
-  const _PreviewCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeState = ref.watch(shardThemeProvider);
-    final shardTheme = themeState.theme;
-    final colorScheme = Theme.of(context).colorScheme;
-    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-
-    return Column(
-      children: [
-        // 预览信息
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(
-              themeExtension?.buttonBorderRadius ?? 10.0,
-            ),
-          ),
-          child: Column(
-            children: [
-              _PreviewInfoRow(
-                icon: Icons.palette_rounded,
-                label: '主题色',
-                value:
-                    '#${shardTheme.primaryColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
-              ),
-              const SizedBox(height: 8),
-              _PreviewInfoRow(
-                icon: Icons.opacity_rounded,
-                label: '卡片不透明度',
-                value: '${(shardTheme.cardOpacity * 100).toStringAsFixed(0)}%',
-              ),
-              const SizedBox(height: 8),
-              _PreviewInfoRow(
-                icon: Icons.rounded_corner_rounded,
-                label: '圆角',
-                value: '${shardTheme.borderRadius.toStringAsFixed(0)}px',
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        // 按钮预览
-        Row(
-          children: [
-            Expanded(
-              child: ShadcnButton(
-                onPressed: () {},
-                icon: Icons.play_arrow_rounded,
-                child: const Text('启动游戏'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ShadcnButton(
-                onPressed: () {},
-                variant: ShadcnButtonVariant.outline,
-                icon: Icons.inventory_2_rounded,
-                child: const Text('版本管理'),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _PreviewInfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _PreviewInfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-        ),
-        const Spacer(),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w500,
-            fontFamily: 'monospace',
-          ),
-        ),
-      ],
     );
   }
 }

@@ -64,17 +64,24 @@ class ShardWindowTitleBar extends StatelessWidget {
   }
 
   Widget _buildAppIcon(BuildContext context) {
-    return Image.asset(
-      'assets/icons/logo.png',
-      width: 16,
-      height: 16,
-      errorBuilder: (context, error, stackTrace) {
-        return Icon(
-          Icons.games,
-          size: 16,
-          color: Theme.of(context).colorScheme.primary,
-        );
-      },
+    final colorScheme = Theme.of(context).colorScheme;
+    return ColorFiltered(
+      colorFilter: ColorFilter.mode(
+        colorScheme.primary,
+        BlendMode.srcIn,
+      ),
+      child: Image.asset(
+        'assets/icons/logo.png',
+        width: 16,
+        height: 16,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.games,
+            size: 16,
+            color: colorScheme.primary,
+          );
+        },
+      ),
     );
   }
 }
