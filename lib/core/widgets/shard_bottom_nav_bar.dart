@@ -31,20 +31,20 @@ class MeasureSize extends SingleChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _MeasureSizeRenderObject(onChange);
+    return MeasureSizeRenderObject(onChange);
   }
 
   @override
-  void updateRenderObject(BuildContext context, _MeasureSizeRenderObject renderObject) {
+  void updateRenderObject(BuildContext context, MeasureSizeRenderObject renderObject) {
     renderObject.onChange = onChange;
   }
 }
 
-class _MeasureSizeRenderObject extends RenderProxyBox {
+class MeasureSizeRenderObject extends RenderProxyBox {
   OnWidgetSizeChange onChange;
   Size? _previousSize;
 
-  _MeasureSizeRenderObject(this.onChange);
+  MeasureSizeRenderObject(this.onChange);
 
   @override
   void performLayout() {

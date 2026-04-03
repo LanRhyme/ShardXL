@@ -4,10 +4,6 @@
 import 'package:flutter/material.dart';
 import '../theme/shard_theme.dart';
 
-// ========================
-// shadcn-ui 风格的 Badge
-// ========================
-
 enum ShadcnBadgeVariant { default_, secondary, destructive, outline }
 
 class ShadcnBadge extends StatelessWidget {
@@ -26,7 +22,8 @@ class ShadcnBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    final borderRadius = BorderRadius.circular(themeExtension?.buttonBorderRadius ?? 10.0);
+    final borderRadius = themeExtension?.buttonBorderRadius ?? 6.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     Color backgroundColor;
     Color foregroundColor;
@@ -38,8 +35,10 @@ class ShadcnBadge extends StatelessWidget {
         foregroundColor = colorScheme.onPrimary;
         break;
       case ShadcnBadgeVariant.secondary:
-        backgroundColor = colorScheme.secondary;
-        foregroundColor = colorScheme.onSecondary;
+        backgroundColor = isDark
+            ? colorScheme.onSurface.withValues(alpha: 0.12)
+            : colorScheme.onSurface.withValues(alpha: 0.08);
+        foregroundColor = colorScheme.onSurface;
         break;
       case ShadcnBadgeVariant.destructive:
         backgroundColor = colorScheme.error;
@@ -48,15 +47,18 @@ class ShadcnBadge extends StatelessWidget {
       case ShadcnBadgeVariant.outline:
         backgroundColor = Colors.transparent;
         foregroundColor = colorScheme.onSurface;
-        borderSide = BorderSide(color: colorScheme.outline);
+        borderSide = BorderSide(
+          color: colorScheme.outline.withValues(alpha: isDark ? 0.3 : 0.5),
+          width: 1,
+        );
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: borderRadius,
+        borderRadius: BorderRadius.circular(borderRadius),
         border: borderSide != null ? Border.fromBorderSide(borderSide) : null,
       ),
       child: Row(
@@ -69,9 +71,10 @@ class ShadcnBadge extends StatelessWidget {
           Text(
             text,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w500,
               color: foregroundColor,
+              letterSpacing: 0.0,
             ),
           ),
         ],
@@ -80,17 +83,17 @@ class ShadcnBadge extends StatelessWidget {
   }
 }
 
-// ========================
-// shadcn-ui 风格的 Input
-// ========================
-
-class ShadcnInput extends StatelessWidget {
+class ShadcnInput extends StatefulWidget {
   final String? placeholder;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
   final IconData? prefixIcon;
   final Widget? suffix;
   final bool obscureText;
+  final bool enabled;
+  final TextInputType? keyboardType;
+  final int? maxLines;
+  final ValueChanged<String>? onSubmitted;
 
   const ShadcnInput({
     super.key,
@@ -100,49 +103,126 @@ class ShadcnInput extends StatelessWidget {
     this.prefixIcon,
     this.suffix,
     this.obscureText = false,
+    this.enabled = true,
+    this.keyboardType,
+    this.maxLines = 1,
+    this.onSubmitted,
   });
+
+  @override
+  State<ShadcnInput> createState() => _ShadcnInputState();
+}
+
+class _ShadcnInputState extends State<ShadcnInput> {
+  late FocusNode _focusNode;
+  bool _isFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (mounted) {
+      setState(() => _isFocused = _focusNode.hasFocus);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    final borderRadius = BorderRadius.circular(themeExtension?.inputBorderRadius ?? 10.0);
+    final borderRadius = themeExtension?.inputBorderRadius ?? 6.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      obscureText: obscureText,
-      style: const TextStyle(fontSize: 14),
-      decoration: InputDecoration(
-        hintText: placeholder,
-        prefixIcon: prefixIcon != null
-            ? Icon(prefixIcon, size: 18, color: colorScheme.onSurfaceVariant)
+    final borderColor = _isFocused
+        ? colorScheme.primary
+        : colorScheme.outline.withValues(alpha: isDark ? 0.25 : 0.4);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: _isFocused
+            ? [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.15),
+                  blurRadius: 0,
+                  spreadRadius: 2,
+                ),
+              ]
             : null,
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: colorScheme.surface,
-        border: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: BorderSide(color: colorScheme.outline),
+      ),
+      child: TextField(
+        controller: widget.controller,
+        onChanged: widget.onChanged,
+        obscureText: widget.obscureText,
+        enabled: widget.enabled,
+        keyboardType: widget.keyboardType,
+        maxLines: widget.maxLines,
+        onSubmitted: widget.onSubmitted,
+        focusNode: _focusNode,
+        style: TextStyle(
+          fontSize: 14,
+          color: widget.enabled
+              ? colorScheme.onSurface
+              : colorScheme.onSurface.withValues(alpha: 0.5),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: BorderSide(color: colorScheme.outline),
+        decoration: InputDecoration(
+          hintText: widget.placeholder,
+          prefixIcon: widget.prefixIcon != null
+              ? Icon(
+                  widget.prefixIcon,
+                  size: 18,
+                  color: _isFocused
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
+                )
+              : null,
+          suffixIcon: widget.suffix,
+          filled: true,
+          fillColor: isDark
+              ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
+              : colorScheme.surface.withValues(alpha: 0.8),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: BorderSide(color: borderColor, width: 1),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: BorderSide(color: borderColor, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: BorderSide(color: colorScheme.primary, width: 2),
+          ),
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: BorderSide(
+              color: colorScheme.outline.withValues(alpha: 0.15),
+              width: 1,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          hintStyle: TextStyle(
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            fontSize: 14,
+          ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: borderRadius,
-          borderSide: BorderSide(color: colorScheme.primary, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
       ),
     );
   }
 }
-
-// ========================
-// shadcn-ui 风格的 Separator
-// ========================
 
 class ShadcnSeparator extends StatelessWidget {
   final bool horizontal;
@@ -159,18 +239,15 @@ class ShadcnSeparator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       height: horizontal ? (height ?? 1) : null,
       width: !horizontal ? (width ?? 1) : null,
-      color: colorScheme.outline.withValues(alpha: 0.2),
+      color: colorScheme.outline.withValues(alpha: isDark ? 0.12 : 0.15),
     );
   }
 }
-
-// ========================
-// shadcn-ui 风格的 Avatar
-// ========================
 
 class ShadcnAvatar extends StatelessWidget {
   final String? imageUrl;
@@ -189,13 +266,19 @@ class ShadcnAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: backgroundColor ?? colorScheme.primary.withValues(alpha: 0.1),
+        color: backgroundColor ??
+            colorScheme.primary.withValues(alpha: isDark ? 0.15 : 0.1),
         shape: BoxShape.circle,
+        border: Border.all(
+          color: colorScheme.outline.withValues(alpha: 0.1),
+          width: 1,
+        ),
       ),
       child: Center(
         child: imageUrl != null
@@ -205,7 +288,7 @@ class ShadcnAvatar extends StatelessWidget {
                   width: size,
                   height: size,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _buildInitials(colorScheme),
+                  errorBuilder: (context, error, stackTrace) => _buildInitials(colorScheme),
                 ),
               )
             : _buildInitials(colorScheme),
@@ -217,17 +300,14 @@ class ShadcnAvatar extends StatelessWidget {
     return Text(
       initials ?? '?',
       style: TextStyle(
-        fontSize: size * 0.4,
+        fontSize: size * 0.38,
         fontWeight: FontWeight.w600,
         color: colorScheme.primary,
+        letterSpacing: 0.0,
       ),
     );
   }
 }
-
-// ========================
-// shadcn-ui 风格的 Skeleton
-// ========================
 
 class ShadcnSkeleton extends StatefulWidget {
   final double width;
@@ -255,9 +335,9 @@ class _ShadcnSkeletonState extends State<ShadcnSkeleton>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1200),
     )..repeat();
-    _animation = Tween<double>(begin: 0.3, end: 0.7).animate(
+    _animation = Tween<double>(begin: 0.25, end: 0.6).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
@@ -270,7 +350,7 @@ class _ShadcnSkeletonState extends State<ShadcnSkeleton>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedBuilder(
       animation: _animation,
@@ -279,18 +359,16 @@ class _ShadcnSkeletonState extends State<ShadcnSkeleton>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withValues(alpha: _animation.value),
-            borderRadius: widget.borderRadius ?? BorderRadius.circular(8),
+            color: isDark
+                ? Colors.white.withValues(alpha: _animation.value * 0.08)
+                : Colors.black.withValues(alpha: _animation.value * 0.06),
+            borderRadius: widget.borderRadius ?? BorderRadius.circular(6),
           ),
         );
       },
     );
   }
 }
-
-// ========================
-// shadcn-ui 风格的 Tabs
-// ========================
 
 class ShadcnTabs extends StatelessWidget {
   final List<ShadcnTab> tabs;
@@ -308,13 +386,16 @@ class ShadcnTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    final borderRadius = BorderRadius.circular(themeExtension?.buttonBorderRadius ?? 10.0);
+    final borderRadius = themeExtension?.buttonBorderRadius ?? 6.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: borderRadius,
+        color: isDark
+            ? colorScheme.onSurface.withValues(alpha: 0.06)
+            : colorScheme.onSurface.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: Row(
         children: tabs.asMap().entries.map((entry) {
@@ -326,15 +407,22 @@ class ShadcnTabs extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onTabChanged(index),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 150),
+                curve: Curves.easeOut,
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? colorScheme.surface : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
+                  color: isSelected
+                      ? (isDark
+                          ? colorScheme.surfaceContainerHigh
+                          : colorScheme.surface)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(borderRadius - 2),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: isDark
+                                ? Colors.black.withValues(alpha: 0.15)
+                                : Colors.black.withValues(alpha: 0.05),
                             blurRadius: 2,
                             offset: const Offset(0, 1),
                           ),
@@ -349,7 +437,7 @@ class ShadcnTabs extends StatelessWidget {
                         tab.icon,
                         size: 16,
                         color: isSelected
-                            ? colorScheme.primary
+                            ? colorScheme.onSurface
                             : colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: 6),
@@ -362,6 +450,7 @@ class ShadcnTabs extends StatelessWidget {
                         color: isSelected
                             ? colorScheme.onSurface
                             : colorScheme.onSurfaceVariant,
+                        letterSpacing: 0.0,
                       ),
                     ),
                   ],
@@ -381,10 +470,6 @@ class ShadcnTab {
 
   const ShadcnTab({required this.label, this.icon});
 }
-
-// ========================
-// shadcn-ui 风格的 Alert
-// ========================
 
 enum ShadcnAlertVariant { default_, destructive, success, warning }
 
@@ -408,7 +493,8 @@ class ShadcnAlert extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    final borderRadius = BorderRadius.circular(themeExtension?.cardBorderRadius ?? 10.0);
+    final borderRadius = themeExtension?.cardBorderRadius ?? 6.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     Color backgroundColor;
     Color borderColor;
@@ -417,37 +503,45 @@ class ShadcnAlert extends StatelessWidget {
 
     switch (variant) {
       case ShadcnAlertVariant.default_:
-        backgroundColor = colorScheme.surface;
-        borderColor = colorScheme.outline;
+        backgroundColor = isDark
+            ? colorScheme.surfaceContainerHigh
+            : colorScheme.surface;
+        borderColor = colorScheme.outline.withValues(alpha: 0.3);
         iconColor = colorScheme.primary;
         effectiveIcon = icon ?? Icons.info_outline;
         break;
       case ShadcnAlertVariant.destructive:
-        backgroundColor = colorScheme.errorContainer.withValues(alpha: 0.1);
-        borderColor = colorScheme.error;
+        backgroundColor = isDark
+            ? colorScheme.errorContainer.withValues(alpha: 0.15)
+            : colorScheme.errorContainer.withValues(alpha: 0.1);
+        borderColor = colorScheme.error.withValues(alpha: 0.4);
         iconColor = colorScheme.error;
         effectiveIcon = icon ?? Icons.error_outline;
         break;
       case ShadcnAlertVariant.success:
-        backgroundColor = Colors.green.withValues(alpha: 0.1);
-        borderColor = Colors.green;
+        backgroundColor = isDark
+            ? Colors.green.withValues(alpha: 0.08)
+            : Colors.green.withValues(alpha: 0.05);
+        borderColor = Colors.green.withValues(alpha: 0.4);
         iconColor = Colors.green;
         effectiveIcon = icon ?? Icons.check_circle_outline;
         break;
       case ShadcnAlertVariant.warning:
-        backgroundColor = Colors.orange.withValues(alpha: 0.1);
-        borderColor = Colors.orange;
+        backgroundColor = isDark
+            ? Colors.orange.withValues(alpha: 0.08)
+            : Colors.orange.withValues(alpha: 0.05);
+        borderColor = Colors.orange.withValues(alpha: 0.4);
         iconColor = Colors.orange;
         effectiveIcon = icon ?? Icons.warning_amber_outlined;
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: borderRadius,
-        border: Border.all(color: borderColor.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,6 +558,7 @@ class ShadcnAlert extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: colorScheme.onSurface,
+                    letterSpacing: 0.0,
                   ),
                 ),
                 if (description != null) ...[
@@ -471,8 +566,9 @@ class ShadcnAlert extends StatelessWidget {
                   Text(
                     description!,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
                       color: colorScheme.onSurfaceVariant,
+                      height: 1.4,
                     ),
                   ),
                 ],
@@ -482,17 +578,20 @@ class ShadcnAlert extends StatelessWidget {
           if (onClose != null)
             GestureDetector(
               onTap: onClose,
-              child: Icon(Icons.close, size: 16, color: colorScheme.onSurfaceVariant),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Icon(
+                  Icons.close,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
         ],
       ),
     );
   }
 }
-
-// ========================
-// shadcn-ui 风格的 Progress
-// ========================
 
 class ShadcnProgress extends StatelessWidget {
   final double value;
@@ -512,24 +611,144 @@ class ShadcnProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    final borderRadius = BorderRadius.circular(themeExtension?.buttonBorderRadius ?? 10.0);
+    final borderRadius = themeExtension?.buttonBorderRadius ?? 6.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: backgroundColor ?? colorScheme.surfaceContainerHighest,
-        borderRadius: borderRadius,
+        color: backgroundColor ??
+            (isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06)),
+        borderRadius: BorderRadius.circular(borderRadius),
       ),
-      child: FractionallySizedBox(
-        alignment: Alignment.centerLeft,
-        widthFactor: value.clamp(0.0, 1.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: valueColor ?? colorScheme.primary,
-            borderRadius: borderRadius,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: FractionallySizedBox(
+          alignment: Alignment.centerLeft,
+          widthFactor: value.clamp(0.0, 1.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: valueColor ?? colorScheme.primary,
+              borderRadius: BorderRadius.circular(borderRadius),
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class ShadcnSwitch extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final bool enabled;
+
+  const ShadcnSwitch({
+    super.key,
+    required this.value,
+    this.onChanged,
+    this.enabled = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      width: 44,
+      height: 24,
+      decoration: BoxDecoration(
+        color: value
+            ? colorScheme.primary
+            : (isDark
+                ? Colors.white.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.1)),
+        borderRadius: BorderRadius.circular(12),
+        border: !value
+            ? Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.3),
+                width: 1,
+              )
+            : null,
+      ),
+      child: GestureDetector(
+        onTap: enabled && onChanged != null ? () => onChanged!(!value) : null,
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 20,
+            height: 20,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ShadcnTooltip extends StatelessWidget {
+  final String message;
+  final Widget child;
+  final bool preferBelow;
+
+  const ShadcnTooltip({
+    super.key,
+    required this.message,
+    required this.child,
+    this.preferBelow = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Tooltip(
+      message: message,
+      preferBelow: preferBelow,
+      verticalOffset: 10,
+      decoration: BoxDecoration(
+        color: isDark
+            ? colorScheme.surfaceContainerHighest
+            : colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: colorScheme.outline.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      textStyle: TextStyle(
+        fontSize: 12,
+        color: colorScheme.onSurface,
+        fontWeight: FontWeight.w400,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      child: child,
     );
   }
 }

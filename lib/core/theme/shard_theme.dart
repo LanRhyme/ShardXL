@@ -57,12 +57,12 @@ class ShardTheme {
 
   const ShardTheme({
     this.isDark = true,
-    this.primaryColor = const Color(0xFF7C4DFF), // Deep Purple A200
+    this.primaryColor = const Color(0xFF7C4DFF),
     this.enableGlassEffect = true,
     this.cardOpacity = 0.65,
     this.uiScale = 1.0,
     this.animationSpeed = 1.0,
-    this.borderRadius = 10.0, // shadcn-ui 风格圆角
+    this.borderRadius = 6.0,
     this.backgroundType = 'solid',
     this.backgroundImagePath,
   });

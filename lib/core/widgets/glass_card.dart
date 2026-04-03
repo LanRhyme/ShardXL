@@ -8,9 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/settings/providers/theme_provider.dart';
 import '../theme/shard_theme.dart';
 
-/// 毛玻璃效果卡片组件（shadcn-ui 风格）
-/// 根据主题配置自动启用/禁用玻璃效果
-class GlassCard extends ConsumerWidget {
+class GlassCard extends ConsumerStatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
@@ -18,6 +16,7 @@ class GlassCard extends ConsumerWidget {
   final double? height;
   final VoidCallback? onTap;
   final bool showBorder;
+  final bool hoverable;
 
   const GlassCard({
     super.key,
@@ -28,19 +27,28 @@ class GlassCard extends ConsumerWidget {
     this.height,
     this.onTap,
     this.showBorder = true,
+    this.hoverable = false,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GlassCard> createState() => _GlassCardState();
+}
+
+class _GlassCardState extends ConsumerState<GlassCard>
+    with SingleTickerProviderStateMixin {
+  bool _isHovered = false;
+  bool _isPressed = false;
+
+  static const Duration _transitionDuration = Duration(milliseconds: 200);
+  static const Curve _transitionCurve = Curves.easeOutCubic;
+
+  @override
+  Widget build(BuildContext context) {
     final themeState = ref.watch(shardThemeProvider);
     final shardTheme = themeState.theme;
-    final themeExtension =
-        Theme.of(context).extension<ShardThemeExtension>();
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
+    final borderRadius = themeExtension?.cardBorderRadius ?? 6.0;
 
-    final borderRadius =
-        BorderRadius.circular(themeExtension?.cardBorderRadius ?? 10.0);
-
-    // 根据是否启用玻璃效果选择不同的卡片样式
     if (shardTheme.enableGlassEffect) {
       return _buildGlassCard(context, shardTheme, themeExtension, borderRadius);
     } else {
@@ -48,69 +56,66 @@ class GlassCard extends ConsumerWidget {
     }
   }
 
-  /// 构建玻璃效果卡片（shadcn-ui 风格）
   Widget _buildGlassCard(
     BuildContext context,
     ShardTheme shardTheme,
     ShardThemeExtension? themeExtension,
-    BorderRadius borderRadius,
+    double borderRadius,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final blurSigma = themeExtension?.glassBlurSigma ?? 12.0;
     final borderWidth = themeExtension?.glassBorderWidth ?? 1.0;
 
-    // shadcn-ui 风格的边框颜色
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.1)
-        : Colors.black.withValues(alpha: 0.1);
+        ? Colors.white.withValues(alpha: _isHovered && widget.hoverable ? 0.15 : 0.08)
+        : Colors.black.withValues(alpha: _isHovered && widget.hoverable ? 0.12 : 0.06);
 
-    // 卡片背景色
     final cardColor = isDark
         ? colorScheme.surfaceContainerHigh.withValues(alpha: shardTheme.cardOpacity)
         : colorScheme.surfaceContainerHigh.withValues(alpha: shardTheme.cardOpacity + 0.1);
 
     return Container(
-      width: width,
-      height: height,
-      margin: margin,
+      width: widget.width,
+      height: widget.height,
+      margin: widget.margin,
       child: ClipRRect(
-        borderRadius: borderRadius,
+        borderRadius: BorderRadius.circular(borderRadius),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-          child: Container(
+          child: AnimatedContainer(
+            duration: _transitionDuration,
+            curve: _transitionCurve,
             decoration: BoxDecoration(
-              borderRadius: borderRadius,
-              border: showBorder
+              borderRadius: BorderRadius.circular(borderRadius),
+              color: _isHovered && widget.hoverable
+                  ? cardColor.withValues(alpha: (shardTheme.cardOpacity + 0.05).clamp(0.0, 1.0))
+                  : cardColor,
+              border: widget.showBorder
                   ? Border.all(
                       color: borderColor,
                       width: borderWidth,
                     )
                   : null,
+              boxShadow: _buildBoxShadow(isDark),
             ),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: borderRadius,
-                      color: cardColor,
-                    ),
+            child: MouseRegion(
+              onEnter: widget.hoverable ? (_) => _setHovered(true) : null,
+              onExit: widget.hoverable ? (_) => _setHovered(false) : null,
+              child: GestureDetector(
+                onTapDown: widget.onTap != null ? (_) => _setPressed(true) : null,
+                onTapUp: widget.onTap != null ? (_) => _setPressed(false) : null,
+                onTapCancel: widget.onTap != null ? () => _setPressed(false) : null,
+                onTap: widget.onTap,
+                child: AnimatedScale(
+                  scale: _isPressed ? 0.995 : 1.0,
+                  duration: const Duration(milliseconds: 100),
+                  child: Padding(
+                    padding: widget.padding ?? const EdgeInsets.all(16),
+                    child: widget.child,
                   ),
                 ),
-                Padding(
-                  padding: padding ?? const EdgeInsets.all(16),
-                  child: onTap != null
-                      ? InkWell(
-                          onTap: onTap,
-                          borderRadius: borderRadius,
-                          splashColor: colorScheme.primary.withValues(alpha: 0.1),
-                          highlightColor: colorScheme.primary.withValues(alpha: 0.05),
-                          child: child,
-                        )
-                      : child,
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -118,35 +123,79 @@ class GlassCard extends ConsumerWidget {
     );
   }
 
-  /// 构建普通卡片（shadcn-ui 风格）
-  Widget _buildNormalCard(BuildContext context, BorderRadius borderRadius) {
+  Widget _buildNormalCard(BuildContext context, double borderRadius) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: _isHovered && widget.hoverable ? 0.12 : 0.06)
+        : Colors.black.withValues(alpha: _isHovered && widget.hoverable ? 0.10 : 0.05);
+
     return Container(
-      width: width,
-      height: height,
-      margin: margin,
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        color: colorScheme.surfaceContainerHigh,
-        border: showBorder
-            ? Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.1),
-                width: 1,
-              )
-            : null,
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: borderRadius,
-        child: Padding(
-          padding: padding ?? const EdgeInsets.all(16),
-          child: child,
+      width: widget.width,
+      height: widget.height,
+      margin: widget.margin,
+      child: AnimatedContainer(
+        duration: _transitionDuration,
+        curve: _transitionCurve,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(borderRadius),
+          color: _isHovered && widget.hoverable
+              ? colorScheme.surfaceContainerHighest
+              : colorScheme.surfaceContainerHigh,
+          border: widget.showBorder
+              ? Border.all(
+                  color: borderColor,
+                  width: 1,
+                )
+              : null,
+          boxShadow: _buildBoxShadow(isDark),
+        ),
+        child: MouseRegion(
+          onEnter: widget.hoverable ? (_) => _setHovered(true) : null,
+          onExit: widget.hoverable ? (_) => _setHovered(false) : null,
+          child: GestureDetector(
+            onTapDown: widget.onTap != null ? (_) => _setPressed(true) : null,
+            onTapUp: widget.onTap != null ? (_) => _setPressed(false) : null,
+            onTapCancel: widget.onTap != null ? () => _setPressed(false) : null,
+            onTap: widget.onTap,
+            child: AnimatedScale(
+              scale: _isPressed ? 0.995 : 1.0,
+              duration: const Duration(milliseconds: 100),
+              child: Padding(
+                padding: widget.padding ?? const EdgeInsets.all(16),
+                child: widget.child,
+              ),
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  List<BoxShadow>? _buildBoxShadow(bool isDark) {
+    if (!_isHovered || !widget.hoverable) return null;
+
+    return [
+      BoxShadow(
+        color: isDark
+            ? Colors.black.withValues(alpha: 0.2)
+            : Colors.black.withValues(alpha: 0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ];
+  }
+
+  void _setHovered(bool value) {
+    if (mounted) {
+      setState(() => _isHovered = value);
+    }
+  }
+
+  void _setPressed(bool value) {
+    if (mounted) {
+      setState(() => _isPressed = value);
+    }
   }
 }

@@ -260,6 +260,7 @@ class HomePageContent extends ConsumerWidget {
   }) {
     return GlassCard(
       onTap: () {},
+      hoverable: true,
       child: Row(
         children: [
           Container(
