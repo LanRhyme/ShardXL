@@ -90,7 +90,8 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   int _selectedIndex = 0;
-  bool _showNotificationPanel = false;
+  OverlayEntry? _notificationOverlayEntry;
+  final GlobalKey _notificationButtonKey = GlobalKey();
 
   // 底部导航项配置
   static const _navItems = [
@@ -133,6 +134,30 @@ class _HomePageState extends ConsumerState<HomePage> {
     Future.microtask(() {
       ref.read(shardThemeProvider.notifier).loadTheme();
     });
+  }
+
+  @override
+  void dispose() {
+    _notificationOverlayEntry?.remove();
+    super.dispose();
+  }
+
+  void _toggleNotificationPanel() {
+    if (_notificationOverlayEntry != null) {
+      _notificationOverlayEntry?.remove();
+      _notificationOverlayEntry = null;
+    } else {
+      _notificationOverlayEntry = OverlayEntry(
+        builder: (context) => NotificationPanel(
+          notificationButtonKey: _notificationButtonKey,
+          onClose: () {
+            _notificationOverlayEntry?.remove();
+            _notificationOverlayEntry = null;
+          },
+        ),
+      );
+      Overlay.of(context).insert(_notificationOverlayEntry!);
+    }
   }
 
   @override
@@ -179,12 +204,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                               selectedIndex: _selectedIndex,
                               onTap: (index) =>
                                   setState(() => _selectedIndex = index),
-                              onNotificationTap: () {
-                                setState(() {
-                                  _showNotificationPanel =
-                                      !_showNotificationPanel;
-                                });
-                              },
+                              onNotificationTap: _toggleNotificationPanel,
+                              notificationButtonKey: _notificationButtonKey,
                             ),
                           ),
                         ],
@@ -195,14 +216,6 @@ class _HomePageState extends ConsumerState<HomePage> {
               ],
             ),
             const NotificationPopup(),
-            if (_showNotificationPanel)
-              NotificationPanel(
-                onClose: () {
-                  setState(() {
-                    _showNotificationPanel = false;
-                  });
-                },
-              ),
           ],
         ),
       ),

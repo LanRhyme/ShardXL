@@ -58,10 +58,7 @@ class _NotificationPopupState extends State<NotificationPopup> {
 class _AnimatedNotificationCard extends StatefulWidget {
   final AppNotification notification;
 
-  const _AnimatedNotificationCard({
-    super.key,
-    required this.notification,
-  });
+  const _AnimatedNotificationCard({super.key, required this.notification});
 
   @override
   State<_AnimatedNotificationCard> createState() =>
@@ -87,18 +84,14 @@ class _AnimatedNotificationCardState extends State<_AnimatedNotificationCard>
     _slideAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutBack,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
-    _opacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
-    ));
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
+      ),
+    );
 
     _startEnterAnimation();
   }
@@ -115,22 +108,18 @@ class _AnimatedNotificationCardState extends State<_AnimatedNotificationCard>
     _slideAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInBack,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInBack));
 
-    _opacityAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeIn),
-    ));
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.8, curve: Curves.easeIn),
+      ),
+    );
 
     _controller.forward(from: 0.0).then((_) {
       if (mounted) {
-        NotificationManager.dismiss(widget.notification.id);
+        NotificationManager.dismissPopup(widget.notification.id);
       }
     });
   }
@@ -225,7 +214,7 @@ class _PopupCard extends StatelessWidget {
           onTap: notification.isClickable
               ? (notification.onClick ??
                     () {
-                      NotificationManager.dismiss(notification.id);
+                      NotificationManager.dismissPopup(notification.id);
                     })
               : null,
           borderRadius: BorderRadius.circular(

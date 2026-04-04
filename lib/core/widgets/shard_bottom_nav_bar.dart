@@ -92,6 +92,7 @@ class ShardBottomNavBar extends ConsumerStatefulWidget {
   final ValueChanged<int> onTap;
   final bool showTopBorder;
   final VoidCallback? onNotificationTap;
+  final GlobalKey? notificationButtonKey;
 
   const ShardBottomNavBar({
     super.key,
@@ -100,6 +101,7 @@ class ShardBottomNavBar extends ConsumerStatefulWidget {
     required this.onTap,
     this.showTopBorder = true,
     this.onNotificationTap,
+    this.notificationButtonKey,
   });
 
   @override
@@ -336,6 +338,7 @@ class _ShardBottomNavBarState extends ConsumerState<ShardBottomNavBar>
         final count = NotificationManager.unreadCount;
 
         return GestureDetector(
+          key: widget.notificationButtonKey,
           onTap: widget.onNotificationTap,
           behavior: HitTestBehavior.opaque,
           child: Container(

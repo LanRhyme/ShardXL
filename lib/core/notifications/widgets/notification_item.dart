@@ -3,7 +3,7 @@ import '../../widgets/shadcn_components.dart';
 import '../notification_model.dart';
 import '../../theme/shard_theme.dart';
 
-class NotificationItemWidget extends StatelessWidget {
+class NotificationItemWidget extends StatefulWidget {
   final AppNotification notification;
   final VoidCallback? onDismiss;
   final VoidCallback? onTap;
@@ -16,33 +16,205 @@ class NotificationItemWidget extends StatelessWidget {
   });
 
   @override
+  State<NotificationItemWidget> createState() => _NotificationItemWidgetState();
+}
+
+class _NotificationItemWidgetState extends State<NotificationItemWidget>
+    with SingleTickerProviderStateMixin {
+  double _dragOffset = 0;
+  bool _isDismissing = false;
+
+  late AnimationController _dismissAnimationController;
+  late Animation<double> _dismissHeightAnimation;
+  late Animation<double> _dismissOpacityAnimation;
+  late Animation<double> _dismissSlideAnimation;
+
+  static const double _dismissThreshold = 80.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _dismissAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _dismissHeightAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _dismissAnimationController,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeInOutCubic),
+      ),
+    );
+    _dismissOpacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _dismissAnimationController,
+        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+      ),
+    );
+    _dismissSlideAnimation = Tween<double>(begin: 0.0, end: 60.0).animate(
+      CurvedAnimation(
+        parent: _dismissAnimationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeInCubic),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _dismissAnimationController.dispose();
+    super.dispose();
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    if (_isDismissing) return;
+    if (details.delta.dx < 0) {
+      setState(() {
+        _dragOffset += details.delta.dx;
+        _dragOffset = _dragOffset.clamp(-300.0, 0.0);
+      });
+    }
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    if (_isDismissing) return;
+
+    final velocityThreshold = 500.0;
+
+    if (_dragOffset.abs() > _dismissThreshold ||
+        details.velocity.pixelsPerSecond.dx.abs() > velocityThreshold) {
+      _performDismiss();
+    } else {
+      _snapBack();
+    }
+  }
+
+  void _snapBack() {
+    if (_dragOffset == 0) return;
+    final startOffset = _dragOffset;
+    final controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    final animation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutCubic,
+    );
+
+    animation.addListener(() {
+      if (mounted) {
+        setState(() {
+          _dragOffset = startOffset * (1 - animation.value);
+        });
+      }
+    });
+
+    controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+      }
+    });
+
+    controller.forward();
+  }
+
+  void _performDismiss() {
+    setState(() {
+      _isDismissing = true;
+    });
+
+    _dismissAnimationController.forward().then((_) {
+      widget.onDismiss?.call();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
+    final cardRadius = themeExtension?.cardBorderRadius ?? 8.0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(cardRadius),
+        child: Stack(
+          children: [
+            _buildDismissBackground(),
+            GestureDetector(
+              onHorizontalDragUpdate: _onHorizontalDragUpdate,
+              onHorizontalDragEnd: _onHorizontalDragEnd,
+              behavior: HitTestBehavior.opaque,
+              child: _isDismissing
+                  ? AnimatedBuilder(
+                      animation: _dismissAnimationController,
+                      builder: (context, child) {
+                        final heightFactor = _dismissHeightAnimation.value;
+                        final slideOffset = _dismissSlideAnimation.value;
+                        return ClipRect(
+                          child: Align(
+                            heightFactor: heightFactor.clamp(0.001, 1.0),
+                            child: Transform.translate(
+                              offset: Offset(-slideOffset, 0),
+                              child: Opacity(
+                                opacity: _dismissOpacityAnimation.value,
+                                child: child,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      child: _buildContent(context),
+                    )
+                  : Transform.translate(
+                      offset: Offset(_dragOffset, 0),
+                      child: _buildContent(context),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDismissBackground() {
     final colorScheme = Theme.of(context).colorScheme;
     final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    Color borderColor = colorScheme.outline.withValues(
-      alpha: isDark ? 0.2 : 0.3,
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.error.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(
+          themeExtension?.cardBorderRadius ?? 8.0,
+        ),
+      ),
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 16),
+      child: Icon(
+        Icons.delete_outline,
+        color: colorScheme.error.withValues(alpha: 0.8),
+        size: 20,
+      ),
     );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final themeExtension = Theme.of(context).extension<ShardThemeExtension>();
+
     Color iconBgColor = colorScheme.primary.withValues(alpha: 0.1);
     Color iconColor = colorScheme.primary;
     IconData iconData = Icons.notifications_outlined;
 
-    switch (notification.type) {
+    switch (widget.notification.type) {
       case NotificationType.temporary:
       case NotificationType.normal:
         break;
       case NotificationType.progress:
-        borderColor = colorScheme.primary.withValues(alpha: 0.3);
         break;
       case NotificationType.warning:
-        borderColor = Colors.orange.withValues(alpha: 0.4);
         iconBgColor = Colors.orange.withValues(alpha: 0.1);
         iconColor = Colors.orange;
         iconData = Icons.warning_amber_outlined;
         break;
       case NotificationType.error:
-        borderColor = colorScheme.error.withValues(alpha: 0.4);
         iconBgColor = colorScheme.error.withValues(alpha: 0.1);
         iconColor = colorScheme.error;
         iconData = Icons.error_outline;
@@ -50,26 +222,27 @@ class NotificationItemWidget extends StatelessWidget {
     }
 
     final effectiveOnTap =
-        onTap ??
-        (notification.isClickable
-            ? (notification.onClick ??
+        widget.onTap ??
+        (widget.notification.isClickable
+            ? (widget.notification.onClick ??
                   () {
-                    _showNotificationDetailDialog(context, notification);
+                    _showNotificationDetailDialog(context, widget.notification);
                   })
             : null);
 
     return GestureDetector(
       onTap: effectiveOnTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(bottom: 8),
+      child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(
-            themeExtension?.cardBorderRadius ?? 8.0,
+          color: colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.zero,
+          border: Border(
+            bottom: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+              width: 0.5,
+            ),
           ),
-          border: Border.all(color: borderColor),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,35 +265,18 @@ class NotificationItemWidget extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              notification.title,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: colorScheme.onSurface,
-                                  ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: onDismiss,
-                            child: Icon(
-                              Icons.close,
-                              size: 16,
-                              color: colorScheme.onSurfaceVariant.withValues(
-                                alpha: 0.6,
-                              ),
-                            ),
-                          ),
-                        ],
+                      Text(
+                        widget.notification.title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        notification.message,
+                        widget.notification.message,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -129,7 +285,7 @@ class NotificationItemWidget extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _formatTimestamp(notification.timestamp),
+                        _formatTimestamp(widget.notification.timestamp),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant.withValues(
                             alpha: 0.5,
@@ -142,13 +298,13 @@ class NotificationItemWidget extends StatelessWidget {
                 ),
               ],
             ),
-            if (notification.type == NotificationType.progress &&
-                notification.progress != null) ...[
+            if (widget.notification.type == NotificationType.progress &&
+                widget.notification.progress != null) ...[
               const SizedBox(height: 8),
-              ShadcnProgress(value: notification.progress!, height: 6),
+              ShadcnProgress(value: widget.notification.progress!, height: 6),
               const SizedBox(height: 4),
               Text(
-                '${(notification.progress! * 100).toInt()}%',
+                '${(widget.notification.progress! * 100).toInt()}%',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontSize: 10,

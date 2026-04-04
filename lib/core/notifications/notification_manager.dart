@@ -72,6 +72,11 @@ class NotificationManager {
     _instance._notifyPopups();
   }
 
+  static void dismissPopup(String id) {
+    _instance._popups.removeWhere((n) => n.id == id);
+    _instance._notifyPopups();
+  }
+
   static void clearAll() {
     _instance._notifications.clear();
     _instance._notify();
