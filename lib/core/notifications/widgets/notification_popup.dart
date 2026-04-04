@@ -84,7 +84,7 @@ class _AnimatedNotificationCardState extends State<_AnimatedNotificationCard>
     _slideAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -108,7 +108,7 @@ class _AnimatedNotificationCardState extends State<_AnimatedNotificationCard>
     _slideAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInBack));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInCubic));
 
     _opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(
