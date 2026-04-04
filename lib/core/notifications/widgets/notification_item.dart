@@ -23,6 +23,7 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
     with SingleTickerProviderStateMixin {
   double _dragOffset = 0;
   bool _isDismissing = false;
+  AnimationController? _snapBackController;
 
   late AnimationController _dismissAnimationController;
   late Animation<double> _dismissHeightAnimation;
@@ -61,6 +62,7 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
   @override
   void dispose() {
     _dismissAnimationController.dispose();
+    _snapBackController?.dispose();
     super.dispose();
   }
 
@@ -89,13 +91,15 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
 
   void _snapBack() {
     if (_dragOffset == 0) return;
+    _snapBackController?.dispose();
+
     final startOffset = _dragOffset;
-    final controller = AnimationController(
+    _snapBackController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
     final animation = CurvedAnimation(
-      parent: controller,
+      parent: _snapBackController!,
       curve: Curves.easeOutCubic,
     );
 
@@ -107,13 +111,17 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
       }
     });
 
-    controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
+    _snapBackController!.addStatusListener((status) {
+      if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
+        if (mounted) {
+          _snapBackController?.dispose();
+          _snapBackController = null;
+        }
       }
     });
 
-    controller.forward();
+    _snapBackController!.forward();
   }
 
   void _performDismiss() {
@@ -143,8 +151,8 @@ class _NotificationItemWidgetState extends State<NotificationItemWidget>
               onHorizontalDragEnd: _onHorizontalDragEnd,
               behavior: HitTestBehavior.opaque,
               child: _isDismissing
-                  ? AnimatedBuilder(
-                      animation: _dismissAnimationController,
+                  ? ListenableBuilder(
+                      listenable: _dismissAnimationController,
                       builder: (context, child) {
                         final heightFactor = _dismissHeightAnimation.value;
                         final slideOffset = _dismissSlideAnimation.value;
