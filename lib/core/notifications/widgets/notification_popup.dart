@@ -43,22 +43,118 @@ class _NotificationPopupState extends State<NotificationPopup> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: popups.map((popup) {
-              return TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-                tween: Tween(begin: 0, end: 1),
-                builder: (context, value, child) {
-                  return Transform.translate(
-                    offset: Offset(0, -20 * (1 - value)),
-                    child: Opacity(opacity: value, child: child),
-                  );
-                },
-                child: _PopupCard(notification: popup),
+              return _AnimatedNotificationCard(
+                key: ValueKey(popup.id),
+                notification: popup,
               );
             }).toList(),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AnimatedNotificationCard extends StatefulWidget {
+  final AppNotification notification;
+
+  const _AnimatedNotificationCard({
+    super.key,
+    required this.notification,
+  });
+
+  @override
+  State<_AnimatedNotificationCard> createState() =>
+      _AnimatedNotificationCardState();
+}
+
+class _AnimatedNotificationCardState extends State<_AnimatedNotificationCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _opacityAnimation;
+
+  static const Duration _animationDuration = Duration(milliseconds: 2500);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: _animationDuration,
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    ));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
+    ));
+
+    _startEnterAnimation();
+  }
+
+  void _startEnterAnimation() {
+    _controller.forward().then((_) {
+      if (mounted) {
+        _startExitAnimation();
+      }
+    });
+  }
+
+  void _startExitAnimation() {
+    _slideAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInBack,
+    ));
+
+    _opacityAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.8, curve: Curves.easeIn),
+    ));
+
+    _controller.forward(from: 0.0).then((_) {
+      if (mounted) {
+        NotificationManager.dismiss(widget.notification.id);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(360 * _slideAnimation.value, 0),
+          child: Opacity(
+            opacity: _opacityAnimation.value.clamp(0.0, 1.0),
+            child: child,
+          ),
+        );
+      },
+      child: _PopupCard(notification: widget.notification),
     );
   }
 }
